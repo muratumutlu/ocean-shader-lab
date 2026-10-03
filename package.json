@@ -1,0 +1,24 @@
+{
+  "name": "ocean-shader-lab",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1 --port 4173 --strictPort",
+    "check": "tsc --noEmit",
+    "test": "vitest run",
+    "build": "vite build && node scripts/prepare-public-assets.mjs && node scripts/verify-publication.mjs",
+    "test:e2e": "playwright test"
+  },
+  "dependencies": {
+    "three": "0.186.1"
+  },
+  "devDependencies": {
+    "@types/three": "0.186.0",
+    "vite": "8.3.2",
+    "typescript": "7.0.2",
+    "vitest": "5.0.3",
+    "@playwright/test": "1.63.0",
+    "wrangler": "4.147.0"
+  }
+}
