@@ -33,21 +33,21 @@ export function createWater(terrain:TerrainResources){
  const postScene=new THREE.Scene(),postCamera=new THREE.OrthographicCamera(-1,1,1,-1,0,1);postScene.add(new THREE.Mesh(postGeometry,postMaterial));
  let profile:QualityProfile='balanced',disposed=false,lastTide=0,lastSun=225,currentTime=0,currentSwell=.55,submerged=false,underwaterFrames=0,drawCalls=0,dynamicGroup:THREE.Group|null=null,environment:EnvironmentSnapshot|null=null;
  const size=new THREE.Vector2(),eye=new THREE.Vector3();
- function capture(renderer:THREE.WebGLRenderer,scene:THREE.Scene,camera:THREE.Camera,force=false){
+ function capture(renderer:THREE.WebGLRenderer,scene:THREE.Scene,camera:THREE.Camera,force=false,steady=false){
   if(disposed)return;if(force)captureResources.invalidate();renderer.getDrawingBufferSize(size);uniforms.uResolution.value.copy(size);camera.updateMatrixWorld();camera.getWorldPosition(eye);
   const level=waterHeightAt(eye.x,eye.z,currentTime,currentSwell,lastTide,terrain.sampleHeight(eye.x,eye.z));submerged=updateSubmerged(submerged,eye,level,terrain.sampleHeight(eye.x,eye.z));uniforms.uUnderwater.value=Number(submerged);
   uniforms.uInverseProjection.value.copy(camera.projectionMatrixInverse);uniforms.uCameraWorld.value.copy(camera.matrixWorld);
   if(camera instanceof THREE.PerspectiveCamera||camera instanceof THREE.OrthographicCamera){uniforms.uCameraRange.value.set(camera.near,camera.far);uniforms.uOrthographic.value=Number(camera instanceof THREE.OrthographicCamera);}
-  captureResources.capture(renderer,scene,camera,dynamicGroup,profile,submerged);uniforms.uSceneColor.value=captureResources.color;uniforms.uSceneDepth.value=captureResources.depth;uniforms.uRockTransmission.value=captureResources.transmission;uniforms.uCaptured.value=1;
+  captureResources.capture(renderer,scene,camera,dynamicGroup,profile,submerged,steady);uniforms.uSceneColor.value=captureResources.color;uniforms.uSceneDepth.value=captureResources.depth;uniforms.uRockTransmission.value=captureResources.transmission;uniforms.uCaptured.value=1;
  }
  return {mesh,
   update(time:number,c:DemoControls){currentTime=time;currentSwell=c.swell;uniforms.uTime.value=time;uniforms.uSwell.value=c.swell;uniforms.uTide.value=c.tide;const a=c.sunAzimuth*Math.PI/180;if(environment)uniforms.uSun.value.set(environment.sun.x,environment.sun.y,environment.sun.z);else uniforms.uSun.value.set(Math.cos(a)*22,25,Math.sin(a)*22);if(c.tide!==lastTide||c.sunAzimuth!==lastSun){lastTide=c.tide;lastSun=c.sunAzimuth;captureResources.invalidate();}terrain.updateOptics?.(0,c.tide);},
   capture,
-  render(renderer:THREE.WebGLRenderer,scene:THREE.Scene,camera:THREE.Camera){
+  render(renderer:THREE.WebGLRenderer,scene:THREE.Scene,camera:THREE.Camera,steady=false){
    if(disposed)return;const autoReset=renderer.info.autoReset,previousTarget=renderer.getRenderTarget(),tone=renderer.toneMapping;renderer.info.autoReset=false;renderer.info.reset();
    const background=scene.background,objects=scene.children.filter(o=>o!==mesh).map(object=>({object,visible:object.visible}));
    try{
-    capture(renderer,scene,camera);scene.background=captureResources.color;objects.forEach(x=>{x.object.visible=false;});
+    capture(renderer,scene,camera,false,steady);scene.background=captureResources.color;objects.forEach(x=>{x.object.visible=false;});
     if(submerged){
      if(!renderer.extensions.has('EXT_color_buffer_float'))finalTarget.texture.type=THREE.UnsignedByteType;
      const next=fitCaptureSize(size,1440,900,{low:.5,balanced:.75,high:1}[profile]);if(finalTarget.width!==next.width||finalTarget.height!==next.height)finalTarget.setSize(next.width,next.height);

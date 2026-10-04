@@ -10,9 +10,11 @@ test('submerged color remains visible through refracting surface at fixed time',
 
 test('static coast is not redrawn for every moving water frame',async({page})=>{
  await page.addInitScript(()=>{let calls=0;for(const name of ['drawElements','drawArrays'] as const){const original=WebGL2RenderingContext.prototype[name];(WebGL2RenderingContext.prototype as any)[name]=function(...args:any[]){calls++;return (original as any).apply(this,args);};}Object.defineProperty(window,'__opticsDrawCalls',{get:()=>calls});});
- await page.emulateMedia({reducedMotion:'reduce'});await page.goto('/');await page.getByRole('button',{name:'Coast settings'}).click();await page.getByLabel('Quality').selectOption('low');await page.getByRole('button',{name:'Play waves',exact:true}).click();
+ await page.emulateMedia({reducedMotion:'reduce'});await page.goto('/');await expect(page.locator('#mode-turtle')).toBeEnabled();await page.getByRole('button',{name:'Coast settings'}).click();await page.getByLabel('Quality').selectOption('low');await page.getByRole('button',{name:'Play waves',exact:true}).click();
  const stats=await page.evaluate(async()=>{let last=(window as any).__opticsDrawCalls,max=0,frames=0,start=performance.now();await new Promise<void>(resolve=>{const sample=(now:number)=>{const next=(window as any).__opticsDrawCalls;if(next!==last){max=Math.max(max,next-last);frames++;last=next;}if(now-start<700)requestAnimationFrame(sample);else resolve();};requestAnimationFrame(sample);});return {max,frames};});
- expect(stats.frames).toBeGreaterThan(1);expect(stats.max).toBeLessThanOrEqual(4);
+ // Two turtle meshes, dynamic/depth composition and water add four draws.
+ // A full coast rebuild exceeds this budget; cove-optics also asserts its exact cache count.
+ expect(stats.frames).toBeGreaterThan(1);expect(stats.max).toBeLessThanOrEqual(8);
 });
 
 // Two coloured probes lie on one camera ray, so their screen position and

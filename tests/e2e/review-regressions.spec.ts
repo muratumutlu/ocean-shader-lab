@@ -20,9 +20,9 @@ test('first GPU render exception unwinds canvas and visibility listeners before 
 });
 test('retry reapplies current tide, swell and sunlight to the rendered scene',async({page})=>{
  await page.emulateMedia({reducedMotion:'reduce'});await page.goto('/');await page.getByRole('button',{name:'Coast settings'}).click();await page.getByLabel('Water level').fill('0.35');await page.getByLabel('Wave swell').fill('0.8');await page.getByLabel('Sun direction').fill('35');await page.getByRole('button',{name:'Coast settings'}).click();
- const before=createHash('sha256').update(await page.locator('#ocean').evaluate((c:HTMLCanvasElement)=>c.toDataURL())).digest('hex');
+ await expect(page.locator('#ocean')).toHaveAttribute('aria-busy','false');const before=createHash('sha256').update(await page.locator('#ocean').evaluate((c:HTMLCanvasElement)=>c.toDataURL())).digest('hex');
  await page.locator('#ocean').evaluate((c:HTMLCanvasElement)=>c.getContext('webgl2')!.getExtension('WEBGL_lose_context')!.loseContext());await expect(page.locator('#fallback')).toBeVisible();await page.getByRole('button',{name:'Try the live scene again'}).click();await expect(page.locator('#fallback')).toBeHidden();
- const after=createHash('sha256').update(await page.locator('#ocean').evaluate((c:HTMLCanvasElement)=>c.toDataURL())).digest('hex');expect(after).toBe(before);
+ await expect(page.locator('#ocean')).toHaveAttribute('aria-busy','false');const after=createHash('sha256').update(await page.locator('#ocean').evaluate((c:HTMLCanvasElement)=>c.toDataURL())).digest('hex');expect(after).toBe(before);
 });
 test('graphics fallback retains prompt navigation',async({page})=>{
  await page.addInitScript(()=>{const get=HTMLCanvasElement.prototype.getContext;HTMLCanvasElement.prototype.getContext=function(type:any,...args:any[]){if(type==='webgl2')return null;return (get as any).call(this,type,...args);} as any;});

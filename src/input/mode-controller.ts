@@ -6,10 +6,10 @@ export function inputVector(keys:Set<string>){
  return {forward,right,vertical,fast:!!has('ShiftLeft','ShiftRight'),active:!!(forward||right||vertical)};
 }
 export function bindModeInput(canvas:HTMLCanvasElement,onActivity:(active:boolean)=>void){
- const abort=new AbortController(),signal=abort.signal,keys=new Set<string>();let mode:ControlMode='camera',blocked=false,pointerActive=false;
+ const abort=new AbortController(),signal=abort.signal,keys=new Set<string>(),touchKeys=new Set<string>();let mode:ControlMode='camera',blocked=false,pointerActive=false;
  canvas.tabIndex=0;
- const notify=()=>onActivity(!blocked&&(inputVector(keys).active||pointerActive));
- const clear=()=>{keys.clear();pointerActive=false;notify();};
+ const notify=()=>onActivity(!blocked&&(inputVector(new Set([...keys,...touchKeys])).active||pointerActive));
+ const clear=()=>{keys.clear();touchKeys.clear();pointerActive=false;notify();};
  const visibility=()=>{if(document.hidden)clear();};
  canvas.addEventListener('keydown',e=>{if(blocked||document.activeElement!==canvas||!movement.has(e.code))return;e.preventDefault();keys.add(e.code);notify();},{signal});
  canvas.addEventListener('keyup',e=>{if(!movement.has(e.code))return;keys.delete(e.code);if(document.activeElement===canvas&&!blocked)e.preventDefault();notify();},{signal});
@@ -17,5 +17,5 @@ export function bindModeInput(canvas:HTMLCanvasElement,onActivity:(active:boolea
  window.addEventListener('pointerup',()=>{pointerActive=false;notify();},{signal});window.addEventListener('pointercancel',clear,{signal});
  canvas.addEventListener('blur',clear,{signal});window.addEventListener('blur',clear,{signal});document.addEventListener('visibilitychange',visibility,{signal});
  canvas.addEventListener('cameraactivity',notify,{signal});
- return {snapshot():InputSnapshot{return {mode,...(blocked?inputVector(new Set()):inputVector(keys)),pointerActive:!blocked&&pointerActive};},setMode(next:ControlMode){mode=next;clear();},setBlocked(next:boolean){blocked=next;if(next)clear();},dispose(){clear();document.removeEventListener('visibilitychange',visibility);abort.abort();}};
+ return {snapshot():InputSnapshot{return {mode,...(blocked?inputVector(new Set()):inputVector(new Set([...keys,...touchKeys]))),pointerActive:!blocked&&pointerActive};},setTouch(code:string,pressed:boolean){if(blocked||mode!=='turtle'||!movement.has(code))return;if(pressed)touchKeys.add(code);else touchKeys.delete(code);notify();},setMode(next:ControlMode){mode=next;clear();},setBlocked(next:boolean){blocked=next;if(next)clear();},dispose(){clear();document.removeEventListener('visibilitychange',visibility);abort.abort();}};
 }

@@ -3,10 +3,13 @@ export type QualityMode='auto'|'low'|'balanced'|'high';
 export type QualityProfile=Exclude<QualityMode,'auto'>;
 export type DemoControls={swell:number;tide:number;sunAzimuth:number};
 export type TerrainResources={group:THREE.Group;heightTexture:THREE.DataTexture;rockMaskTexture:THREE.DataTexture;sampleHeight(x:number,z:number):number;updateOptics?(time:number,tide:number):void;dispose():void};
-export type DemoController={setPaused(value:boolean):void;setControls(patch:Partial<DemoControls>):void;setQuality(mode:QualityMode):void;resetCamera():void;setInputBlocked(value:boolean):void;resize(width:number,height:number,dpr:number):void;dispose():void};
+export type DemoController={setMode(mode:ControlMode):void;resetTurtle():void;setTouchControl(code:string,pressed:boolean):void;setPaused(value:boolean):void;setControls(patch:Partial<DemoControls>):void;setQuality(mode:QualityMode):void;resetCamera():void;setInputBlocked(value:boolean):void;resize(width:number,height:number,dpr:number):void;dispose():void};
 export const DEFAULT_CONTROLS:DemoControls={swell:0.55,tide:0,sunAzimuth:225};
 
 export type ControlMode='camera'|'turtle';
 
 import type {Vec3} from './scene/cove-data';
 export type EnvironmentSnapshot={controls:DemoControls;sun:Vec3;sunColor:number;sunIntensity:number;ambientIntensity:number;waveSpeed:number;flow:number};
+
+export type SeaState='calm'|'breezy'|'active';
+export type CoveSettings={version:1;seed:number;hour:number;seaState:SeaState;tide:number;marineEnabled:boolean;density:number;quality:QualityMode;controlMode:ControlMode};

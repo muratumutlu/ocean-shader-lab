@@ -23,3 +23,10 @@ describe('free camera motion',()=>{
   }finally{w.dispose();}
  });
 });
+
+it('orbit zoom can leave the near navigation box while preserving collision sweeps and a finite outer bound',()=>{
+ const world={sweepSphere:(from:any,to:any)=>({position:to})} as any;
+ const p=resolveCameraMove(world,{x:22,y:24,z:20},{x:100,y:80,z:90},.15,false,'orbit');expect(p).toEqual({x:100,y:80,z:90});
+ const q=resolveCameraMove(world,p,{x:1000,y:900,z:800},.15,false,'orbit');expect(Math.hypot(q.x,q.y,q.z)).toBeLessThanOrEqual(200.00001);
+ const close=resolveCameraMove(world,{x:0,y:20,z:0},{x:100,y:100,z:100},.15,false);expect(close).toEqual({x:24,y:45,z:20});
+});

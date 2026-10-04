@@ -8,7 +8,8 @@
     "check": "tsc --noEmit",
     "test": "vitest run",
     "build": "vite build && node scripts/prepare-public-assets.mjs && node scripts/verify-publication.mjs",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "assets:turtle": "node scripts/assets/build-turtle.mjs"
   },
   "dependencies": {
     "three": "0.186.1",

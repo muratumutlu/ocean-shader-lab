@@ -1,10 +1,11 @@
+import {createHash} from 'node:crypto';
 import {test,expect} from '@playwright/test';
 test('reduced motion starts still, Play moves and Pause freezes the real canvas',async({page})=>{
  const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text());});
  await page.emulateMedia({reducedMotion:'reduce'});await page.goto('/');await expect(page.getByRole('button',{name:'Play waves',exact:true})).toBeVisible();
- const canvas=page.locator('#ocean');const a=await canvas.screenshot();await page.waitForTimeout(120);const b=await canvas.screenshot();expect(a.equals(b)).toBe(true);
- await page.getByRole('button',{name:'Play waves',exact:true}).click();await page.waitForTimeout(150);const c=await canvas.screenshot();expect(b.equals(c)).toBe(false);
- await page.getByRole('button',{name:'Pause waves',exact:true}).click();const d=await canvas.screenshot();await page.waitForTimeout(150);const e=await canvas.screenshot();expect(d.equals(e)).toBe(true);expect(errors).toEqual([]);
+ const canvas=page.locator('#ocean');await expect(canvas).toHaveAttribute('aria-busy','false');const pixels=async()=>createHash('sha256').update(await canvas.evaluate((c:HTMLCanvasElement)=>c.toDataURL())).digest('hex');const a=await pixels();await page.waitForTimeout(120);const b=await pixels();expect(a===b).toBe(true);
+ await page.getByRole('button',{name:'Play waves',exact:true}).click();await page.waitForTimeout(150);const c=await pixels();expect(b===c).toBe(false);
+ await page.getByRole('button',{name:'Pause waves',exact:true}).click();const d=await pixels();await page.waitForTimeout(150);const e=await pixels();expect(d===e).toBe(true);expect(errors).toEqual([]);
  await page.screenshot({path:'docs/evidence/demo-desktop.png'});
 });
 test('controls work on mobile and high quality survives resize',async({page})=>{
