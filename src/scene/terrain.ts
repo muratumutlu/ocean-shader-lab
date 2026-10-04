@@ -1,60 +1,23 @@
 import * as THREE from 'three';
 import type {TerrainResources} from '../types';
-import {createRocks,rockLayout} from './rocks';
+import {createRocks} from './rocks';
+import {createCove} from './cove';
+import {sampleGrid,type CoveData} from './cove-data';
+import {createStrata} from './strata';
 import {createSurfaceTextures,fbm,noise2} from './textures';
-import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 const SIZE=129, WIDTH=32, DEPTH=24;
 const clamp=(v:number,a:number,b:number)=>Math.max(a,Math.min(b,v));
 const smooth=(a:number,b:number,v:number)=>{const t=clamp((v-a)/(b-a),0,1);return t*t*(3-2*t);};
-// Approximate reference edge cues mapped onto the unchanged terrain/camera.
-const mossEdgePoints=[[-16,-6.3],[-12.35,-7.48],[-6.97,-9.0],[-3.80,-10.35],[-3.31,-9.83],[-.86,-8.75],[2.25,-6.69],[4.52,-7.67],[8,-7.9],[11.68,-7.51],[14.04,-7.79],[16,-7.5]];
 function mossCoverage(x:number,z:number,h:number){
- let edge=mossEdgePoints[mossEdgePoints.length-1][1];
- for(let i=1;i<mossEdgePoints.length;i++)if(x<=mossEdgePoints[i][0]){const [a,za]=mossEdgePoints[i-1],[b,zb]=mossEdgePoints[i];edge=za+(zb-za)*smooth(a,b,x);break;}
- const drift=(fbm(x*.8,z*.9,17)-.5)*.75+(noise2(x*3.7,z*3.7,31)-.5)*.16;
- const tongues=smooth(.51,.72,noise2(x*2.4,z*2.2,67))*.44;
- const notches=smooth(.63,.80,noise2(x*3.7,z*2.9,71))*.18;
- const inside=edge-z+drift+tongues-notches;
- const pocketField=noise2(x*.92,z*.95,43)-(noise2(x*3.6,z*3.2,59)-.5)*.12;
- const sandPocket=smooth(.60,.77,pocketField)*(1.-smooth(.5,2.6,inside));
- return smooth(-.075,.075,inside)*(1.-sandPocket*.94)*smooth(.4,.75,h);
+ const patch=fbm(x*.6,z*.7,17),edge=-8.1+.55*Math.sin(x*.39);
+ return smooth(.8,1.2,h)*(1-smooth(edge-.8,edge+.5,z))*(.60+.40*smooth(.25,.65,patch));
 }
-export function createTerrain(seed:number):TerrainResources{
-  const group=new THREE.Group(), heights=new Float32Array(SIZE*SIZE), masks=new Float32Array(SIZE*SIZE);
-  const rocks=rockLayout(seed);
-  for(let j=0;j<SIZE;j++)for(let i=0;i<SIZE;i++){
-    const x=-16+i/(SIZE-1)*WIDTH,z=-12+j/(SIZE-1)*DEPTH;
-    const shore=-1.4+1.05*Math.sin(x*.22)+.48*Math.sin(x*.64+.8);
-    const d=shore-z;
-    const dune=Math.max(0,Math.min(1,(d-2)/5))*(.7+.65*Math.sin(x*.29+z*.25)**2);
-    const ripple=(fbm(x*1.2,z*1.2,seed)-.5)*.022;
-    const rawHeight=clamp(d*.24+dune+ripple,-3,3.8),baseHeight=rawHeight>0?rawHeight*.44:rawHeight;
-    // Unequal crest anchors follow the native reference silhouette with the fixed camera.
-    // Cubic slopes are shape-preserving; this is geometry, with no added noise field.
-    const crestProfile=[-16,1.077951,0.000000, -14.2,1.085262,0.008338, -12.8,1.457151,0.195224, -11.25,1.694630,0.184690, -10,1.980097,0.194524, -8.1,2.295960,0.081222, -6.25,2.395675,0.073813, -4.2,2.640644,0.000000, -2.4,2.540710,-0.073997, -0.7,2.353920,0.000000, 1.1,2.383135,0.028774, 2.7,2.562327,0.071045, 4.1,2.636017,0.070996, 5.8,2.828229,0.097111, 7,2.931743,0.000000, 8.1,2.923854,-0.012798, 9.5,2.804564,-0.070638, 11,2.714384,-0.000143, 12.8,2.714259,0.000000, 14.3,2.793009,0.072761, 16,2.999972,0.000000];
-    let profileHeight=crestProfile[crestProfile.length-2];
-    for(let k=3;k<crestProfile.length;k+=3)if(x<=crestProfile[k]){
-      const a=crestProfile[k-3],b=crestProfile[k],u=clamp((x-a)/(b-a),0,1),u2=u*u,u3=u2*u;
-      profileHeight=(2*u3-3*u2+1)*crestProfile[k-2]+(u3-2*u2+u)*(b-a)*crestProfile[k-1]+(-2*u3+3*u2)*crestProfile[k+1]+(u3-u2)*(b-a)*crestProfile[k+2];break;
-    }
-    const crestHeight=Math.max(.92+(profileHeight-.92)*Math.exp(-(((z+12)/5.4)**2)),baseHeight*smooth(-4,0,x));
-    const duneVolumes=.46*Math.exp(-(((x+10.7)/3.7)**2+((z+7.5)/1.6)**2))+.34*Math.exp(-(((x+3.2)/3.3)**2+((z+7.6)/1.4)**2));
-    // The foreground tide band and other actor sites stay held.
-    const landWeight=smooth(.78,.98,baseHeight)*(1-smooth(-10.0,-6.5,z))*(1-smooth(3.0,4.6,x));
-    // Shared terrain/rock sampling joins the dry rear ridge to the broad hillside.
-    // The height change fades before the unchanged middle/foreground ridge.
-    const crestWeight=smooth(.78,.98,baseHeight)*(1-smooth(-10.0,-6.5,z));
-    heights[j*SIZE+i]=baseHeight+crestWeight*smooth(5,9,d)*(crestHeight-baseHeight)+landWeight*duneVolumes;
-    let mask=0;for(const rock of rocks) mask=Math.max(mask,Math.exp(-((x-rock.x)**2+(z-rock.z)**2)/(rock.radius**2*.9)));
-    masks[j*SIZE+i]=mask;
-  }
+export function createTerrain(seed:number):TerrainResources{return createCove(seed);}
+export function createTerrainFromData(data:CoveData):TerrainResources & {setQuality:ReturnType<typeof createRocks>['setQuality']}{
+  const group=new THREE.Group(),heights=data.heights,masks=data.rockMask,rocks=data.rocks,seed=data.seed;
   const texture=(data:Float32Array)=>{const t=new THREE.DataTexture(data,SIZE,SIZE,THREE.RedFormat,THREE.FloatType);t.minFilter=THREE.NearestFilter;t.magFilter=THREE.NearestFilter;t.needsUpdate=true;return t;};
   const heightTexture=texture(heights),rockMaskTexture=texture(masks);
-  const sampleHeight=(x:number,z:number)=>{
-    const u=clamp((x+16)/WIDTH*(SIZE-1),0,SIZE-1),v=clamp((z+12)/DEPTH*(SIZE-1),0,SIZE-1);
-    const i=Math.floor(u),j=Math.floor(v),i1=Math.min(i+1,SIZE-1),j1=Math.min(j+1,SIZE-1),a=u-i,b=v-j;
-    return (heights[j*SIZE+i]*(1-a)+heights[j*SIZE+i1]*a)*(1-b)+(heights[j1*SIZE+i]*(1-a)+heights[j1*SIZE+i1]*a)*b-Math.max(z-12,0)*.12;
-  };
+  const sampleHeight=(x:number,z:number)=>sampleGrid(data,x,z);
   const geometry=new THREE.PlaneGeometry(32,24,256,192);geometry.rotateX(-Math.PI/2);
   const positions=geometry.attributes.position;const colors=new Float32Array(positions.count*3),moss=new Float32Array(positions.count);
   const sand=new THREE.Color(0xfff4db),wet=new THREE.Color(0xb6a788);
@@ -68,7 +31,7 @@ export function createTerrain(seed:number):TerrainResources{
   geometry.setAttribute('color',new THREE.BufferAttribute(colors,3));geometry.setAttribute('coastMoss',new THREE.BufferAttribute(moss,1));geometry.computeVertexNormals();
   const textures=createSurfaceTextures('sand');for(const t of [textures.map,textures.bumpMap,textures.roughnessMap])t.repeat.set(16,12);
   // A material mask resolves rounded contours independently of ground triangles.
-  const mossWidth=768,mossDepth=576,mossPixels=new Uint8Array(mossWidth*mossDepth);
+  const mossWidth=256,mossDepth=192,mossPixels=new Uint8Array(mossWidth*mossDepth);
   for(let j=0;j<mossDepth;j++)for(let i=0;i<mossWidth;i++){
     const x=-16+(i+.5)/mossWidth*WIDTH,z=-12+(j+.5)/mossDepth*DEPTH;
     mossPixels[j*mossWidth+i]=Math.round(mossCoverage(x,z,sampleHeight(x,z))*255);
@@ -154,27 +117,8 @@ export function createTerrain(seed:number):TerrainResources{
     normal=normalize(normal-mossGradient);`);
   };
   const terrain=new THREE.Mesh(geometry,material);terrain.receiveShadow=true;group.add(terrain);
-  // Closed, visible tile sides; each upper edge consumes the same height sampler.
-  const sideVertices:number[]=[], sideColors:number[]=[];
-  const edges=[[-16,-12,16,-12],[16,-12,16,12],[16,12,-16,12],[-16,12,-16,-12]];
-  for(const [x0,z0,x1,z1] of edges) for(let k=0;k<128;k++){
-    const a=k/128,b=(k+1)/128,xa=x0+(x1-x0)*a,za=z0+(z1-z0)*a,xb=x0+(x1-x0)*b,zb=z0+(z1-z0)*b;
-    const points=[[xa,sampleHeight(xa,za),za],[xb,sampleHeight(xb,zb),zb],[xa,-3.5,za],[xb,sampleHeight(xb,zb),zb],[xb,-3.5,zb],[xa,-3.5,za]];
-    for(const q of points){sideVertices.push(...q);const c=new THREE.Color(q[1]<-2?0x27221b:0x59432e);c.toArray(sideColors,sideColors.length);}
-  }
-  const sideGeo=new THREE.BufferGeometry();sideGeo.setAttribute('position',new THREE.Float32BufferAttribute(sideVertices,3));sideGeo.setAttribute('color',new THREE.Float32BufferAttribute(sideColors,3));sideGeo.computeVertexNormals();
-  const sideMat=new THREE.MeshStandardMaterial({vertexColors:true,roughness:1,side:THREE.DoubleSide});const soil=new THREE.Mesh(sideGeo,sideMat);soil.name='soil-cutaway';soil.receiveShadow=true;group.add(soil);
+  const strata=createStrata(sampleHeight);group.add(strata.group);
   const rockResources=createRocks(rocks,sampleHeight);group.add(rockResources.group);
-  const bladeGeo=new THREE.PlaneGeometry(.065,.52,1,4);const bp=bladeGeo.attributes.position;for(let i=0;i<bp.count;i++){const h=(bp.getY(i)+.26)/.52;bp.setXYZ(i,bp.getX(i)*(1-h*.96),bp.getY(i),h*h*.11);}bladeGeo.computeVertexNormals();const parts=[0,Math.PI/3,Math.PI*2/3].map(a=>bladeGeo.clone().rotateY(a));const tuftGeo=mergeGeometries(parts);parts.forEach(p=>p.dispose());const bladeMat=new THREE.MeshStandardMaterial({color:0x85936a,roughness:1,side:THREE.DoubleSide,emissive:0x556737,emissiveIntensity:.18});
-  const blades=new THREE.InstancedMesh(tuftGeo,bladeMat,1600),dummy=new THREE.Object3D();
-  let state=(seed+99)>>>0;const random=()=>{state=(Math.imul(state,1664525)+1013904223)>>>0;return state/4294967296;};
-  for(let i=0;i<1600;i++){
-    const x=-15.8+random()*31.6,z=-11.8+random()*6.5,h=sampleHeight(x,z),patch=noise2(x*.48,z*.48,seed),scale=.10+random()*.22;
-    dummy.position.set(x,h+.12*scale,z);dummy.scale.setScalar(h>.92&&patch>.43?scale:0);dummy.rotation.set(.2*random(),random()*6.28,.2*random());dummy.updateMatrix();blades.setMatrixAt(i,dummy.matrix);
-    blades.setColorAt(i,new THREE.Color().setHSL(.18+random()*.04,.25,.3+random()*.17));
-  }
-  blades.instanceMatrix.needsUpdate=true;blades.visible=false;group.add(blades);
-  const scaleGeo=new THREE.CapsuleGeometry(.105,.43,6,12),scaleMat=new THREE.MeshStandardMaterial({color:0xeb7735,roughness:.7});const marker=new THREE.Mesh(scaleGeo,scaleMat);marker.position.set(-.5,sampleHeight(-.5,-6.2)+.32,-6.2);marker.castShadow=true;group.add(marker);
   let disposed=false;
-  return {group,heightTexture,rockMaskTexture,sampleHeight,updateOptics(time:number,tide:number){optics.coastTime.value=time;optics.coastTide.value=tide;rockResources.updateOptics(tide);},dispose(){if(disposed)return;disposed=true;geometry.dispose();material.dispose();textures.dispose();mossTexture.dispose();sideGeo.dispose();sideMat.dispose();bladeGeo.dispose();tuftGeo.dispose();bladeMat.dispose();blades.dispose();rockResources.dispose();scaleGeo.dispose();scaleMat.dispose();heightTexture.dispose();rockMaskTexture.dispose();group.clear();}};
+  return {setQuality:rockResources.setQuality,group,heightTexture,rockMaskTexture,sampleHeight,updateOptics(time:number,tide:number){optics.coastTime.value=time;optics.coastTide.value=tide;rockResources.updateOptics(tide);},dispose(){if(disposed)return;disposed=true;geometry.dispose();material.dispose();textures.dispose();mossTexture.dispose();strata.dispose();rockResources.dispose();heightTexture.dispose();rockMaskTexture.dispose();group.clear();}};
 }

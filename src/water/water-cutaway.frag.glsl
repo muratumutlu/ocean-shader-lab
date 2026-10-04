@@ -8,14 +8,14 @@ varying vec3 edgeWorld;
 /* WAVE_CODE */
 
 float bedAt(vec2 p){return readMap(uHeight,(p+vec2(16.,12.))/vec2(32.,24.));}
-vec3 cutNormal(){return abs(edgeWorld.z-12.)<.001?vec3(0.,0.,1.):vec3(sign(edgeWorld.x),0.,0.);}
+vec3 cutNormal(){return abs(edgeWorld.z-12.)<.001?vec3(0.,0.,1.):abs(edgeWorld.z+12.)<.001?vec3(0.,0.,-1.):vec3(sign(edgeWorld.x),0.,0.);}
 
 // Trace through the finite water footprint until its actual terrain bed.
 // The cut plane exposes a volume: vertical depth alone is not its optical path.
 float volumePath(vec3 entry,vec3 direction,out bool reachesBed){
  vec2 remaining=mix(vec2(-16.,-12.),vec2(16.,12.),step(vec2(0.),direction.xz))-entry.xz;
- vec2 bounds=remaining/(direction.xz+sign(direction.xz)*.00001);
- float limit=min(min(bounds.x,bounds.y),48.),previous=0.;reachesBed=false;
+ vec2 bounds=remaining/(vec2(abs(direction.x)<.00001?.00001:direction.x,abs(direction.z)<.00001?.00001:direction.z));
+ float limit=max(.001,min(min(bounds.x,bounds.y),48.)),previous=0.;reachesBed=false;
  for(int i=1;i<=12;i++){
   float distance=limit*float(i)/12.;vec3 p=entry+direction*distance;
   if(p.y<=bedAt(p.xz)){
@@ -37,6 +37,10 @@ void main(){
  float bed=bedAt(edgeXZ);if(bed>uTide||edgeY<bed-.02)discard;
  vec2 screenUV=gl_FragCoord.xy/uResolution;
  if(texture2D(uSceneDepth,screenUV).r<gl_FragCoord.z-.000004)discard;
+ if(!gl_FrontFacing){gl_FragColor=vec4(texture2D(uSceneColor,screenUV).rgb,1.);
+ #include <tonemapping_fragment>
+ #include <colorspace_fragment>
+ return;}
  vec3 normal=cutNormal(),incident=normalize(edgeWorld-cameraPosition);
  vec3 direction=normalize(refract(incident,normal,1./1.333));
  vec3 entry=edgeWorld-normal*.002;bool reachesBed;

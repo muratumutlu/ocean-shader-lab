@@ -17,14 +17,15 @@ function start(){
  shutdown();fallback.hidden=true;toolbar.hidden=false;status.textContent='Preparing the coast…';
  const old=document.querySelector<HTMLCanvasElement>('#ocean')!,canvas=old.cloneNode(false) as HTMLCanvasElement;old.replaceWith(canvas);
  try{
-  controller=createDemo(canvas,{reducedMotion:userPaused||hostPaused,quality:(document.querySelector<HTMLSelectElement>('#quality')!.value as 'auto'|'low'|'balanced'|'high'),onFatal:fail});
+  controller=createDemo(canvas,{reducedMotion:userPaused||hostPaused,quality:(document.querySelector<HTMLSelectElement>('#quality')!.value as 'auto'|'low'|'balanced'|'high'),onFatal:fail,onNavigation(ready,error){const hint=document.querySelector<HTMLElement>('#navigation-status')!;hint.textContent=ready?'Drag to orbit · Scroll to zoom · Arrows / WASD to move · Q / E to rise / dive':error??'Preparing navigation…';document.querySelector<HTMLButtonElement>('#navigation-retry')!.hidden=!error;}});
   controller.setControls({swell:Number(document.querySelector<HTMLInputElement>('#swell')!.value),tide:Number(document.querySelector<HTMLInputElement>('#tide')!.value),sunAzimuth:Number(document.querySelector<HTMLInputElement>('#light')!.value)});
-  uiBindings=bindControls({paused:userPaused,onPause:setUserPaused,onControls:patch=>controller?.setControls(patch),onQuality:mode=>controller?.setQuality(mode),onReset:()=>controller?.resetCamera()});
+  uiBindings=bindControls({paused:userPaused,onPause:setUserPaused,onControls:patch=>controller?.setControls(patch),onQuality:mode=>controller?.setQuality(mode),onReset:()=>controller?.resetCamera(),onInputBlocked:value=>controller?.setInputBlocked(value)});
   observer=new ResizeObserver(()=>{controller?.resize(canvas.clientWidth,canvas.clientHeight,devicePixelRatio);});observer.observe(canvas);
   status.textContent=userPaused?'PAUSED / COASTAL STUDY':'LIVE / COASTAL STUDY';postParent('ready');
  }catch(error){fail(error instanceof Error?error:new Error('The live coast could not start.'));}
 }
 document.querySelector('#retry')!.addEventListener('click',start);
+document.querySelector('#navigation-retry')!.addEventListener('click',()=>document.querySelector('#ocean')!.dispatchEvent(new Event('retrynavigation')));
 window.addEventListener('message',event=>{
  if(!isTrustedMessage(event,PARENT_ORIGIN,window.parent))return;
  if(event.data.type==='dispose')shutdown();

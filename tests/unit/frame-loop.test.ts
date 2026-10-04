@@ -9,6 +9,11 @@ describe('frame lifecycle',()=>{
  it('hidden interval never jumps time and disposed loops never render',()=>{
   expect(api.createFrameLoop).toBeTypeOf('function');const c=clock(),deltas:number[]=[];const loop=api.createFrameLoop(c,(_t:number,d:number)=>deltas.push(d));
   loop.setActivity({paused:false,visible:true});c.tick(16);c.tick(16);loop.setActivity({paused:false,visible:false});expect(c.pending()).toBe(0);c.tick(120000);loop.setActivity({paused:false,visible:true});c.tick(16);c.tick(1000);
-  expect(deltas).toEqual([0,.016,0,.05]);loop.dispose();loop.setActivity({paused:false,visible:true});c.tick(1000);expect(c.pending()).toBe(0);expect(deltas).toHaveLength(4);
+  expect(deltas).toEqual([0,.016,0,.1]);loop.dispose();loop.setActivity({paused:false,visible:true});c.tick(1000);expect(c.pending()).toBe(0);expect(deltas).toHaveLength(4);
  });
+});
+it('paused camera input has one scheduler and leaves simulation frozen',()=>{
+ const c=clock(),seen:number[][]=[];const loop=api.createFrameLoop(c,(t:number,d:number,i:number)=>seen.push([t,d,i]));
+ loop.setActivity({paused:true,visible:true,inputActive:true});c.tick(16);c.tick(16);expect(seen[1]).toEqual([0,0,.016]);expect(c.pending()).toBe(1);
+ loop.setActivity({paused:true,visible:true,inputActive:false});expect(c.pending()).toBe(0);loop.dispose();
 });
