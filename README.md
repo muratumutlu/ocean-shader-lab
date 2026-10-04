@@ -1,6 +1,14 @@
 # Ocean Shader Lab
 
+![Ocean Shader Lab: mavi su, kum ve kayalarla etkileşimli kıyı dioraması](./public/poster.webp)
+
 Tarayıcıda çalışan etkileşimli bir kıyı dioraması: şeffaf mavi su, görünen deniz tabanı, hareketli kıyı köpüğü, sıcak tonlu parçalı kayalar, kum ve bitki örtüsü. Önden ve yanlardan suyun hacmini gösteren kesit yüzleri var. Three.js, TypeScript ve GLSL ile özgün olarak uygulandı; görsel araştırmanın ilk esin kaynağı Marco Ludovico Perego'nun kıyı dioramasıydı. Referans görsel veya onun kaynak kodu dağıtılmıyor.
+
+## Geliştirme önizlemesi — Yaşayan Koy
+
+Aşağıdaki 6 saniyelik GIF, gerçek Three.js sahnesinin geliştirme sürümünden alınmış bir kamera turudur (700×438, yaklaşık 2,8 MB). Yeni koy ve jeolojik kesit çalışmasını gösterir; mevcut canlı sürümden farklıdır. Kaplumbağa ve sonraki oyun özellikleri bu önizlemede yer almıyor.
+
+![Yaşayan Koy geliştirme önizlemesi: kamera kayalık kıyı, hareketli dalgalar ve jeolojik kesit etrafında dolaşıyor](./docs/media/living-cove-preview.gif)
 
 ## Çalıştır
 
@@ -55,10 +63,10 @@ Mobil viewport, gerçek Mac üzerinde küçük ekran/touch iş yüküdür; fizik
 
 `wrangler.jsonc` yalnız `dist` statik asset'lerini yüklemek için yapılandırılmıştır. Worker kodu, server, veritabanı veya secret yok. HTTP `_headers` framing'i https://portfolio.muum.ai ile sınırlar. Yerel geliştirme parent'ı 4321 portundadır; bu origin üretim JavaScript'inden çıkarılır. Mesajlar origin, source window, channel, version ve payload'a göre doğrulanır. Sahne kapanınca renderer kaynakları temizlenir.
 
-Build allowlist'i yalnız index.html, kendi poster.webp'si, tam PROMPT.md, _headers ve üretilmiş JS/CSS asset'lerini kabul eder. Env/credentials, özel kanıtlar ve tasarımlar, orijinal referans, source map ve eski portföy projeleri yayınlanmaz. Yerel build'in geçmesi dışarıda deployment yapıldığı anlamına gelmez. GitHub hedef hesap kararı ayrı tutuluyor; bu içerik güncellemesinde commit, push veya deploy yapılmadı.
+Build allowlist'i yalnız index.html, kendi poster.webp'si, tam PROMPT.md, _headers ve üretilmiş JS/CSS asset'lerini kabul eder. Env/credentials, özel kanıtlar ve tasarımlar, orijinal referans, source map ve eski portföy projeleri yayınlanmaz. Yerel build'in geçmesi dışarıda deployment yapıldığı anlamına gelmez. Bu README’de kayda geçirilen önceki sahne güncellemesinde commit, push veya deploy yapılmadı. README medyası ayrı bir dokümantasyon güncellemesidir.
 
 ## Sınırlar ve sonraki sürüm
 
 Dalga, köpük, caustic, refraction ve kesit soğurması görsel yaklaşımlardır. Hydrodynamic solver, fiziksel fluid collision veya ray-traced renderer yok. Görüntü prosedürel CGI niteliğindedir; fotoğraf gerçekçiliği iddiası yok. Ekran uzayındaki refraction ve sonlu kesit hacminin görüş açısına bağlı sınırları vardır. Test sayısı görsel kalitenin kanıtı sayılmaz.
 
-Yaşayan Koy yönü henüz tasarım aşamasındadır: özgün Ege kıyısı ve küçük çakıl plajı, bir balık sürüsü, deniz çayırı, canlı yoğunluğu, gün saati ve deniz durumu. Bunlar mevcut Ocean sürümünde çalışan özellikler değildir. Piknik yapan aile ikinci aşama olarak ayrıldı.
+Yaşayan Koy ayrı bir geliştirme çalışmasında ilerliyor: özgün Ege kıyısı ve küçük çakıl plajı, bir balık sürüsü, deniz çayırı, canlı yoğunluğu, gün saati ve deniz durumu. Bunlar mevcut Ocean sürümünde çalışan özellikler değildir. Piknik yapan aile ikinci aşama olarak ayrıldı.
