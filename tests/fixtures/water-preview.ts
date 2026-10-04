@@ -17,5 +17,10 @@ else{
  document.querySelector('#t1')!.addEventListener('click',()=>{time=1;render();});
  document.querySelector('#low')!.addEventListener('click',()=>{control.tide=-.35;render();});
  document.querySelector('#high')!.addEventListener('click',()=>{control.tide=.35;render();});
+ const probeAnchor=new THREE.Vector3(-2,0,5);
+ (window as any).__waterProbe={
+  setDepth(depth:number){const ray=probeAnchor.clone().sub(camera.position);marker.position.copy(probeAnchor).addScaledVector(ray,depth/ray.y);render();},
+  readPixel(){camera.updateMatrixWorld();const projected=probeAnchor.clone().project(camera),gl=renderer.getContext(),pixels=new Uint8Array(5*5*4);gl.readPixels(Math.round((projected.x+1)*640)-2,Math.round((projected.y+1)*360)-2,5,5,gl.RGBA,gl.UNSIGNED_BYTE,pixels);const mean=[0,0,0];for(let i=0;i<25;i++)for(let c=0;c<3;c++)mean[c]+=pixels[i*4+c]/25;return mean;}
+ };
  render();document.querySelector('#ready')!.textContent='Water ready';
 }

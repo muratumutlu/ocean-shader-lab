@@ -3,10 +3,15 @@ import {bindControls} from './ui/controls';
 import {isTrustedMessage,PARENT_ORIGIN,postParent} from './bridge/messages';
 import type {DemoController} from './types';
 import './styles.css';
-let controller:DemoController|null=null,cleanupUI:(()=>void)|null=null,observer:ResizeObserver|null=null;
-let userPaused=matchMedia('(prefers-reduced-motion:reduce)').matches,hostPaused=false;
+let controller:DemoController|null=null,uiBindings:ReturnType<typeof bindControls>|null=null,observer:ResizeObserver|null=null;
+const reducedMotion=matchMedia('(prefers-reduced-motion:reduce)');
+let userPaused=reducedMotion.matches,hostPaused=false;
 const fallback=document.querySelector<HTMLElement>('#fallback')!,status=document.querySelector<HTMLElement>('#scene-status')!,toolbar=document.querySelector<HTMLElement>('#toolbar')!;
-function shutdown(){observer?.disconnect();observer=null;cleanupUI?.();cleanupUI=null;controller?.dispose();controller=null;}
+function shutdown(){observer?.disconnect();observer=null;uiBindings?.dispose();uiBindings=null;controller?.dispose();controller=null;}
+function setUserPaused(value:boolean){
+ userPaused=value;controller?.setPaused(userPaused||hostPaused);uiBindings?.setPaused(userPaused);
+ if(controller)status.textContent=userPaused?'PAUSED / COASTAL STUDY':'LIVE / COASTAL STUDY';
+}
 function fail(error:Error){shutdown();fallback.hidden=false;toolbar.hidden=true;status.textContent='STILL VIEW';document.querySelector('#fallback-message')!.textContent=error.message+' You can retry the live scene below.';}
 function start(){
  shutdown();fallback.hidden=true;toolbar.hidden=false;status.textContent='Preparing the coast…';
@@ -14,7 +19,7 @@ function start(){
  try{
   controller=createDemo(canvas,{reducedMotion:userPaused||hostPaused,quality:(document.querySelector<HTMLSelectElement>('#quality')!.value as 'auto'|'low'|'balanced'|'high'),onFatal:fail});
   controller.setControls({swell:Number(document.querySelector<HTMLInputElement>('#swell')!.value),tide:Number(document.querySelector<HTMLInputElement>('#tide')!.value),sunAzimuth:Number(document.querySelector<HTMLInputElement>('#light')!.value)});
-  cleanupUI=bindControls({paused:userPaused,onPause(value){userPaused=value;controller?.setPaused(userPaused||hostPaused);status.textContent=userPaused?'PAUSED / COASTAL STUDY':'LIVE / COASTAL STUDY';},onControls:patch=>controller?.setControls(patch),onQuality:mode=>controller?.setQuality(mode),onReset:()=>controller?.resetCamera()});
+  uiBindings=bindControls({paused:userPaused,onPause:setUserPaused,onControls:patch=>controller?.setControls(patch),onQuality:mode=>controller?.setQuality(mode),onReset:()=>controller?.resetCamera()});
   observer=new ResizeObserver(()=>{controller?.resize(canvas.clientWidth,canvas.clientHeight,devicePixelRatio);});observer.observe(canvas);
   status.textContent=userPaused?'PAUSED / COASTAL STUDY':'LIVE / COASTAL STUDY';postParent('ready');
  }catch(error){fail(error instanceof Error?error:new Error('The live coast could not start.'));}
@@ -28,4 +33,5 @@ window.addEventListener('message',event=>{
 document.addEventListener('keydown',event=>{if(event.key==='Escape'&&window.parent!==window){event.preventDefault();postParent('dispose');}});
 window.addEventListener('pagehide',shutdown);
 window.addEventListener('pageshow',event=>{if(event.persisted)start();});
+reducedMotion.addEventListener('change',event=>{if(event.matches)setUserPaused(true);});
 start();

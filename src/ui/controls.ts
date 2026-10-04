@@ -18,5 +18,5 @@ export function bindControls(options:{paused:boolean;onPause(value:boolean):void
   try{if(document.fullscreenElement)await document.exitFullscreen();else await document.querySelector<HTMLElement>('#app')!.requestFullscreen();}
   catch{const link=document.querySelector<HTMLAnchorElement>('#full-screen-link')!;link.href=location.href;link.hidden=false;link.focus();}
  });
- return ()=>abort.abort();
+ return {dispose:()=>abort.abort(),setPaused(value:boolean){paused=value;update();}};
 }

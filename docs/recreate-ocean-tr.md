@@ -1,4 +1,6 @@
-# Ocean Shader Lab — bunu kendin yap
+# Ocean Shader Lab için Bunu kendin yap prompt paketi
+
+Durum: Kullanıcıya yönelik taslak. Henüz portföye entegre edilmedi veya yayımlanmadı.
 
 Bu rehber, tarayıcıda çalışan özgün bir kıyı dioraması üretmek isteyenler için. Three.js, TypeScript ve GLSL ile şeffaf mavi suyu, su altındaki zemini, önden görünen kesiti ve sıcak tonlu kayaları birlikte kurmayı anlatıyor. Ana promptu bir kodlama ajanına ver; sonraki promptları çıkan görüntüye göre kullan.
 
@@ -8,64 +10,9 @@ Bu rehber, tarayıcıda çalışan özgün bir kıyı dioraması üretmek isteye
 
 Ocean Shader Lab'in mevcut sahnesinde kıyı kesiti, şeffaf mavi su, sıcak tonlu parçalı kayalar, kum ve bitki örtüsü var. Kamerayı döndürme, başlangıç görünümüne dönme, animasyonu duraklatma, azaltılmış hareket ve farklı ekranlara uyarlanan kontroller bulunuyor.
 
-Güncel M3 Max/Metal oturumunda yaklaşık 30 masaüstü FPS ve 22.6 mobil viewport FPS görüldü; geçmiş ayrı ölçüm yaklaşık 60/30 idi. Bu koşullar aynı sonuç gibi birleştirilmez. Mobil görünüm testi fiziksel telefon testi değildir. Ölçüm yöntemi ve farklar aşağıdaki teknik bölümde ve README’de belirtiliyor; hiçbir değer cihaz başına performans garantisi sayılmaz.
+M3 Max üzerinde yapılan mevcut kontrollerde masaüstü görünümünde yaklaşık 60 FPS, mobil boyutlu tarayıcı görünümünde yaklaşık 30 FPS gözlendi. Mobil görünüm testi fiziksel telefon testi değildir. Bu değerler her cihaz için performans garantisi sayılmaz.
 
 Aşağıdaki tarif yeni bir uygulama üretmek için yazıldı. Önerilen test düzeni ve dosya organizasyonu, mevcut deponun birebir açıklaması olarak okunmamalı. Yaşayan Koy bölümünde özgün Ege kıyısı, küçük bir balık sürüsü ve deniz çayırı için ilk sürüm promptu; piknik yapan aile için ayrı bir sonraki aşama promptu var. Bu yeni sahneler mevcut Ocean Shader Lab sürümünün tamamlanmış özellikleri değiller.
-
-## Mevcut uygulamanın doğrulanmış teknik bilgileri
-
-Bu bölüm mevcut Ocean sahnesinin gerçek dosyalarından çıkarıldı. Ana prompt ve takip promptları benzer özgün bir çalışma üretmek için kullanılabilir; uygulamanın kaynak kodunu veya görsel referansını birebir çoğaltma şartı değildir. Mevcut sahnenin doğru teknik tarifi aşağıdadır; eski kesitsiz kıyı tarifi bu sürüm için kullanılmamalı.
-
-### Çalıştırma ve stack
-
-- Node 26.7.0 ve npm 11.19.0 ile kontrol edildi; desteklenen çift numaralı Node >=22.12 kullan. `package-lock.json` dosyasını koru.
-- Vite 8.3.2, TypeScript 7.0.2, Three.js 0.186.1, @types/three 0.186.0. Test araçları Vitest 5.0.3 ve Playwright 1.63.0. React, backend veya veritabanı yok.
-- Gerçek scriptler: `npm ci` kurulum; `npm run dev` yerel http://127.0.0.1:4173; `npm run check` TypeScript; `npm test` unit; `npm run test:e2e` Chromium; `npm run build` Vite + prompt kopyası + yayın allowlist kontrolü. Tarayıcı gerekirse `npx playwright install chromium` ile kurulur.
-- Önceki kontrol 74’te korunan sahnede TypeScript, 17 unit, 17 browser ve build geçti. İçerik turu 75’te TypeScript/build geçti; geometri kuran 9 unit 5 s timeout verdi ve tek worker tekrarı da timeout ile bitti. İlgili browser kontrollerinde bir dev-server navigation timeout’u kaydedildi. Host load average bu sırada 141.5..202.3 idi; kaynaklar değişmedi. Yeni tam tur başarılı sayılmıyor; ayrıntılar README’de. Son içerik güncellemesinde temiz `npm ci` yeniden yapılmadı; çalıştırılmamış bir kurulum denemesini başarılı diye raporlama.
-
-### Dünya, kıyı ve kayalar
-
-- Seed 7. Kara ve su alanı 32×24: x=-16..16, z=-12..12; pozitif z deniz. Merkezi yükseklik ve kaya footprint verileri 129×129 Float32 texture'larıdır. CPU ve shader aynı bilinear örneklemeyi kullanır.
-- Rendered ground 32×24, 256×192 subdivison; eski 64×48 arazi uzatması kullanılmaz. Water plane 32×24'tür; eski 128×96 su alanı kullanılmaz. Low/Balanced/High su subdivisions 160/224/320; derinlik subdivisions enin .75 katıdır.
-- Kıyı, kumlu ön yamaç ve arkada bitki örtülü yüksekçe kütleler olarak kurulur. Bitki örtüsü mevcut sahnede yüzey maskesi ve çok ölçekli malzeme ayrıntısıyla okunur. Sahnede oluşturulan instanced kara çimi görünmez durumdadır; hareketli üç boyutlu çim olduğu iddia edilmez.
-- Sıcak kahverengi/oker kayalar yönlü kırılma ve mineral aşınmasıyla ayrışır. Sağda tek sürekli ridge, onun yüzeyini takip eden 68 fracture plate ve 11 ayrı boulder/shelf/pebble mesh bulunur. Plakalar zemine doğal oturur; her parça yukarı clamp edilerek düz bir ped oluşturulmaz.
-- Sand ve taş albedo/bump/roughness verileri prosedüreldir. Bed albedo atlası gerçek ground vertex renklerinden 257×193 olarak oluşturulur; sand map aynı paylaşılan texture ve 16×12 repeat'i kullanır. Yeni arazi üretirsen height, rock mask, kesit altı ve atlası birlikte yenile.
-- Mevcut küçük turuncu marker yalnız ölçek işaretidir; insan/aile veya canlı karakter değildir. Yeniden üretimde kendi özgün sahne kompozisyonunu oluşturabilirsin.
-
-### Kamera ve ışık
-
-- Perspektif FOV 34.73°, near .1, far 350; target [0,2.22,1.48]. Desktop başlangıcı [20.85,12,32.64]. Portrait, aynı target etrafında `max(1,1.60214/aspect)` ile mesafe ölçekler. Eski FOV 49 ve alçak açık kıyı kamera konumu kullanılmaz.
-- Orbit azimuth -.9..+.9 rad, polar 55°..80°, distance 30..70; portrait distance sınırları aynı aspect ölçeğini kullanır. Pan ve otomatik kamera hareketi yok. Reset mevcut aspect ve aynı target ile çalışır.
-- Arka plan 0x3b4350. Three.js Sky nesnesi mevcut sahnede görünmezdir; su procedural sky reflection hesaplar. Tam ekran görünür gökyüzü varmış gibi tarif etme.
-- SRGB output, ACESFilmic tone mapping, exposure .94. Hemisphere 0xdff4ff / 0x746a56, intensity 1. Directional sun 0xfff1db, intensity 3.4; shader/ışık ortak azimuth yönünü kullanır, y yüksekliği 25. 1024² PCF soft shadow map yalnız gerektiğinde güncellenir.
-
-### Su yüzeyi ve kesit
-
-- Üç domain-warped directional wave band ve analytic gradient; sığ bölgede genlik azalır. İnce normal ayrıntısı pixel footprint ile filtrelenir. Fresnel F0 .0204, kontrollü glint, görünen taban/kaya için depth absorption ve screen-space refraction kullanılır.
-- Opaque coast lineer color target + depth texture'a kaydedilir. Destek varsa half-float, yoksa 8-bit. Emergent/submerged kaya optiği için ayrı önbellekli rock-transmission hedefi vardır. Su önündeki kuru kayaların içinden sahne örneği sızmasına izin verilmez.
-- Statik kıyı mip seviyeleri capture yenilenince üretilir. Anahtar camera world/projection, drawing buffer, tide, sun ve quality değişimine bağlıdır. Ordinary dalga hareketinde kıyı/kayalar yeniden çizilmez; <=4 draw/frame hedefi test edilir. Görünürlük, render target, background ve tone mapping finally ile geri yüklenir.
-- Ön (z=12), sol (x=-16) ve sağ (x=16) su kesitleri 160 edge segment kullanır. Alt kenar gerçek `sampleHeight` ile, üst kenar yüzeyle aynı wave koduyla hesaplanır. Üst ve kesit arasında zaman/seviye çatlağı yoktur. Yapay cam çerçeve veya düz tek renk duvar ekleme.
-- Kesit shaderı sonlu su hacmi içinde kırılan görüş ışınını bed/boundary'ye kadar izler: 12 büyük adım, bed kesişiminde 5 binary refinement, saçılma integralinde 8 segment. Gerçek bed renk atlası, sand map, ışık yolu soğurması ve diffuse scattering ile su hacmini gösterir. Bu yaklaşık görsel hesap, fiziksel doğru hacimsel ray tracing veya hidrodinamik solver değildir.
-- Köpük kıyı/bed derinliği ve kaya footprint'inden oluşur; shader zamanı ile düzensiz parçalar hareket eder. Sabit ekran gradyanı veya bağımsız sahte shoreline maskesi kullanma. Caustic-like ayrıntı düşük kontrastlı görsel bir yaklaşımdır.
-
-### Kontroller, yaşam döngüsü ve modüller
-
-- Play/Pause; swell 0..1, default .55; water level -.35..+.35, default 0; sun azimuth 0..360°, default 225; Auto/Low/Balanced/High; reset; fullscreen. Günün saati, deniz durumu, canlı toggle/density ve URL paylaşımı mevcut sürümde yoktur.
-- Tek frame-loop. Reduced motion başlangıçta durur, tercih etkinleştirilince durur; açık Play devam eder. Tercihin kapanması manuel pause'u kaldırmaz. Hidden tab RAF'ı ve elapsed zamanı durdurur; resume ilk delta 0, sonraki delta en çok .05 s. Kamera paused durumda kullanılabilir.
-- Auto Balanced başlar; actual rendered intervals üç saniyede bütçenin 1.35 katından yavaşsa bir alt profile geçer. Manual quality override edilmez. DPR caps 1/1.5/2; hedef desktop 60, small/coarse-pointer 30 FPS. Hedefi ölçülmüş sonuç garantisi gibi sunma.
-- Dispose: RAF/listeners/observers, orbit, geometry/material/textures/targets, render lists ve context. Tekrar çağrı güvenlidir; startup render hatasında alınmış kaynaklar da çözülür. Retry taze canvas ve mevcut kontrol değerleriyle başlar. Persisted pageshow sahneyi yeniden kurar.
-- Mevcut modüller: `scene/terrain.ts`, `rocks.ts`, `textures.ts`, `camera.ts`; `water/water.ts`, `water.vert.glsl`, `water.frag.glsl`, `water-cutaway.frag.glsl`, `water-exposure.frag.glsl`; `runtime/demo.ts`, `frame-loop.ts`, `render-pacer.ts`, `quality.ts`; `ui/controls.ts`, `bridge/messages.ts`, `main.ts`, `styles.css`.
-
-### Test, ölçüm ve teslim
-
-- Deterministik seed/CPU-texture agreement, cutaway ortak wave/bed sınırları, loop pause/hidden/dispose, quality/pacing, trusted embed origin/source rejection; rendered movement ve same-time repeat, tide uçları, actual submerged red/blue probe depth contrast, ordinary draw budget testlerini çalıştır.
-- Desktop/mobile viewport, pause/resume, reduced-motion runtime değişimi, fallback, context/shader failure, first-draw resource unwind, retry state, persisted history ve fullscreen rejection davranışlarını gerçek browser üzerinden kontrol et. Statik test sayıları görsel kabul yerine geçmez.
-- Güncel M3 Max/Metal headed Chromium oturumunda 1440×900 DPR1 Auto->Low yaklaşık 30 FPS/p95 34.8 ms, 390×844 DPR2 Auto->Low yaklaşık 22.6 FPS/p95 66.9 ms görüldü. 3.4 s warmup + 10 s actual-render pencereleri; kayıt/readback yok. Mobil test gerçek telefon değildir. Önceki ayrı koşullardaki yaklaşık 60/30 FPS bu yeni ölçüm yerine kullanılamaz. Ek güncel tanılamada ham headed RAF da yaklaşık 30/s idi; ortam farkının nedeni kesinleşmedi. Ayrıntılar README'de ayrı tabloda bulunur.
-- Aynı fixture ile önce/sonra ekran görüntüsü ve sürekli hareketi incele. Shader compile başarısı veya p95 değeri, fiziksel gerçekçilik kanıtı değildir.
-- Kendi accepted scene'inden üretilmiş WebP poster kullan; referans veya eski sahne poster'i dağıtma. Mevcut poster 1600×1000, DPR1, time0, seed7, Balanced/default controls ve Apple Metal live canvas exportudur.
-- `PROMPT.md` build'e aynı byte'larla kopyalanır ve hash doğrulanır. HTTP CSP yalnız onaylı portföy origin'inden framing'e izin verir. Embed mesajı channel ocean-demo, version1, ready/pause/dispose; exact origin/source/payload validasyonu. Yerel parent origin production JS'te bulunamaz.
-- Env, credentials, özgün referans görseli, özel evidence/spec/taslak, source map ve diğer portfolio projeleri dışarıda kalır. Yalnız izole projeyi çalıştır. Bu yeniden üretim tarifinin kapsamında dış yayın/deploy yapma.
-
 
 ## Başlamadan önce
 
@@ -86,9 +33,9 @@ Three.js, TypeScript ve GLSL ile tarayıcıda çalışan özgün bir kıyı dior
 
 Görsel hedef
 
-1. İlk açılışta üç çeyrek açıdan, hafif yukarıdan bakılan tek bir diorama göster. Ön kesit ve suyun üst yüzeyi aynı anda görülsün. Ön yüzü aşırı sığ bir açıyla kaybetme. Başlangıç için yukarıdaki doğrulanmış perspektif kamera presetini kullan; yeni bir özgün kadraj deneyeceksen bunu ayrı varyasyon olarak değerlendir.
+1. İlk açılışta üç çeyrek açıdan, hafif yukarıdan bakılan tek bir diorama göster. Ön kesit ve suyun üst yüzeyi aynı anda görülsün. Ön yüzü aşırı sığ bir açıyla kaybetme. Ortografik veya düşük perspektifli kamera seçeneklerinden maket hissini en iyi vereni seç ve nedenini kısaca açıkla.
 2. Su kadrajın ana öğesi olsun. Kayalık kıyı sahnenin arka ve bir yan bölümünde yükselsin; karşı tarafta suyun ve tabanın okunabildiği boşluk kalsın. Kıyı çizgisi asimetrik ve hafif kıvrımlı olsun. Tekdüze bir dikdörtgen havuz görünümünden kaçın.
-3. İlk kadrajda su yüzeyi, ön kesit ve kıyı/kaya kütleleri birlikte okunur olsun. Başlangıç için doğrulanmış kamera presetini koru. Dışarıdaki boş alan mevcut örnekteki gibi sakin, koyu nötr renkli olsun. UI sahnenin odak noktasını örtmesin.
+3. Sahne çerçeveye değmesin. Kesit tabanının tamamı ve kaya tepeleri ilk kadrajda görünsün. Dışarıdaki boş alan sakin, açık nötr renkli olsun. UI sahnenin odak noktasını örtmesin.
 4. Bir referans görsel varsa ondan kamera yüksekliği, renk dengesi, büyük kütle oranları ve su derinliğinin okunurluğu için yararlan. Aynı kaya dizilimini, nesneleri veya ayırt edici kompozisyonu birebir kopyalama. Özgün bir yorum üret.
 
 Geometri
@@ -296,6 +243,12 @@ Ocean Shader Lab için kullanılabilecek kısa açıklama:
 Süreç bölümüne uygun kısa metin:
 
 > Geliştirme boyunca aynı kadrajdan ekran görüntüleri alıp suyun görünürlüğünü, kaya siluetlerini ve kıyı kesitini karşılaştırdım. Her turda en belirgin sorunları düzelterek ilerledim. Yeniden denemek isteyenler için ana promptu, düzeltme promptlarını ve kontrol listesini de ekledim.
+
+## Gerçek depoyla eşleştirme notu
+
+Bu taslak mevcut `PROMPT.md` dosyasının yerine henüz geçirilmedi. Mevcut repo Vite 8.3.2, TypeScript 7.0.2 ve Three.js 0.186.1 kullanıyor. `npm run dev` yerel 4173 portunu açıyor; `npm run check`, `npm test`, `npm run test:e2e`, `npm run build` gerçek scriptler. 2026-10-04 kontrolünde TypeScript, 17 unit, 17 browser ve build geçti. Bu turda `npm ci` yeniden çalıştırılmadı; temiz kurulumun yeniden denendiği iddia edilmez. Kilit dosyası mevcut. Mevcut repo tek döngü ve statik kıyı renk/derinlik önbelleği kullanır; yeni hareketli sualtı yaşamı ayrı dinamik render katmanı gerektirir.
+
+Eski mevcut `PROMPT.md` hâlâ önceki açık kıyı kadrajı, farklı kamera ve kesitsiz dünya tarifini içeriyor. Yayın için kabul edilmiş güncel sahnenin tam teknik tarifi ayrıca eşleştirilmeli. Portföy bileşeni, prompt ve poster'i aynı doğrulanmış commit/release'ten almadan üretim build'ine izin vermiyor.
 
 ## Teknik referanslar
 

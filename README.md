@@ -1,36 +1,64 @@
 # Ocean Shader Lab
 
-A procedural natural coast: moving refractive water, visible shallows, shore foam, textured sand and smooth irregular rocks. An original visual shader study inspired by Marco Ludovico Perego's coastal diorama.
+Tarayıcıda çalışan etkileşimli bir kıyı dioraması: şeffaf mavi su, görünen deniz tabanı, hareketli kıyı köpüğü, sıcak tonlu parçalı kayalar, kum ve bitki örtüsü. Önden ve yanlardan suyun hacmini gösteren kesit yüzleri var. Three.js, TypeScript ve GLSL ile özgün olarak uygulandı; görsel araştırmanın ilk esin kaynağı Marco Ludovico Perego'nun kıyı dioramasıydı. Referans görsel veya onun kaynak kodu dağıtılmıyor.
 
-## Run
+## Çalıştır
 
-Node 26.7.0 / npm 11.19.0 were used. Supported even Node >=22.12 is required.
+Bu sürüm Node 26.7.0 ve npm 11.19.0 ile kontrol edildi. Desteklenen çift numaralı Node >=22.12 kullanın. `package-lock.json` dosyasını koruyun.
 
 ```sh
 npm ci
 npm run dev
-npm run check
-npm test
-npm run build
-npm run test:e2e
 ```
 
-Open http://127.0.0.1:4173. Browser tests use a separate Chromium instance. Install it once with `npx playwright install chromium`.
+Yerel adres http://127.0.0.1:4173. Kontroller:
 
-## Explore
+```sh
+npm run check
+npm test
+npm run test:e2e
+npm run build
+```
 
-Drag to orbit. Play/Pause controls waves; Coast settings exposes swell, water level, sunlight, quality and camera reset. Reduced motion starts still. Auto lowers quality after sustained slow frames; targets are 60 desktop/30 small-screen fps, not guarantees. WebGL2 is required for the live scene; a poster and retry remain available when graphics cannot start.
+Tarayıcı testleri ayrı Chromium kullanır. Gerekiyorsa bir kez `npx playwright install chromium` çalıştırın. 2026-10-04'te önceki kontrol 74'te korunan sahne için TypeScript, 17 birim testi, 17 tarayıcı testi ve build geçti. İçerik güncellemesi 75'te TypeScript ve build geçti; 17 birim testinden 8'i geçti, geometri kuran 9 test 5 s timeout verdi. Tek worker ile, aynı deadline korunarak yapılan bir tekrar aynı 9 timeout ile sonuçlandı. İlgili iki fallback browser testinden prompt navigation geçti; WebGL-absence testi dev-server gezinmesinde 15 s timeout aldı. Bu sırada 16 çekirdekli host'ta load average 141.5 ve sonra 202.3 gözlendi. Kaynak hash'leri değişmedi; bu sonuçlar geçmiş tam test başarısının yerine başarılı bir yeni tam tur diye sunulmaz. Yeni üretim asset'leri ayrıca doğrudan HTTP/fallback yüklemesiyle kontrol edilir. Bu son içerik güncellemesinde `npm ci` yeniden çalıştırılmadı; temiz kurulumun bu turda tekrar denendiği iddia edilmez.
 
-## Reproduce
+Kurulu stack: Three.js 0.186.1, @types/three 0.186.0, Vite 8.3.2, TypeScript 7.0.2, Vitest 5.0.3, Playwright 1.63.0. Uygulamada React, backend, veritabanı veya ücretli üretim API'si yok.
 
-[PROMPT.md](./PROMPT.md) is the complete reproduction prompt. The production build contains identical bytes. Locked dependencies, seed 7, common terrain data and deterministic test frames make the study reproducible.
+## Sahneyi incele
 
-## Embed and deployment
+Sürükleyerek orbit, scroll ile kontrollü zoom; Play/Pause ile dalga hareketi. Coast settings içinde swell 0..1, water level -.35..+.35, sun direction 0..360°, Auto/Low/Balanced/High kalite ve kamera reset var. Fullscreen reddedilirse kullanıcının açabileceği ayrı bir bağlantı gösterilir.
 
-`wrangler.jsonc` uploads only `dist` as static assets, with no Worker script, server, database or secrets. HTTP `_headers` restricts embedding to https://portfolio.muum.ai. Local development allows the portfolio at port 4321; that development origin is absent from production. Message listeners validate both origin and sender window. Modal closure disposes renderer resources.
+Azaltılmış hareket ilk açılışta durağan sahne verir. Tercih uygulama açıkken etkinleştirilirse hareket durur; kullanıcı Play ile açıkça devam edebilir. Tercihin kapanması elle pause edilen sahneyi kendiliğinden oynatmaz. Gizli sekmede zaman ve animasyon döngüsü durur. WebGL2 gereklidir; destek yokluğu, shader hatası veya context loss durumunda bu sürümün kendi sahnesinden üretilen poster, prompt bağlantısı ve Retry kullanılabilir.
 
-## Limits
+## Bunu kendin yap
 
-Waves, caustics and foam are visual approximations. This is not a hydrodynamic solver; rocks have no physical fluid collision simulation. Performance depends on the device. Verification so far used isolated headless Chromium 153, including a mobile viewport; no physical-phone benchmark is claimed. Four-second software-GPU windows measured 32.9 rendered fps at 1440×900 and 30.2 at 390×844, with Auto reducing to Low; the hardware targets are not proven by these results. The original inspiration screenshot is not shipped.
+[PROMPT.md](./PROMPT.md) güncel kıyı kesitini kurmak için ayrıntılı ana prompt, teknik sahne bilgileri, aşamalı düzeltme promptları, görsel kabul kontrolü ve gelecek sürüm fikirlerini içerir. Aynı UTF-8 dosya byte-for-byte build'e kopyalanır; yayın kontrolü eşleşmesini ve SHA-256 değerini doğrular. Tarif benzer bir sonuç üretmeye yardımcı olur; tek seferde aynı görüntü veya farklı GPU'larda pixel-perfect eşleşme garantisi vermez.
 
-The earlier low-poly diorama is retained only as private comparison evidence. The current scene targets higher realism but still has a procedural CGI appearance; photographic quality is not claimed. A linear colour/depth coast capture is reused between camera/light/tide/size changes, and moving water is drawn separately. All textures are original procedural data.
+Mevcut sahne seed 7 ile tekrar üretilir. Ortak 129×129 yükseklik/rock-mask verisi, 32×24 arazi/su alanı, CPU/shader bilinear yükseklik örneklemesi, dalgalarla ortak kesit üst kenarı ve gerçek zemine oturan kesit alt kenarı kullanılır. Perspektif kamera FOV 34.73°, hedef [0,2.22,1.48]; varsayılan desktop konumu [20.85,12,32.64]. Portre kadrajı aynı hedef etrafında ölçeklenir. Kesit su shaderı görsel soğurma/saçılma yaklaşımı kullanır. Kaya yüzeyleri prosedürel; eski küresel kaya dizilimi ve kesitsiz açık kıyı kadrajı bu sürümün tarifi değildir.
+
+## Render ve performans
+
+Statik kıyı lineer renk/derinlik hedeflerine kaydedilir. Kamera, ışık, tide, kalite veya buffer boyutu değişince önbellek yenilenir; ordinary dalga animasyonunda tüm arazi ve kayalar her kare yeniden çizilmez. Su yüzeyi, kesit ve optik kaynaklar aynı su fabrikasının sahipliğindedir. Tek zaman döngüsü ve idempotent dispose kullanılır. Auto, üç saniyelik sürekli yavaşlıkta kaliteyi düşürür; manuel kaliteyi değiştirmez. DPR cap Low/Balanced/High için 1/1.5/2. Hedefler 60 desktop/30 küçük ekran FPS'dir; sonuç garantisi değildir.
+
+Ölçümler arasında fark var; aşağıdaki sonuçlar birleştirilmedi:
+
+| Ölçüm | Ortam ve koşullar | Masaüstü | Mobil boyutlu viewport |
+|---|---|---:|---:|
+| Geçmiş kontrol 63 | Apple M3 Max, ANGLE Metal, headed Chromium 153.0.8010.12; 3.4 s ısınma + 10 s pencere, Auto/Balanced | 1440×900, DPR 1: 60.0 rendered FPS; p95 17.9 ms | 390×844, DPR 2: 30.0 rendered FPS; p95 40.1 ms |
+| Güncel korunan sahne, kontrol 74 | Aynı raporlanan Mac/GPU/tarayıcı; 3.4 s ısınma + 10 s pencere, Auto ölçüm sırasında Low'a indi | 1440×900, DPR 1: 30.0 rendered FPS; p95 34.8 ms | 390×844, DPR 2: 22.6 rendered FPS; p95 66.9 ms |
+
+FPS, default framebuffer'a gerçekten gönderilen renderlardan ölçüldü; callback sayısı FPS diye sunulmadı. Ölçüm pencerelerinde video kaydı veya canvas readback yoktu. Güncel mobil viewport son drawing buffer'ı Low'da 390×844 idi. Ek beş saniyelik headed masaüstü tanılamasında görünür ve odaklı sayfanın ham requestAnimationFrame temposu da yaklaşık 30/s bulundu. Önceki 60 FPS koşuluyla eşdeğer bir ortam olduğu doğrulanmadı; farkın nedeni kesinleştirilmedi ve yalnız shader maliyetine bağlanmadı. CPU submission zamanı GPU execution zamanı değildir.
+
+Mobil viewport, gerçek Mac üzerinde küçük ekran/touch iş yüküdür; fiziksel telefon testi değildir. Önceki SwiftShader sonuçları ayrı yazılım-GPU ölçümleridir; bugünkü Metal sayılarıyla bir performans vaadinde birleştirilmez. Yeni özelliklerin performansı mevcut koşulda önce/sonra ölçülmelidir.
+
+## Embed ve yayın sınırı
+
+`wrangler.jsonc` yalnız `dist` statik asset'lerini yüklemek için yapılandırılmıştır. Worker kodu, server, veritabanı veya secret yok. HTTP `_headers` framing'i https://portfolio.muum.ai ile sınırlar. Yerel geliştirme parent'ı 4321 portundadır; bu origin üretim JavaScript'inden çıkarılır. Mesajlar origin, source window, channel, version ve payload'a göre doğrulanır. Sahne kapanınca renderer kaynakları temizlenir.
+
+Build allowlist'i yalnız index.html, kendi poster.webp'si, tam PROMPT.md, _headers ve üretilmiş JS/CSS asset'lerini kabul eder. Env/credentials, özel kanıtlar ve tasarımlar, orijinal referans, source map ve eski portföy projeleri yayınlanmaz. Yerel build'in geçmesi dışarıda deployment yapıldığı anlamına gelmez. GitHub hedef hesap kararı ayrı tutuluyor; bu içerik güncellemesinde commit, push veya deploy yapılmadı.
+
+## Sınırlar ve sonraki sürüm
+
+Dalga, köpük, caustic, refraction ve kesit soğurması görsel yaklaşımlardır. Hydrodynamic solver, fiziksel fluid collision veya ray-traced renderer yok. Görüntü prosedürel CGI niteliğindedir; fotoğraf gerçekçiliği iddiası yok. Ekran uzayındaki refraction ve sonlu kesit hacminin görüş açısına bağlı sınırları vardır. Test sayısı görsel kalitenin kanıtı sayılmaz.
+
+Yaşayan Koy yönü henüz tasarım aşamasındadır: özgün Ege kıyısı ve küçük çakıl plajı, bir balık sürüsü, deniz çayırı, canlı yoğunluğu, gün saati ve deniz durumu. Bunlar mevcut Ocean sürümünde çalışan özellikler değildir. Piknik yapan aile ikinci aşama olarak ayrıldı.

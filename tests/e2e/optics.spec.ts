@@ -14,3 +14,17 @@ test('static coast is not redrawn for every moving water frame',async({page})=>{
  const stats=await page.evaluate(async()=>{let last=(window as any).__opticsDrawCalls,max=0,frames=0,start=performance.now();await new Promise<void>(resolve=>{const sample=(now:number)=>{const next=(window as any).__opticsDrawCalls;if(next!==last){max=Math.max(max,next-last);frames++;last=next;}if(now-start<700)requestAnimationFrame(sample);else resolve();};requestAnimationFrame(sample);});return {max,frames};});
  expect(stats.frames).toBeGreaterThan(1);expect(stats.max).toBeLessThanOrEqual(4);
 });
+
+// Two coloured probes lie on one camera ray, so their screen position and
+// water surface/bed path stay fixed while actual submerged depth changes.
+test('depth hides submerged colour progressively at the same screen position',async({page})=>{
+ await page.goto('/tests/fixtures/water-preview.html');await expect(page.locator('#ready')).toHaveText('Water ready');
+ const contrastAt=async(depth:number)=>{
+  await page.evaluate(d=>(window as any).__waterProbe.setDepth(d),depth);
+  await page.getByRole('button',{name:'Red seabed'}).click();const red=await page.evaluate(()=>(window as any).__waterProbe.readPixel()) as number[];
+  await page.getByRole('button',{name:'Blue seabed'}).click();const blue=await page.evaluate(()=>(window as any).__waterProbe.readPixel()) as number[];
+  return red.reduce((sum,value,i)=>sum+Math.abs(value-blue[i]),0);
+ };
+ const shallow=await contrastAt(-.15),deep=await contrastAt(-.90);
+ expect(shallow).toBeGreaterThan(15);expect(deep/shallow).toBeLessThan(.65);
+});
