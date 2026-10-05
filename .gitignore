@@ -7,3 +7,6 @@ playwright-report/
 docs/evidence/
 docs/superpowers/
 .superpowers/
+assets/archaeology/source/
+output/
+tools/sculpt/

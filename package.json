@@ -6,12 +6,15 @@
   "scripts": {
     "dev": "vite --host 127.0.0.1 --port 4173 --strictPort",
     "check": "tsc --noEmit",
+    "design:check": "node scripts/check-design-tokens.mjs",
     "test": "vitest run",
     "build": "vite build && node scripts/prepare-public-assets.mjs && node scripts/verify-publication.mjs",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "assets:turtle": "node scripts/assets/build-turtle.mjs"
   },
   "dependencies": {
-    "three": "0.186.1"
+    "three": "0.186.1",
+    "@dimforge/rapier3d-compat": "0.12.0"
   },
   "devDependencies": {
     "@types/three": "0.186.0",

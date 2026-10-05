@@ -1,2 +1,3 @@
 import {defineConfig} from '@playwright/test';
-export default defineConfig({testDir:'./tests/e2e',timeout:15000,workers:1,use:{baseURL:'http://127.0.0.1:4173',viewport:{width:1280,height:800},launchOptions:{args:['--enable-unsafe-swiftshader']}},webServer:{command:'npm run dev',url:'http://127.0.0.1:4173',reuseExistingServer:true},reporter:'list'});
+const baseURL=process.env.COVE_TEST_URL??'http://127.0.0.1:4173';
+export default defineConfig({testDir:'./tests/e2e',timeout:15000,workers:1,use:{headless:true,baseURL,viewport:{width:1280,height:800},launchOptions:{args:process.env.COVE_GPU==='metal'?['--use-angle=metal']:['--enable-unsafe-swiftshader']}},webServer:process.env.COVE_TEST_URL?undefined:{command:'npm run dev',url:baseURL,reuseExistingServer:true},reporter:'list'});

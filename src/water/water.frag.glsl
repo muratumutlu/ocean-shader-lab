@@ -1,4 +1,4 @@
-uniform float uTime,uTide,uSwell,uCaptured;uniform sampler2D uHeight,uRocks,uSceneColor,uSceneDepth,uRockTransmission;uniform vec3 uSun;uniform vec2 uResolution,uCameraRange;uniform float uOrthographic;varying vec2 vXZ;varying vec3 vWorld,vNormal;varying float vCrest;
+uniform float uTime,uTide,uSwell,uCaptured,uUnderwater,uOrbitResponse;uniform sampler2D uHeight,uRocks,uSceneColor,uSceneDepth,uRockTransmission;uniform vec3 uSun;uniform vec2 uResolution,uCameraRange;uniform float uOrthographic;varying vec2 vXZ;varying vec3 vWorld,vNormal;varying float vCrest;
 float readMap(sampler2D map,vec2 uv){
  vec2 f=clamp(uv,0.0,1.0)*128.0;vec2 cell=floor(f),blend=fract(f),p=(cell+0.5)/129.0,s=vec2(1.0/129.0);
  return mix(mix(texture2D(map,p).r,texture2D(map,p+vec2(s.x,0.0)).r,blend.x),mix(texture2D(map,p+vec2(0.0,s.y)).r,texture2D(map,p+s).r,blend.x),blend.y);
@@ -16,9 +16,19 @@ void main(){
  vec2 ripples=detailGradient(vXZ*2.8+vec2(-uTime*.34,uTime*.12))*.027;
  ripples+=rotateA*detailGradient(rotateA*vXZ*6.2+vec2(uTime*.19,-uTime*.28))*.015;
  ripples+=rotateB*detailGradient(rotateB*vXZ*11.6+vec2(-uTime*.22,uTime*.36))*.007*microFade;
- vec3 N=normalize(vNormal+vec3(ripples.x,0,ripples.y));
+ // A bounded normal-only response to user orbiting; the physical surface stays unchanged.
+ vec2 orbitRipple=vec2(sin(dot(vXZ,vec2(2.1,-1.4))-uTime*1.7),cos(dot(vXZ,vec2(1.3,2.4))+uTime*1.3))*.70710678;
+ ripples+=orbitRipple*uOrbitResponse*smoothstep(.04,.45,depth);
+ vec3 N=normalize(vNormal+vec3(ripples.x,0,ripples.y));if(!gl_FrontFacing)N=-N;
  float fresnel=.0204+.9796*pow(1.0-max(dot(N,V),0.0),5.0);
  vec2 screenUV=gl_FragCoord.xy/uResolution;float foreground=texture2D(uSceneDepth,screenUV).r;if(uCaptured>.5&&gl_FragCoord.z>foreground+.000004)discard;vec3 viewN=mat3(viewMatrix)*N;vec2 bend=viewN.xy*.010*smoothstep(.03,1.4,depth);vec2 refractedUV=clamp(screenUV+bend,vec2(.002),vec2(.998));if(texture2D(uSceneDepth,refractedUV).r<gl_FragCoord.z)refractedUV=screenUV;
+ if(uUnderwater>.5&&!gl_FrontFacing){
+  vec3 escape=refract(-V,N,1.333);vec3 reflection=vec3(.055,.18,.22);vec3 color=length(escape)<.001?reflection:mix(sky(escape)*1.45,reflection,fresnel);
+  gl_FragColor=vec4(color,1.);
+  #include <tonemapping_fragment>
+  #include <colorspace_fragment>
+  return;
+ }
  // Actual opaque-surface distance varies along submerged rocks, unlike bed depth.
  float opaqueZ=texture2D(uSceneDepth,refractedUV).r;
  float opticalDistance=max(0.,viewDepth(opaqueZ)-viewDepth(gl_FragCoord.z));

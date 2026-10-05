@@ -1,0 +1,1411 @@
+{
+  "sourceUrl": "https://dbarchive.biosciencedbc.jp/data/bodyparts3d/LATEST/partof_BP3D_4.0_obj_99.zip",
+  "archiveSha256": "9fbc713fffeee924a5a657d9813d84d7eb957bded63adb854931dd5e3eb61c97",
+  "generatedSha256": "732a6a123342f3cfe2ab55e228d19b580e34155a95be7b2f99aca7b9b3c2ccf3",
+  "selectedBones": 198,
+  "vertices": 162559,
+  "triangles": 328184,
+  "rawBounds": [
+    [
+      -323.914,
+      -236.044,
+      -70.4799
+    ],
+    [
+      323.935,
+      18.001,
+      1636.27
+    ]
+  ],
+  "height": 1.7,
+  "coordinateChange": "raw millimetres X/Y/Z -> metres X/Z/-Y; centred; uniform height 1.7",
+  "positionPrecision": 5e-05,
+  "parts": [
+    {
+      "file": "FJ3152",
+      "concept": "FMA16586",
+      "name": "right hip bone",
+      "indexStart": 0,
+      "indexCount": 6942
+    },
+    {
+      "file": "FJ3153",
+      "concept": "FMA7488",
+      "name": "xiphoid process",
+      "indexStart": 6942,
+      "indexCount": 1470
+    },
+    {
+      "file": "FJ3154",
+      "concept": "FMA10037",
+      "name": "tenth thoracic vertebra",
+      "indexStart": 8412,
+      "indexCount": 6138
+    },
+    {
+      "file": "FJ3155",
+      "concept": "FMA10059",
+      "name": "eleventh thoracic vertebra",
+      "indexStart": 14550,
+      "indexCount": 5844
+    },
+    {
+      "file": "FJ3156",
+      "concept": "FMA10081",
+      "name": "twelfth thoracic vertebra",
+      "indexStart": 20394,
+      "indexCount": 6078
+    },
+    {
+      "file": "FJ3157",
+      "concept": "FMA13072",
+      "name": "first lumbar vertebra",
+      "indexStart": 26472,
+      "indexCount": 7008
+    },
+    {
+      "file": "FJ3158",
+      "concept": "FMA9165",
+      "name": "first thoracic vertebra",
+      "indexStart": 33480,
+      "indexCount": 3882
+    },
+    {
+      "file": "FJ3159",
+      "concept": "FMA13073",
+      "name": "second lumbar vertebra",
+      "indexStart": 37362,
+      "indexCount": 7314
+    },
+    {
+      "file": "FJ3160",
+      "concept": "FMA9187",
+      "name": "second thoracic vertebra",
+      "indexStart": 44676,
+      "indexCount": 4308
+    },
+    {
+      "file": "FJ3161",
+      "concept": "FMA12521",
+      "name": "third cervical vertebra",
+      "indexStart": 48984,
+      "indexCount": 4008
+    },
+    {
+      "file": "FJ3162",
+      "concept": "FMA13074",
+      "name": "third lumbar vertebra",
+      "indexStart": 52992,
+      "indexCount": 7410
+    },
+    {
+      "file": "FJ3163",
+      "concept": "FMA9209",
+      "name": "third thoracic vertebra",
+      "indexStart": 60402,
+      "indexCount": 4662
+    },
+    {
+      "file": "FJ3164",
+      "concept": "FMA12522",
+      "name": "fourth cervical vertebra",
+      "indexStart": 65064,
+      "indexCount": 4626
+    },
+    {
+      "file": "FJ3165",
+      "concept": "FMA13075",
+      "name": "fourth lumbar vertebra",
+      "indexStart": 69690,
+      "indexCount": 8013
+    },
+    {
+      "file": "FJ3166",
+      "concept": "FMA9248",
+      "name": "fourth thoracic vertebra",
+      "indexStart": 77703,
+      "indexCount": 4518
+    },
+    {
+      "file": "FJ3167",
+      "concept": "FMA12523",
+      "name": "fifth cervical vertebra",
+      "indexStart": 82221,
+      "indexCount": 4488
+    },
+    {
+      "file": "FJ3168",
+      "concept": "FMA13076",
+      "name": "fifth lumbar vertebra",
+      "indexStart": 86709,
+      "indexCount": 9114
+    },
+    {
+      "file": "FJ3169",
+      "concept": "FMA9922",
+      "name": "fifth thoracic vertebra",
+      "indexStart": 95823,
+      "indexCount": 4878
+    },
+    {
+      "file": "FJ3170",
+      "concept": "FMA12524",
+      "name": "sixth cervical vertebra",
+      "indexStart": 100701,
+      "indexCount": 4728
+    },
+    {
+      "file": "FJ3171",
+      "concept": "FMA9945",
+      "name": "sixth thoracic vertebra",
+      "indexStart": 105429,
+      "indexCount": 5052
+    },
+    {
+      "file": "FJ3172",
+      "concept": "FMA12525",
+      "name": "seventh cervical vertebra",
+      "indexStart": 110481,
+      "indexCount": 4074
+    },
+    {
+      "file": "FJ3173",
+      "concept": "FMA9968",
+      "name": "seventh thoracic vertebra",
+      "indexStart": 114555,
+      "indexCount": 5922
+    },
+    {
+      "file": "FJ3174",
+      "concept": "FMA9991",
+      "name": "eighth thoracic vertebra",
+      "indexStart": 120477,
+      "indexCount": 5778
+    },
+    {
+      "file": "FJ3175",
+      "concept": "FMA10014",
+      "name": "ninth thoracic vertebra",
+      "indexStart": 126255,
+      "indexCount": 5961
+    },
+    {
+      "file": "FJ3176",
+      "concept": "FMA12519",
+      "name": "atlas",
+      "indexStart": 132216,
+      "indexCount": 4398
+    },
+    {
+      "file": "FJ3177",
+      "concept": "FMA12520",
+      "name": "axis",
+      "indexStart": 136614,
+      "indexCount": 4680
+    },
+    {
+      "file": "FJ3178",
+      "concept": "FMA7487",
+      "name": "body of sternum",
+      "indexStart": 141294,
+      "indexCount": 8718
+    },
+    {
+      "file": "FJ3179",
+      "concept": "FMA32653",
+      "name": "distal phalanx of left second toe",
+      "indexStart": 150012,
+      "indexCount": 432
+    },
+    {
+      "file": "FJ3180",
+      "concept": "FMA32655",
+      "name": "distal phalanx of left third toe",
+      "indexStart": 150444,
+      "indexCount": 402
+    },
+    {
+      "file": "FJ3181",
+      "concept": "FMA32657",
+      "name": "distal phalanx of left fourth toe",
+      "indexStart": 150846,
+      "indexCount": 366
+    },
+    {
+      "file": "FJ3182",
+      "concept": "FMA32651",
+      "name": "distal phalanx of left big toe",
+      "indexStart": 151212,
+      "indexCount": 822
+    },
+    {
+      "file": "FJ3183",
+      "concept": "FMA23953",
+      "name": "distal phalanx of left index finger",
+      "indexStart": 152034,
+      "indexCount": 570
+    },
+    {
+      "file": "FJ3184",
+      "concept": "FMA23959",
+      "name": "distal phalanx of left little finger",
+      "indexStart": 152604,
+      "indexCount": 324
+    },
+    {
+      "file": "FJ3185",
+      "concept": "FMA32659",
+      "name": "distal phalanx of left little toe",
+      "indexStart": 152928,
+      "indexCount": 294
+    },
+    {
+      "file": "FJ3186",
+      "concept": "FMA23955",
+      "name": "distal phalanx of left middle finger",
+      "indexStart": 153222,
+      "indexCount": 528
+    },
+    {
+      "file": "FJ3187",
+      "concept": "FMA23957",
+      "name": "distal phalanx of left ring finger",
+      "indexStart": 153750,
+      "indexCount": 348
+    },
+    {
+      "file": "FJ3188",
+      "concept": "FMA23951",
+      "name": "distal phalanx of left thumb",
+      "indexStart": 154098,
+      "indexCount": 516
+    },
+    {
+      "file": "FJ3189",
+      "concept": "FMA32652",
+      "name": "distal phalanx of right second toe",
+      "indexStart": 154614,
+      "indexCount": 366
+    },
+    {
+      "file": "FJ3190",
+      "concept": "FMA32654",
+      "name": "distal phalanx of right third toe",
+      "indexStart": 154980,
+      "indexCount": 354
+    },
+    {
+      "file": "FJ3191",
+      "concept": "FMA32656",
+      "name": "distal phalanx of right fourth toe",
+      "indexStart": 155334,
+      "indexCount": 390
+    },
+    {
+      "file": "FJ3192",
+      "concept": "FMA32650",
+      "name": "distal phalanx of right big toe",
+      "indexStart": 155724,
+      "indexCount": 864
+    },
+    {
+      "file": "FJ3193",
+      "concept": "FMA24460",
+      "name": "distal phalanx of right index finger",
+      "indexStart": 156588,
+      "indexCount": 396
+    },
+    {
+      "file": "FJ3194",
+      "concept": "FMA24463",
+      "name": "distal phalanx of right little finger",
+      "indexStart": 156984,
+      "indexCount": 348
+    },
+    {
+      "file": "FJ3195",
+      "concept": "FMA32658",
+      "name": "distal phalanx of right little toe",
+      "indexStart": 157332,
+      "indexCount": 288
+    },
+    {
+      "file": "FJ3196",
+      "concept": "FMA24461",
+      "name": "distal phalanx of right middle finger",
+      "indexStart": 157620,
+      "indexCount": 408
+    },
+    {
+      "file": "FJ3197",
+      "concept": "FMA24462",
+      "name": "distal phalanx of right ring finger",
+      "indexStart": 158028,
+      "indexCount": 276
+    },
+    {
+      "file": "FJ3198",
+      "concept": "FMA24459",
+      "name": "distal phalanx of right thumb",
+      "indexStart": 158304,
+      "indexCount": 480
+    },
+    {
+      "file": "FJ3199",
+      "concept": "FMA52740",
+      "name": "ethmoid",
+      "indexStart": 158784,
+      "indexCount": 34047
+    },
+    {
+      "file": "FJ3200",
+      "concept": "FMA52734",
+      "name": "frontal bone",
+      "indexStart": 192831,
+      "indexCount": 33822
+    },
+    {
+      "file": "FJ3225",
+      "concept": "FMA8472",
+      "name": "left tenth rib",
+      "indexStart": 226653,
+      "indexCount": 10602
+    },
+    {
+      "file": "FJ3226",
+      "concept": "FMA8532",
+      "name": "left eleventh rib",
+      "indexStart": 237255,
+      "indexCount": 7956
+    },
+    {
+      "file": "FJ3227",
+      "concept": "FMA8534",
+      "name": "left twelfth rib",
+      "indexStart": 245211,
+      "indexCount": 4542
+    },
+    {
+      "file": "FJ3228",
+      "concept": "FMA7987",
+      "name": "left first rib",
+      "indexStart": 249753,
+      "indexCount": 4869
+    },
+    {
+      "file": "FJ3229",
+      "concept": "FMA8012",
+      "name": "left second rib",
+      "indexStart": 254622,
+      "indexCount": 8895
+    },
+    {
+      "file": "FJ3230",
+      "concept": "FMA8039",
+      "name": "left third rib",
+      "indexStart": 263517,
+      "indexCount": 11526
+    },
+    {
+      "file": "FJ3231",
+      "concept": "FMA8148",
+      "name": "left fourth rib",
+      "indexStart": 275043,
+      "indexCount": 14208
+    },
+    {
+      "file": "FJ3232",
+      "concept": "FMA8093",
+      "name": "left fifth rib",
+      "indexStart": 289251,
+      "indexCount": 15615
+    },
+    {
+      "file": "FJ3233",
+      "concept": "FMA8202",
+      "name": "left sixth rib",
+      "indexStart": 304866,
+      "indexCount": 16545
+    },
+    {
+      "file": "FJ3234",
+      "concept": "FMA8256",
+      "name": "left seventh rib",
+      "indexStart": 321411,
+      "indexCount": 16074
+    },
+    {
+      "file": "FJ3235",
+      "concept": "FMA8310",
+      "name": "left eighth rib",
+      "indexStart": 337485,
+      "indexCount": 13200
+    },
+    {
+      "file": "FJ3236",
+      "concept": "FMA8391",
+      "name": "left ninth rib",
+      "indexStart": 350685,
+      "indexCount": 12417
+    },
+    {
+      "file": "FJ3237",
+      "concept": "FMA13323",
+      "name": "left clavicle",
+      "indexStart": 363102,
+      "indexCount": 3270
+    },
+    {
+      "file": "FJ3240",
+      "concept": "FMA24465",
+      "name": "left first metacarpal bone",
+      "indexStart": 366372,
+      "indexCount": 1374
+    },
+    {
+      "file": "FJ3241",
+      "concept": "FMA24508",
+      "name": "left first metatarsal bone",
+      "indexStart": 367746,
+      "indexCount": 2646
+    },
+    {
+      "file": "FJ3243",
+      "concept": "FMA24467",
+      "name": "left second metacarpal bone",
+      "indexStart": 370392,
+      "indexCount": 1632
+    },
+    {
+      "file": "FJ3244",
+      "concept": "FMA24510",
+      "name": "left second metatarsal bone",
+      "indexStart": 372024,
+      "indexCount": 1716
+    },
+    {
+      "file": "FJ3246",
+      "concept": "FMA24469",
+      "name": "left third metacarpal bone",
+      "indexStart": 373740,
+      "indexCount": 1668
+    },
+    {
+      "file": "FJ3247",
+      "concept": "FMA24512",
+      "name": "left third metatarsal bone",
+      "indexStart": 375408,
+      "indexCount": 1722
+    },
+    {
+      "file": "FJ3249",
+      "concept": "FMA24471",
+      "name": "left fourth metacarpal bone",
+      "indexStart": 377130,
+      "indexCount": 1206
+    },
+    {
+      "file": "FJ3250",
+      "concept": "FMA24514",
+      "name": "left fourth metatarsal bone",
+      "indexStart": 378336,
+      "indexCount": 1686
+    },
+    {
+      "file": "FJ3252",
+      "concept": "FMA24473",
+      "name": "left fifth metacarpal bone",
+      "indexStart": 380022,
+      "indexCount": 1254
+    },
+    {
+      "file": "FJ3253",
+      "concept": "FMA24516",
+      "name": "left fifth metatarsal bone",
+      "indexStart": 381276,
+      "indexCount": 2064
+    },
+    {
+      "file": "FJ3256",
+      "concept": "FMA24498",
+      "name": "left calcaneus",
+      "indexStart": 383340,
+      "indexCount": 3348
+    },
+    {
+      "file": "FJ3257",
+      "concept": "FMA24447",
+      "name": "left capitate",
+      "indexStart": 386688,
+      "indexCount": 834
+    },
+    {
+      "file": "FJ3258",
+      "concept": "FMA24529",
+      "name": "left cuboid bone",
+      "indexStart": 387522,
+      "indexCount": 2058
+    },
+    {
+      "file": "FJ3259",
+      "concept": "FMA24475",
+      "name": "left femur",
+      "indexStart": 389580,
+      "indexCount": 9438
+    },
+    {
+      "file": "FJ3260",
+      "concept": "FMA24481",
+      "name": "left fibula",
+      "indexStart": 399018,
+      "indexCount": 3258
+    },
+    {
+      "file": "FJ3261",
+      "concept": "FMA24449",
+      "name": "left hamate",
+      "indexStart": 402276,
+      "indexCount": 828
+    },
+    {
+      "file": "FJ3262",
+      "concept": "FMA23131",
+      "name": "left humerus",
+      "indexStart": 403104,
+      "indexCount": 10080
+    },
+    {
+      "file": "FJ3264",
+      "concept": "FMA24524",
+      "name": "left intermediate cuneiform bone",
+      "indexStart": 413184,
+      "indexCount": 948
+    },
+    {
+      "file": "FJ3265",
+      "concept": "FMA53646",
+      "name": "left lacrimal bone",
+      "indexStart": 414132,
+      "indexCount": 1638
+    },
+    {
+      "file": "FJ3267",
+      "concept": "FMA24526",
+      "name": "left lateral cuneiform bone",
+      "indexStart": 415770,
+      "indexCount": 1338
+    },
+    {
+      "file": "FJ3268",
+      "concept": "FMA24438",
+      "name": "left lunate",
+      "indexStart": 417108,
+      "indexCount": 594
+    },
+    {
+      "file": "FJ3269",
+      "concept": "FMA53650",
+      "name": "left maxilla",
+      "indexStart": 417702,
+      "indexCount": 12648
+    },
+    {
+      "file": "FJ3271",
+      "concept": "FMA24522",
+      "name": "left medial cuneiform bone",
+      "indexStart": 430350,
+      "indexCount": 1860
+    },
+    {
+      "file": "FJ3272",
+      "concept": "FMA53648",
+      "name": "left nasal bone",
+      "indexStart": 432210,
+      "indexCount": 990
+    },
+    {
+      "file": "FJ3273",
+      "concept": "FMA53656",
+      "name": "left palatine bone",
+      "indexStart": 433200,
+      "indexCount": 4944
+    },
+    {
+      "file": "FJ3274",
+      "concept": "FMA52789",
+      "name": "left parietal bone",
+      "indexStart": 438144,
+      "indexCount": 27804
+    },
+    {
+      "file": "FJ3275",
+      "concept": "FMA24487",
+      "name": "left patella",
+      "indexStart": 465948,
+      "indexCount": 882
+    },
+    {
+      "file": "FJ3276",
+      "concept": "FMA24442",
+      "name": "left pisiform",
+      "indexStart": 466830,
+      "indexCount": 456
+    },
+    {
+      "file": "FJ3277",
+      "concept": "FMA23465",
+      "name": "left radius",
+      "indexStart": 467286,
+      "indexCount": 1818
+    },
+    {
+      "file": "FJ3278",
+      "concept": "FMA24436",
+      "name": "left scaphoid",
+      "indexStart": 469104,
+      "indexCount": 708
+    },
+    {
+      "file": "FJ3279",
+      "concept": "FMA13396",
+      "name": "left scapula",
+      "indexStart": 469812,
+      "indexCount": 38805
+    },
+    {
+      "file": "FJ3280",
+      "concept": "FMA24483",
+      "name": "left talus",
+      "indexStart": 508617,
+      "indexCount": 3060
+    },
+    {
+      "file": "FJ3281",
+      "concept": "FMA52739",
+      "name": "left temporal bone",
+      "indexStart": 511677,
+      "indexCount": 12552
+    },
+    {
+      "file": "FJ3282",
+      "concept": "FMA24478",
+      "name": "left tibia",
+      "indexStart": 524229,
+      "indexCount": 4926
+    },
+    {
+      "file": "FJ3283",
+      "concept": "FMA24444",
+      "name": "left trapezium",
+      "indexStart": 529155,
+      "indexCount": 726
+    },
+    {
+      "file": "FJ3284",
+      "concept": "FMA24445",
+      "name": "left trapezoid",
+      "indexStart": 529881,
+      "indexCount": 678
+    },
+    {
+      "file": "FJ3285",
+      "concept": "FMA24440",
+      "name": "left triquetral",
+      "indexStart": 530559,
+      "indexCount": 606
+    },
+    {
+      "file": "FJ3286",
+      "concept": "FMA23468",
+      "name": "left ulna",
+      "indexStart": 531165,
+      "indexCount": 2238
+    },
+    {
+      "file": "FJ3287",
+      "concept": "FMA52893",
+      "name": "left zygomatic bone",
+      "indexStart": 533403,
+      "indexCount": 3534
+    },
+    {
+      "file": "FJ3288",
+      "concept": "FMA16587",
+      "name": "left hip bone",
+      "indexStart": 536937,
+      "indexCount": 6828
+    },
+    {
+      "file": "FJ3289",
+      "concept": "FMA52748",
+      "name": "mandible",
+      "indexStart": 543765,
+      "indexCount": 15480
+    },
+    {
+      "file": "FJ3290",
+      "concept": "FMA7486",
+      "name": "manubrium",
+      "indexStart": 559245,
+      "indexCount": 4680
+    },
+    {
+      "file": "FJ3291",
+      "concept": "FMA23942",
+      "name": "middle phalanx of left ring finger",
+      "indexStart": 563925,
+      "indexCount": 684
+    },
+    {
+      "file": "FJ3292",
+      "concept": "FMA24457",
+      "name": "middle phalanx of right ring finger",
+      "indexStart": 564609,
+      "indexCount": 672
+    },
+    {
+      "file": "FJ3293",
+      "concept": "FMA32643",
+      "name": "middle phalanx of left second toe",
+      "indexStart": 565281,
+      "indexCount": 564
+    },
+    {
+      "file": "FJ3294",
+      "concept": "FMA32645",
+      "name": "middle phalanx of left third toe",
+      "indexStart": 565845,
+      "indexCount": 492
+    },
+    {
+      "file": "FJ3295",
+      "concept": "FMA32647",
+      "name": "middle phalanx of left fourth toe",
+      "indexStart": 566337,
+      "indexCount": 474
+    },
+    {
+      "file": "FJ3296",
+      "concept": "FMA23938",
+      "name": "middle phalanx of left index finger",
+      "indexStart": 566811,
+      "indexCount": 570
+    },
+    {
+      "file": "FJ3297",
+      "concept": "FMA23944",
+      "name": "middle phalanx of left little finger",
+      "indexStart": 567381,
+      "indexCount": 504
+    },
+    {
+      "file": "FJ3298",
+      "concept": "FMA230988",
+      "name": "middle phalanx of left little toe",
+      "indexStart": 567885,
+      "indexCount": 330
+    },
+    {
+      "file": "FJ3299",
+      "concept": "FMA23940",
+      "name": "middle phalanx of left middle finger",
+      "indexStart": 568215,
+      "indexCount": 714
+    },
+    {
+      "file": "FJ3300",
+      "concept": "FMA32642",
+      "name": "middle phalanx of right second toe",
+      "indexStart": 568929,
+      "indexCount": 462
+    },
+    {
+      "file": "FJ3301",
+      "concept": "FMA32644",
+      "name": "middle phalanx of right third toe",
+      "indexStart": 569391,
+      "indexCount": 564
+    },
+    {
+      "file": "FJ3302",
+      "concept": "FMA32646",
+      "name": "middle phalanx of right fourth toe",
+      "indexStart": 569955,
+      "indexCount": 540
+    },
+    {
+      "file": "FJ3303",
+      "concept": "FMA24455",
+      "name": "middle phalanx of right index finger",
+      "indexStart": 570495,
+      "indexCount": 528
+    },
+    {
+      "file": "FJ3304",
+      "concept": "FMA24458",
+      "name": "middle phalanx of right little finger",
+      "indexStart": 571023,
+      "indexCount": 444
+    },
+    {
+      "file": "FJ3305",
+      "concept": "FMA230986",
+      "name": "middle phalanx of right little toe",
+      "indexStart": 571467,
+      "indexCount": 264
+    },
+    {
+      "file": "FJ3306",
+      "concept": "FMA24456",
+      "name": "middle phalanx of right middle finger",
+      "indexStart": 571731,
+      "indexCount": 720
+    },
+    {
+      "file": "FJ3307",
+      "concept": "FMA24501",
+      "name": "navicular bone of left foot",
+      "indexStart": 572451,
+      "indexCount": 1488
+    },
+    {
+      "file": "FJ3308",
+      "concept": "FMA24500",
+      "name": "navicular bone of right foot",
+      "indexStart": 573939,
+      "indexCount": 1314
+    },
+    {
+      "file": "FJ3309",
+      "concept": "FMA52735",
+      "name": "occipital bone",
+      "indexStart": 575253,
+      "indexCount": 29676
+    },
+    {
+      "file": "FJ3310",
+      "concept": "FMA43253",
+      "name": "proximal phalanx of right big toe",
+      "indexStart": 604929,
+      "indexCount": 1158
+    },
+    {
+      "file": "FJ3311",
+      "concept": "FMA32637",
+      "name": "proximal phalanx of left third toe",
+      "indexStart": 606087,
+      "indexCount": 744
+    },
+    {
+      "file": "FJ3312",
+      "concept": "FMA32639",
+      "name": "proximal phalanx of left fourth toe",
+      "indexStart": 606831,
+      "indexCount": 762
+    },
+    {
+      "file": "FJ3313",
+      "concept": "FMA71915",
+      "name": "proximal phalanx of left index finger",
+      "indexStart": 607593,
+      "indexCount": 948
+    },
+    {
+      "file": "FJ3314",
+      "concept": "FMA66791",
+      "name": "proximal phalanx of left little finger",
+      "indexStart": 608541,
+      "indexCount": 648
+    },
+    {
+      "file": "FJ3315",
+      "concept": "FMA32641",
+      "name": "proximal phalanx of left little toe",
+      "indexStart": 609189,
+      "indexCount": 786
+    },
+    {
+      "file": "FJ3316",
+      "concept": "FMA71908",
+      "name": "proximal phalanx of left middle finger",
+      "indexStart": 609975,
+      "indexCount": 1086
+    },
+    {
+      "file": "FJ3317",
+      "concept": "FMA71916",
+      "name": "proximal phalanx of left ring finger",
+      "indexStart": 611061,
+      "indexCount": 894
+    },
+    {
+      "file": "FJ3318",
+      "concept": "FMA65470",
+      "name": "proximal phalanx of left thumb",
+      "indexStart": 611955,
+      "indexCount": 774
+    },
+    {
+      "file": "FJ3319",
+      "concept": "FMA32634",
+      "name": "proximal phalanx of right second toe",
+      "indexStart": 612729,
+      "indexCount": 714
+    },
+    {
+      "file": "FJ3320",
+      "concept": "FMA32636",
+      "name": "proximal phalanx of right third toe",
+      "indexStart": 613443,
+      "indexCount": 738
+    },
+    {
+      "file": "FJ3321",
+      "concept": "FMA32638",
+      "name": "proximal phalanx of right fourth toe",
+      "indexStart": 614181,
+      "indexCount": 798
+    },
+    {
+      "file": "FJ3322",
+      "concept": "FMA24451",
+      "name": "proximal phalanx of right index finger",
+      "indexStart": 614979,
+      "indexCount": 900
+    },
+    {
+      "file": "FJ3323",
+      "concept": "FMA24454",
+      "name": "proximal phalanx of right little finger",
+      "indexStart": 615879,
+      "indexCount": 720
+    },
+    {
+      "file": "FJ3324",
+      "concept": "FMA32640",
+      "name": "proximal phalanx of right little toe",
+      "indexStart": 616599,
+      "indexCount": 792
+    },
+    {
+      "file": "FJ3325",
+      "concept": "FMA24452",
+      "name": "proximal phalanx of right middle finger",
+      "indexStart": 617391,
+      "indexCount": 1128
+    },
+    {
+      "file": "FJ3326",
+      "concept": "FMA24453",
+      "name": "proximal phalanx of right ring finger",
+      "indexStart": 618519,
+      "indexCount": 888
+    },
+    {
+      "file": "FJ3327",
+      "concept": "FMA24450",
+      "name": "proximal phalanx of right thumb",
+      "indexStart": 619407,
+      "indexCount": 720
+    },
+    {
+      "file": "FJ3328",
+      "concept": "FMA32635",
+      "name": "proximal phalanx of left second toe",
+      "indexStart": 620127,
+      "indexCount": 804
+    },
+    {
+      "file": "FJ3329",
+      "concept": "FMA43254",
+      "name": "proximal phalanx of left big toe",
+      "indexStart": 620931,
+      "indexCount": 1236
+    },
+    {
+      "file": "FJ3330",
+      "concept": "FMA8445",
+      "name": "right tenth rib",
+      "indexStart": 622167,
+      "indexCount": 10635
+    },
+    {
+      "file": "FJ3331",
+      "concept": "FMA8531",
+      "name": "right eleventh rib",
+      "indexStart": 632802,
+      "indexCount": 8076
+    },
+    {
+      "file": "FJ3332",
+      "concept": "FMA8533",
+      "name": "right twelfth rib",
+      "indexStart": 640878,
+      "indexCount": 4560
+    },
+    {
+      "file": "FJ3334",
+      "concept": "FMA7857",
+      "name": "right first rib",
+      "indexStart": 645438,
+      "indexCount": 4878
+    },
+    {
+      "file": "FJ3336",
+      "concept": "FMA7882",
+      "name": "right second rib",
+      "indexStart": 650316,
+      "indexCount": 8718
+    },
+    {
+      "file": "FJ3338",
+      "concept": "FMA7909",
+      "name": "right third rib",
+      "indexStart": 659034,
+      "indexCount": 11457
+    },
+    {
+      "file": "FJ3340",
+      "concept": "FMA7957",
+      "name": "right fourth rib",
+      "indexStart": 670491,
+      "indexCount": 14448
+    },
+    {
+      "file": "FJ3342",
+      "concept": "FMA8066",
+      "name": "right fifth rib",
+      "indexStart": 684939,
+      "indexCount": 15834
+    },
+    {
+      "file": "FJ3344",
+      "concept": "FMA8175",
+      "name": "right sixth rib",
+      "indexStart": 700773,
+      "indexCount": 16512
+    },
+    {
+      "file": "FJ3346",
+      "concept": "FMA8229",
+      "name": "right seventh rib",
+      "indexStart": 717285,
+      "indexCount": 16242
+    },
+    {
+      "file": "FJ3347",
+      "concept": "FMA8283",
+      "name": "right eighth rib",
+      "indexStart": 733527,
+      "indexCount": 13302
+    },
+    {
+      "file": "FJ3348",
+      "concept": "FMA8364",
+      "name": "right ninth rib",
+      "indexStart": 746829,
+      "indexCount": 12399
+    },
+    {
+      "file": "FJ3349",
+      "concept": "FMA23464",
+      "name": "right radius",
+      "indexStart": 759228,
+      "indexCount": 1890
+    },
+    {
+      "file": "FJ3350",
+      "concept": "FMA24464",
+      "name": "right first metacarpal bone",
+      "indexStart": 761118,
+      "indexCount": 1212
+    },
+    {
+      "file": "FJ3351",
+      "concept": "FMA24507",
+      "name": "right first metatarsal bone",
+      "indexStart": 762330,
+      "indexCount": 2538
+    },
+    {
+      "file": "FJ3352",
+      "concept": "FMA24466",
+      "name": "right second metacarpal bone",
+      "indexStart": 764868,
+      "indexCount": 1698
+    },
+    {
+      "file": "FJ3353",
+      "concept": "FMA24509",
+      "name": "right second metatarsal bone",
+      "indexStart": 766566,
+      "indexCount": 1608
+    },
+    {
+      "file": "FJ3354",
+      "concept": "FMA24468",
+      "name": "right third metacarpal bone",
+      "indexStart": 768174,
+      "indexCount": 1638
+    },
+    {
+      "file": "FJ3355",
+      "concept": "FMA24511",
+      "name": "right third metatarsal bone",
+      "indexStart": 769812,
+      "indexCount": 1668
+    },
+    {
+      "file": "FJ3356",
+      "concept": "FMA24470",
+      "name": "right fourth metacarpal bone",
+      "indexStart": 771480,
+      "indexCount": 1194
+    },
+    {
+      "file": "FJ3357",
+      "concept": "FMA24513",
+      "name": "right fourth metatarsal bone",
+      "indexStart": 772674,
+      "indexCount": 1554
+    },
+    {
+      "file": "FJ3358",
+      "concept": "FMA24472",
+      "name": "right fifth metacarpal bone",
+      "indexStart": 774228,
+      "indexCount": 1152
+    },
+    {
+      "file": "FJ3359",
+      "concept": "FMA24515",
+      "name": "right fifth metatarsal bone",
+      "indexStart": 775380,
+      "indexCount": 1926
+    },
+    {
+      "file": "FJ3360",
+      "concept": "FMA24497",
+      "name": "right calcaneus",
+      "indexStart": 777306,
+      "indexCount": 3204
+    },
+    {
+      "file": "FJ3361",
+      "concept": "FMA24446",
+      "name": "right capitate",
+      "indexStart": 780510,
+      "indexCount": 846
+    },
+    {
+      "file": "FJ3362",
+      "concept": "FMA13322",
+      "name": "right clavicle",
+      "indexStart": 781356,
+      "indexCount": 3204
+    },
+    {
+      "file": "FJ3364",
+      "concept": "FMA24528",
+      "name": "right cuboid bone",
+      "indexStart": 784560,
+      "indexCount": 1932
+    },
+    {
+      "file": "FJ3365",
+      "concept": "FMA24474",
+      "name": "right femur",
+      "indexStart": 786492,
+      "indexCount": 9060
+    },
+    {
+      "file": "FJ3366",
+      "concept": "FMA24480",
+      "name": "right fibula",
+      "indexStart": 795552,
+      "indexCount": 3300
+    },
+    {
+      "file": "FJ3367",
+      "concept": "FMA24448",
+      "name": "right hamate",
+      "indexStart": 798852,
+      "indexCount": 918
+    },
+    {
+      "file": "FJ3368",
+      "concept": "FMA23130",
+      "name": "right humerus",
+      "indexStart": 799770,
+      "indexCount": 9642
+    },
+    {
+      "file": "FJ3370",
+      "concept": "FMA24523",
+      "name": "right intermediate cuneiform bone",
+      "indexStart": 809412,
+      "indexCount": 864
+    },
+    {
+      "file": "FJ3371",
+      "concept": "FMA53645",
+      "name": "right lacrimal bone",
+      "indexStart": 810276,
+      "indexCount": 1686
+    },
+    {
+      "file": "FJ3373",
+      "concept": "FMA24525",
+      "name": "right lateral cuneiform bone",
+      "indexStart": 811962,
+      "indexCount": 1236
+    },
+    {
+      "file": "FJ3374",
+      "concept": "FMA24437",
+      "name": "right lunate",
+      "indexStart": 813198,
+      "indexCount": 582
+    },
+    {
+      "file": "FJ3375",
+      "concept": "FMA53649",
+      "name": "right maxilla",
+      "indexStart": 813780,
+      "indexCount": 12894
+    },
+    {
+      "file": "FJ3377",
+      "concept": "FMA24521",
+      "name": "right medial cuneiform bone",
+      "indexStart": 826674,
+      "indexCount": 1842
+    },
+    {
+      "file": "FJ3378",
+      "concept": "FMA53647",
+      "name": "right nasal bone",
+      "indexStart": 828516,
+      "indexCount": 1020
+    },
+    {
+      "file": "FJ3379",
+      "concept": "FMA53655",
+      "name": "right palatine bone",
+      "indexStart": 829536,
+      "indexCount": 4374
+    },
+    {
+      "file": "FJ3380",
+      "concept": "FMA52788",
+      "name": "right parietal bone",
+      "indexStart": 833910,
+      "indexCount": 27654
+    },
+    {
+      "file": "FJ3381",
+      "concept": "FMA24486",
+      "name": "right patella",
+      "indexStart": 861564,
+      "indexCount": 852
+    },
+    {
+      "file": "FJ3382",
+      "concept": "FMA24441",
+      "name": "right pisiform",
+      "indexStart": 862416,
+      "indexCount": 378
+    },
+    {
+      "file": "FJ3383",
+      "concept": "FMA24435",
+      "name": "right scaphoid",
+      "indexStart": 862794,
+      "indexCount": 750
+    },
+    {
+      "file": "FJ3384",
+      "concept": "FMA13395",
+      "name": "right scapula",
+      "indexStart": 863544,
+      "indexCount": 37890
+    },
+    {
+      "file": "FJ3385",
+      "concept": "FMA24482",
+      "name": "right talus",
+      "indexStart": 901434,
+      "indexCount": 3174
+    },
+    {
+      "file": "FJ3386",
+      "concept": "FMA52738",
+      "name": "right temporal bone",
+      "indexStart": 904608,
+      "indexCount": 12744
+    },
+    {
+      "file": "FJ3387",
+      "concept": "FMA24477",
+      "name": "right tibia",
+      "indexStart": 917352,
+      "indexCount": 4872
+    },
+    {
+      "file": "FJ3388",
+      "concept": "FMA24443",
+      "name": "right trapezium",
+      "indexStart": 922224,
+      "indexCount": 804
+    },
+    {
+      "file": "FJ3389",
+      "concept": "FMA23725",
+      "name": "right trapezoid",
+      "indexStart": 923028,
+      "indexCount": 654
+    },
+    {
+      "file": "FJ3390",
+      "concept": "FMA24439",
+      "name": "right triquetral",
+      "indexStart": 923682,
+      "indexCount": 402
+    },
+    {
+      "file": "FJ3391",
+      "concept": "FMA23467",
+      "name": "right ulna",
+      "indexStart": 924084,
+      "indexCount": 2268
+    },
+    {
+      "file": "FJ3392",
+      "concept": "FMA52892",
+      "name": "right zygomatic bone",
+      "indexStart": 926352,
+      "indexCount": 3828
+    },
+    {
+      "file": "FJ3393",
+      "concept": "FMA16202",
+      "name": "sacrum",
+      "indexStart": 930180,
+      "indexCount": 24054
+    },
+    {
+      "file": "FJ3394",
+      "concept": "FMA52736",
+      "name": "sphenoid bone",
+      "indexStart": 954234,
+      "indexCount": 20922
+    },
+    {
+      "file": "FJ3395",
+      "concept": "FMA9710",
+      "name": "vomer",
+      "indexStart": 975156,
+      "indexCount": 9396
+    }
+  ]
+}

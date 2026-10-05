@@ -1,0 +1,10 @@
+import {readFile} from 'node:fs/promises';
+const css=await readFile(new URL('../src/styles.css',import.meta.url),'utf8');
+const html=await readFile(new URL('../index.html',import.meta.url),'utf8');
+if(/<style\b|\sstyle=/i.test(html))throw Error('Production controls must use the shared token stylesheet.');
+const controls=css.replace(/:root\s*\{[^}]*\}/g,'').replace(/@media\(max-width:600px\)/g,'');
+const raw=controls.match(/#[\da-f]{3,8}\b|\b[\d.]+px\b/gi)??[];
+const declared=new Set([...css.matchAll(/(--[\w-]+)\s*:/g)].map(m=>m[1]));
+const missing=[...css.matchAll(/var\((--[\w-]+)\)/g)].map(m=>m[1]).filter(v=>!declared.has(v));
+if(raw.length||missing.length)throw Error('Untokenized controls: '+raw.join(', ')+'; missing: '+missing.join(', '));
+console.log('Control token check passed: '+declared.size+' documented color, size and font tokens.');

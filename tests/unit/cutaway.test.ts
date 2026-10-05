@@ -28,3 +28,7 @@ it('water releases its bed atlas once while the terrain retains its shared albed
  }finally{water.dispose();terrain.dispose();}
  expect(mapReleases).toBe(1);
 });
+
+ it('closes the rear cut edge for full azimuth exploration',()=>{
+  const terrain=createTerrain(7),water=createWater(terrain);try{const p=(water.mesh.children[0] as THREE.Mesh).geometry.attributes.position;let rear=0;for(let i=0;i<p.count;i++)if(p.getZ(i)===-12)rear++;expect(rear).toBeGreaterThan(160*5);}finally{water.dispose();terrain.dispose();}
+ });
