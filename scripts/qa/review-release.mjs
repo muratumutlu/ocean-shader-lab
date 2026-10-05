@@ -10,7 +10,14 @@ const browser=await chromium.launch({headless:true,args:['--use-angle=metal']});
 const errors=[];
 async function reviewProduction(page){
  for(const size of [{width:1440,height:900},{width:390,height:844}]){
-  await page.setViewportSize(size);await page.emulateMedia({reducedMotion:'reduce'});await page.goto(base+'/');await page.waitForSelector('#mode-turtle:not([disabled])');
+  await page.setViewportSize(size);await page.emulateMedia({reducedMotion:'reduce'});const response=await page.goto(base+'/');
+  try {await page.waitForSelector('#mode-turtle:not([disabled])');}
+  catch(error){
+   const diagnostic={url:page.url(),size,status:response?.status(),headers:await response?.allHeaders(),controls:await page.locator('#toolbar').innerText(),errors};
+   await page.screenshot({path:resolve(dir,'production-failure-'+size.width+'.png')});
+   await writeFile(resolve(dir,'production-failure-'+size.width+'.json'),JSON.stringify(diagnostic,null,2));
+   console.error(JSON.stringify(diagnostic));throw error;
+  }
   if((await page.title())!=='Ocean Shader Lab — a study in motion'||await page.locator('#fallback').isVisible())throw Error('Production page identity/fallback gate failed');
   await page.screenshot({path:resolve(dir,'production-'+size.width+'.png')});
   await page.locator('#settings').click();await page.screenshot({path:resolve(dir,'settings-'+size.width+'.png')});

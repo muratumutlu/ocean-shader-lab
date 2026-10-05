@@ -4,6 +4,8 @@
 
 An interactive coastal diorama running in the browser: translucent blue water, shoreline foam, limestone rocks, a sandy beach and a controllable adult loggerhead turtle. Cutaway faces reveal the water volume and geological layers, with pottery and an archaeological skeleton. The scene is an original implementation in Three.js, TypeScript, GLSL and Rapier, initially inspired by Marco Ludovico Perego’s coastal diorama. The reference image and its source code are not distributed.
 
+[Open the live Living Cove](https://ocean-shader-lab.muum-dev-account.workers.dev/). Published files, response headers and desktop/mobile-sized controls were verified on 5 October 2026.
+
 ## Living Cove — October 5, 2026
 
 Choose Turtle to swim or crawl using WASD/arrows, Q/E to dive/rise and Shift to move faster. Touch controls appear on small screens. Land movement uses alternating pushes, terrain contact anchors and contact-based sand marks. The original model has a broad loggerhead head, brown scutes and skin, fuller proximal flippers and separate Swim, Crawl and Idle clips.
@@ -31,7 +33,7 @@ COVE_GPU=metal npm run test:e2e
 npm run build
 ```
 
-Browser tests use a separate Chromium instance. If required, run `npx playwright install chromium` once. `COVE_GPU=metal` selects the Mac GPU path used for this review; omit it on other platforms. The release checks passed 121 unit tests and 32 browser tests. The repeatable visual review uses `node scripts/qa/review-release.mjs anatomy`, then `node scripts/qa/review-release.mjs suite`. Its screenshots, contact samples and crawl recording go into ignored local evidence. Set `QA_URL` and use `production` mode to review a built or deployed page.
+Browser tests use a separate Chromium instance. If required, run `npx playwright install chromium` once. `COVE_GPU=metal` selects the Mac GPU path used for this review; omit it on other platforms. The release checks passed 121 unit tests and 33 browser tests, including navigation and embedded texture loading under the production build's actual CSP. The repeatable visual review uses `node scripts/qa/review-release.mjs anatomy`, then `node scripts/qa/review-release.mjs suite`. Its screenshots, contact samples and crawl recording go into ignored local evidence. Set `QA_URL` and use `production` mode to review a built or deployed page.
 
 Installed stack: Three.js 0.186.1, Rapier 0.12.0, Vite 8.3.2, TypeScript 7.0.2, Vitest 5.0.3 and Playwright 1.63.0. There is no backend, database or paid generation API. Control tokens and their check are documented in [the design system](./docs/design-system.md).
 
@@ -55,9 +57,11 @@ The generated JavaScript is approximately 14 MB minified / 4.1 MB gzip, includin
 
 ## Embedding and publication scope
 
-`wrangler.jsonc` is configured to upload only the static assets in `dist`. There is no Worker code, server, database or secret. HTTP `_headers` limits framing to https://portfolio.muum.ai. The local development parent uses port 4321; that origin is removed from production JavaScript. Messages are validated by origin, source window, channel, version and payload. Renderer resources are released when the scene closes.
+`wrangler.jsonc` is configured to upload only the static assets in `dist`. There is no Worker code, server, database or secret. HTTP `_headers` limits framing to https://portfolio.muum.ai. Its CSP permits Rapier's WebAssembly compilation and the local blob images used for GLB textures; JavaScript eval, inline scripts and external connection hosts remain blocked. The local development parent uses port 4321; that origin is removed from production JavaScript. Messages are validated by origin, source window, channel, version and payload. Renderer resources are released when the scene closes.
 
 The build allowlist accepts only index.html, the scene's own poster.webp, the complete PROMPT.md, _headers, generated JS/CSS and the exact assets/turtle.glb dependency. The copied turtle must match the source byte for byte. Experimental models, research photos/video, private QA evidence, environment files and source maps are excluded. `npx wrangler deploy` publishes the verified static build to the configured Cloudflare account; a local build alone does not confirm deployment.
+
+This release was uploaded through Cloudflare's static asset dashboard. After building, run `node scripts/qa/verify-live.mjs` to compare every public file's SHA-256 and the response headers with `dist`, and verify excluded paths return 404. Then run `QA_URL=https://ocean-shader-lab.muum-dev-account.workers.dev node scripts/qa/review-release.mjs production` to exercise the deployed page and capture both viewport sizes.
 
 ## License
 
