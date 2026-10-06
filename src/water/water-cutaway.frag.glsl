@@ -31,7 +31,7 @@ float volumePath(vec3 entry,vec3 direction,out bool reachesBed){
 }
 vec3 skyLight(vec3 direction){
  float horizon=pow(1.-max(direction.y,0.),3.);
- return mix(vec3(.12,.18,.26),vec3(.34,.41,.47),horizon);
+ return mix(vec3(.28,.50,.53),vec3(.66,.70,.62),horizon);
 }
 void main(){
  float bed=bedAt(edgeXZ);if(bed>uTide||edgeY<bed-.02)discard;
@@ -46,8 +46,8 @@ void main(){
  vec3 entry=edgeWorld-normal*.002;bool reachesBed;
  float path=max(volumePath(entry,direction,reachesBed),.001);
  vec3 endpoint=entry+direction*path;
- const vec3 bedExtinction=vec3(.90,.50,.42);
- const vec3 absorption=vec3(.50,.16,.095);
+ const vec3 bedExtinction=vec3(.70,.32,.34);
+ const vec3 absorption=vec3(.37,.105,.12);
  const float particleScattering=.32,anisotropy=.75;
  const vec3 extinction=absorption+vec3(particleScattering);
  // Diffuse daylight is redistributed, rather than lost with the direct beam.

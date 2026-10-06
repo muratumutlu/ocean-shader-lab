@@ -1,0 +1,20 @@
+import {it,expect} from 'vitest';
+import {createCoveData,sampleGrid} from '../../src/scene/cove-data';
+import {createSeabedLayout,createSeabedProps} from '../../src/scene/seabed';
+it('original benthic layout is reproducible, rests below mean water and leaves the turtle corridor open',()=>{
+ const data=createCoveData(7),a=createSeabedLayout(7,data),b=createSeabedLayout(7,data);
+ expect(a).toEqual(b);expect(createSeabedLayout(8,data)).not.toEqual(a);
+ expect(a.filter(p=>p.kind==='star')).toHaveLength(6);expect(a.filter(p=>p.kind==='spiral')).toHaveLength(4);expect(a.filter(p=>p.kind==='valve')).toHaveLength(12);
+ for(const p of a){expect(p.x).toBeGreaterThan(-15);expect(p.x).toBeLessThan(15);expect(p.z).toBeLessThan(10);expect(sampleGrid(data,p.x,p.z)).toBeLessThan(-.12);expect(sampleGrid(data,p.x,p.z)).toBeGreaterThan(-1.9);expect(Math.abs(p.x-1.2)).toBeGreaterThan(1.9);}
+});
+it('closed star bodies and hollow shells have finite bounded geometry and actual ground contact across both quality levels',()=>{
+ const data=createCoveData(7),props=createSeabedProps(7,data);
+ try{
+  expect(props.metadata.triangles.high).toBeLessThanOrEqual(15000);expect(props.metadata.triangles.low).toBeLessThan(props.metadata.triangles.high*.70);expect(props.metadata.materials).toBe(2);
+  for(const profile of ['balanced','low'] as const){props.setQuality(profile);let visible=0;
+   for(const object of props.group.children as any[]){if(!object.visible)continue;visible++;const g=object.geometry,p=g.attributes.position;expect(Array.from(p.array).every(Number.isFinite)).toBe(true);expect(Array.from(g.attributes.normal.array).every(Number.isFinite)).toBe(true);
+    for(const range of object.userData.propRanges){let nearest=Infinity;for(let i=range.start;i<range.end;i++){const gap=p.getY(i)-sampleGrid(data,p.getX(i),p.getZ(i));expect(gap).toBeGreaterThan(-.008);nearest=Math.min(nearest,gap);}expect(nearest).toBeLessThan(.016);}
+   }expect(visible).toBe(2);
+  }
+ }finally{props.dispose();props.dispose();}
+});

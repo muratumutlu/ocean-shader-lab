@@ -1,0 +1,10 @@
+import {chromium} from '@playwright/test';
+import {mkdir,writeFile} from 'node:fs/promises';
+const dir='docs/evidence/living-cove/b09-trails-diagnostic';await mkdir(dir,{recursive:false});
+const browser=await chromium.launch({headless:true,args:['--use-angle=metal']});
+try{
+ const page=await browser.newPage({viewport:{width:1440,height:900}}),errors=[];page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text());});
+ await page.goto('http://127.0.0.1:4175/tests/fixtures/cove-preview.html');await page.waitForFunction(()=>window.__cove?.ready);await page.evaluate(()=>window.__cove.prepareTurtle());
+ const result=await page.evaluate(()=>{const a=window.__cove,i={mode:'turtle',forward:1,right:0,vertical:0,active:true,fast:false,pointerActive:false};a.stepTurtle(i,[0,0,-1],2050);const s=a.turtleState(),p=s.position;a.setPose([p.x+1.6,p.y+3.5,p.z+3.5],[p.x,p.y,p.z+1.5]);a.render();const mesh=a.trails.group.children[0],m=mesh.instanceMatrix.array,meta=mesh.geometry.attributes.imprint.array,points=[];for(let n=0;n<mesh.count;n+=Math.max(1,Math.floor(mesh.count/12))){const q=[m[n*16+12],m[n*16+13],m[n*16+14]];points.push({index:n,q,kind:meta[n*2+1],birth:meta[n*2],ground:a.cove.sampleHeight(q[0],q[2]),withTrail:a.readWorldPixel(q)});}a.trails.group.visible=false;a.render();for(const p of points)p.without=a.readWorldPixel(p.q);a.trails.group.visible=true;a.render();return {state:s,trails:a.trails.diagnostics(),uniforms:{now:mesh.material.uniforms.uNow.value,tide:mesh.material.uniforms.uTide.value},points,metadata:a.metadata()};});
+ await page.screenshot({path:dir+'/with.png'});await page.evaluate(()=>{window.__cove.trails.group.visible=false;window.__cove.render();});await page.screenshot({path:dir+'/without.png'});await writeFile(dir+'/diagnostic.json',JSON.stringify({result,errors},null,2));console.log(JSON.stringify({trails:result.trails,uniforms:result.uniforms,position:result.state.position,points:result.points.map(p=>({...p,difference:p.withTrail.reduce((n,v,i)=>n+v-p.without[i],0)})),errors},null,2));if(errors.length)throw Error(errors.join('\n'));
+}finally{await browser.close();}

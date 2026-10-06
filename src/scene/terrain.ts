@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import type {TerrainResources} from '../types';
 import {createRocks} from './rocks';
+import {createPalms} from './palms';
 import {createCove} from './cove';
 import {sampleGrid,type CoveData} from './cove-data';
 import {createStrata} from './strata';
@@ -20,7 +21,7 @@ export function createTerrainFromData(data:CoveData):TerrainResources & {setQual
   const sampleHeight=(x:number,z:number)=>sampleGrid(data,x,z);
   const geometry=new THREE.PlaneGeometry(32,24,256,192);geometry.rotateX(-Math.PI/2);
   const positions=geometry.attributes.position;const colors=new Float32Array(positions.count*3),moss=new Float32Array(positions.count);
-  const sand=new THREE.Color(0xfff4db),wet=new THREE.Color(0xb6a788);
+  const sand=new THREE.Color(0xffe5b5),wet=new THREE.Color(0xc5b28b);
   for(let n=0;n<positions.count;n++){
     const h=sampleHeight(positions.getX(n),positions.getZ(n));positions.setY(n,h);
     const c=sand.clone().lerp(wet,clamp(-h*.19,0,.4));
@@ -63,7 +64,7 @@ export function createTerrainFromData(data:CoveData):TerrainResources & {setQual
     shader.fragmentShader=shader.fragmentShader.replace('#include <color_fragment>',`#include <color_fragment>
     float mossCover=texture2D(coastMossMap,(vCoastWorld.xz+vec2(16.,12.))/vec2(32.,24.)).r;
     float dry=smoothstep(.035,.30,vCoastWorld.y);
-    vec3 drySand=diffuseColor.r*vec3(.98,1.,.985);
+    vec3 drySand=diffuseColor.r*vec3(1.,.76,.44);
     diffuseColor.rgb=mix(diffuseColor.rgb,drySand,dry);
     float largePatch=coastFbm(vCoastWorld.xz*.72+vec2(19.3,-5.1));
     float mossDensity=smoothstep(.24,.70,largePatch);
@@ -75,10 +76,10 @@ export function createTerrainFromData(data:CoveData):TerrainResources & {setQual
     float mossClump=coastFbm(vCoastWorld.xz*10.5);
     float mossGrain=coastNoise(vCoastWorld.xz*73.);
     float fineTone=mix(.5,smoothstep(.24,.76,mossClump),mix(.12,1.,mossDensity));
-    vec3 mossTint=mix(vec3(.145,.139,.013),vec3(.36,.312,.032),fineTone);
+    vec3 mossTint=mix(vec3(.09,.20,.13),vec3(.25,.42,.29),fineTone);
     mossTint*=.98+(mossGrain-.5)*mix(.04,.21,mossDensity);
     // Thin cover shows muted mineral ground, while established openings stay white.
-    vec3 thinCover=diffuseColor.rgb*vec3(.35,.30,.20);
+    vec3 thinCover=diffuseColor.rgb*vec3(.40,.52,.35);
     thinCover=mix(thinCover,mossTint,.22);
     vec3 cover=mix(thinCover,mossTint,mossDensity);
     // Irregular directional grain stays resolvable in the foreshortened land.
@@ -119,6 +120,7 @@ export function createTerrainFromData(data:CoveData):TerrainResources & {setQual
   const terrain=new THREE.Mesh(geometry,material);terrain.receiveShadow=true;group.add(terrain);
   const strata=createStrata(sampleHeight);group.add(strata.group);
   const rockResources=createRocks(rocks,sampleHeight);group.add(rockResources.group);
+  const palms=createPalms(sampleHeight);group.add(palms.group);
   let disposed=false;
-  return {setQuality:rockResources.setQuality,group,heightTexture,rockMaskTexture,sampleHeight,updateOptics(time:number,tide:number){optics.coastTime.value=time;optics.coastTide.value=tide;rockResources.updateOptics(tide);},dispose(){if(disposed)return;disposed=true;geometry.dispose();material.dispose();textures.dispose();mossTexture.dispose();strata.dispose();rockResources.dispose();heightTexture.dispose();rockMaskTexture.dispose();group.clear();}};
+  return {setQuality:rockResources.setQuality,group,heightTexture,rockMaskTexture,sampleHeight,updateOptics(time:number,tide:number){optics.coastTime.value=time;optics.coastTide.value=tide;rockResources.updateOptics(tide);},dispose(){if(disposed)return;disposed=true;geometry.dispose();material.dispose();textures.dispose();mossTexture.dispose();strata.dispose();rockResources.dispose();palms.dispose();heightTexture.dispose();rockMaskTexture.dispose();group.clear();}};
 }

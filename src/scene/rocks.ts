@@ -21,9 +21,9 @@ export function createRocks(layout:Rock[],sampleHeight:(x:number,z:number)=>numb
   float fracture=(1.-smoothstep(.0015,.008+fwidth(fractureField),fractureField))*smoothstep(.32,.62,rNoise(vRockWorld*.87+9.1));
   float bedding=abs(vRockWorld.y*.27+rFbm(vRockWorld*vec3(.64,.25,.64))*.44-.61);
   float seam=1.-smoothstep(.004,.018+fwidth(bedding),bedding);
-  vec3 limestone=mix(vec3(.31,.285,.245),vec3(.59,.55,.46),smoothstep(.23,.78,mineral));
+  vec3 limestone=mix(vec3(.35,.32,.31),vec3(.64,.60,.53),smoothstep(.23,.78,mineral));
   float quartz=smoothstep(.60,.76,rFbm(vRockWorld*8.3+4.7));
-  limestone=mix(limestone,vec3(.67,.63,.54),quartz*.22);
+  limestone=mix(limestone,vec3(.74,.70,.62),quartz*.22);
   limestone*=1.-fracture*.14-seam*.07;
   limestone=mix(limestone,vec3(.24,.245,.18),rNoise(vRockWorld*5.7)*.10*(1.-smoothstep(.0,.35,vRockWorld.y-rockTide)));
   float grainFade=1.-smoothstep(.3,1.,max(length(dFdx(vRockWorld*57.)),length(dFdy(vRockWorld*57.))));limestone*=.93+(fine-.5)*.07*rockDetail*grainFade;

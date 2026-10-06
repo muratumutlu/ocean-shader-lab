@@ -21,7 +21,7 @@ import {DEFAULT_CONTROLS} from '../types';
 import type {DemoController,DemoControls,QualityMode,QualityProfile,ControlMode,TurtleRoutineStatus} from '../types';
 export function createDemo(canvas:HTMLCanvasElement,options:{reducedMotion:boolean;quality:QualityMode;onFatal(error:Error):void;onNavigation?(ready:boolean,error?:string):void;onTurtle?(ready:boolean,error?:string):void;onTurtleState?(state:string):void;onTurtleRoutine?(status:TurtleRoutineStatus):void}):DemoController{
  const gl=canvas.getContext('webgl2',{antialias:true,alpha:false,preserveDrawingBuffer:true});if(!gl)throw Error('WebGL2 is unavailable on this browser.');
- const scene=new THREE.Scene();scene.background=new THREE.Color(0x3b4350);
+ const scene=new THREE.Scene();scene.background=new THREE.Color(0xeeeae5);
  let renderer:THREE.WebGLRenderer|null=null,cove:ReturnType<typeof createCove>|null=null,water:ReturnType<typeof createWater>|null=null;
  const initialCamera=createCamera(canvas.clientWidth/canvas.clientHeight);let camera=initialCamera.camera,rig:ReturnType<typeof createCameraRig>|null=null,world:PhysicsWorld|null=null,input:ReturnType<typeof bindModeInput>|null=null,loop:ReturnType<typeof createFrameLoop>|null=null;
  let paused=options.reducedMotion,disposed=false,initializing=true,time=0,previousRender:number|null=null,startupError:Error|null=null,blocked=false,loading=false;

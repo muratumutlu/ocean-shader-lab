@@ -48,12 +48,17 @@ export function createStrata(sampleHeight:(x:number,z:number)=>number){
   s.fragmentShader=s.fragmentShader.replace('#include <color_fragment>',`#include <color_fragment>
    float warpedDepth=vSoilDepth+(sFbm(vSoilWorld*vec3(.26,.03,.26))-.47)*.20;
    float sediment=smoothstep(.27,.34,warpedDepth),silt=smoothstep(.80,.93,warpedDepth),bedrock=smoothstep(1.70,1.90,warpedDepth);
-   vec3 soil=mix(vec3(.65,.56,.40),vec3(.41,.30,.18),sediment);soil=mix(soil,vec3(.32,.28,.22),silt);soil=mix(soil,vec3(.39,.41,.37),bedrock);
+   vec3 soil=mix(vec3(.78,.65,.40),vec3(.61,.43,.23),sediment);soil=mix(soil,vec3(.53,.38,.25),silt);soil=mix(soil,vec3(.46,.32,.19),bedrock);
+   // A muted rose lamina carries the reference palette without moving any layer.
+   float roseLamina=smoothstep(.87,.94,warpedDepth)*(1.-smoothstep(1.,1.08,warpedDepth));
+   soil=mix(soil,vec3(.62,.36,.33),roseLamina*.72);
    float folds=warpedDepth*8.7+sFbm(vSoilWorld*.6)*2.1,lamina=pow(.5+.5*sin(folds),10.);
    float mineral=sFbm(vSoilWorld*4.),grain=sNoise(vSoilWorld*66.);float grainFade=1.-smoothstep(.35,1.1,max(length(dFdx(vSoilWorld*66.)),length(dFdy(vSoilWorld*66.))));
    soil*=.89+mineral*.22-lamina*mix(.09,.22,bedrock)+(grain-.5)*.12*grainFade;
    float fossils=1.-smoothstep(.03,.14,abs(sin(vSoilWorld.x*4.2+vSoilWorld.z*3.1+sFbm(vSoilWorld*1.7)*4.)));
    soil=mix(soil,soil*vec3(.84,.82,.69),fossils*bedrock*.26);diffuseColor.rgb=soil*(1.-vSoilContact);`);
+  // Soft mineral fill keeps the shaded cut face legible in the light diorama palette.
+  s.fragmentShader=s.fragmentShader.replace('#include <emissivemap_fragment>','#include <emissivemap_fragment>\n totalEmissiveRadiance+=soil*mix(.16,.065,bedrock);');
   s.fragmentShader=s.fragmentShader.replace('#include <normal_fragment_maps>',`#include <normal_fragment_maps>
    float relief=sFbm(vSoilWorld*9.)*.015+sNoise(vSoilWorld*66.)*.0015*grainFade-lamina*.012;
    vec3 sx=dFdx(-vViewPosition),sy=dFdy(-vViewPosition),a=cross(sy,normal),b=cross(normal,sx);float det=dot(sx,a);

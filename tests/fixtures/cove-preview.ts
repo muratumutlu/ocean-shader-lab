@@ -12,7 +12,7 @@ import {nearPlaneRadius} from '../../src/camera/free-camera';
 import {createCamera} from '../../src/scene/camera';
 const canvas=document.querySelector<HTMLCanvasElement>('#cove')!,renderer=new THREE.WebGLRenderer({canvas,antialias:true,preserveDrawingBuffer:true});
 renderer.setPixelRatio(Number(new URLSearchParams(location.search).get('dpr'))||1);renderer.setSize(innerWidth,innerHeight,false);renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=.94;
-const scene=new THREE.Scene();scene.background=new THREE.Color(0x3b4350);
+const scene=new THREE.Scene();scene.background=new THREE.Color(0xeeeae5);
 const coveStart=performance.now();const cove=createCove(7);cove.setQuality('balanced');const coveCreateMs=performance.now()-coveStart;const water=createWater(cove),camera=createCamera(innerWidth/innerHeight).camera;
 scene.add(cove.group,water.mesh,new THREE.HemisphereLight(0xdff4ff,0x746a56,1));
 const sun=new THREE.DirectionalLight(0xfff1db,3.4);sun.position.set(Math.cos(225*Math.PI/180)*22,25,Math.sin(225*Math.PI/180)*22);scene.add(sun);

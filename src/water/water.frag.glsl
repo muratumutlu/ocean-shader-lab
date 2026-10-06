@@ -7,7 +7,7 @@ float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
 float noise(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.0-2.0*f);return mix(mix(hash(i),hash(i+vec2(1,0)),f.x),mix(hash(i+vec2(0,1)),hash(i+vec2(1,1)),f.x),f.y);}
 float fbm(vec2 p){return noise(p)*.58+noise(p*2.03+7.1)*.28+noise(p*4.1-3.7)*.14;}
 vec2 detailGradient(vec2 p){vec2 i=floor(p),f=fract(p),u=f*f*(3.-2.*f),du=6.*f*(1.-f);float a=hash(i),b=hash(i+vec2(1,0)),c=hash(i+vec2(0,1)),d=hash(i+vec2(1,1));return vec2(mix(b-a,d-c,u.y)*du.x,mix(c-a,d-b,u.x)*du.y);}
-vec3 sky(vec3 direction){float horizon=pow(1.0-max(direction.y,0.0),3.0);vec3 col=mix(vec3(.12,.18,.26),vec3(.34,.41,.47),horizon);float s=max(dot(direction,normalize(uSun)),0.0);col+=vec3(1.0,.82,.51)*(pow(s,420.0)*3.0+pow(s,18.0)*.15);return col;}
+vec3 sky(vec3 direction){float horizon=pow(1.0-max(direction.y,0.0),3.0);vec3 col=mix(vec3(.28,.50,.53),vec3(.66,.70,.62),horizon);float s=max(dot(direction,normalize(uSun)),0.0);col+=vec3(1.0,.82,.51)*(pow(s,420.0)*3.0+pow(s,18.0)*.15);return col;}
 float viewDepth(float z){float perspective=(uCameraRange.x*uCameraRange.y)/max(uCameraRange.y-z*(uCameraRange.y-uCameraRange.x),.000001);return mix(perspective,mix(uCameraRange.x,uCameraRange.y,z),uOrthographic);}
 void main(){
  vec2 uv=(vXZ+vec2(16.0,12.0))/vec2(32.0,24.0);float bed=readMap(uHeight,uv)-max(vXZ.y-12.0,0.0)*.12,depth=max(vWorld.y-bed,0.0);if(vWorld.y-bed<-.012)discard;
@@ -23,7 +23,7 @@ void main(){
  float fresnel=.0204+.9796*pow(1.0-max(dot(N,V),0.0),5.0);
  vec2 screenUV=gl_FragCoord.xy/uResolution;float foreground=texture2D(uSceneDepth,screenUV).r;if(uCaptured>.5&&gl_FragCoord.z>foreground+.000004)discard;vec3 viewN=mat3(viewMatrix)*N;vec2 bend=viewN.xy*.010*smoothstep(.03,1.4,depth);vec2 refractedUV=clamp(screenUV+bend,vec2(.002),vec2(.998));if(texture2D(uSceneDepth,refractedUV).r<gl_FragCoord.z)refractedUV=screenUV;
  if(uUnderwater>.5&&!gl_FrontFacing){
-  vec3 escape=refract(-V,N,1.333);vec3 reflection=vec3(.055,.18,.22);vec3 color=length(escape)<.001?reflection:mix(sky(escape)*1.45,reflection,fresnel);
+  vec3 escape=refract(-V,N,1.333);vec3 reflection=vec3(.08,.30,.29);vec3 color=length(escape)<.001?reflection:mix(sky(escape)*1.45,reflection,fresnel);
   gl_FragColor=vec4(color,1.);
   #include <tonemapping_fragment>
   #include <colorspace_fragment>
@@ -41,12 +41,12 @@ void main(){
  vec3 subduedRock=floorColor/max(1.,max(max(floorColor.r,floorColor.g),floorColor.b)/.45);
  subduedRock-=vec3(min(min(subduedRock.r,subduedRock.g),subduedRock.b)*.30);
  floorColor=mix(floorColor,subduedRock,topExposure);
- vec3 scatteredLight=vec3(.070,.180,.255);
+ vec3 scatteredLight=vec3(.10,.37,.36);
  floorColor=mix(floorColor,scatteredLight,1.-exp(-opticalDistance*mix(.42,.055,topExposure)));
  if(uCaptured<.5)floorColor=vec3(.66,.60,.43);
  float caustic=pow(1.0-abs(sin(vXZ.x*5.0+sin(vXZ.y*3.0+uTime*.7))*sin(vXZ.y*4.7-sin(vXZ.x*2.5-uTime*.65))),17.0);floorColor+=vec3(.002,.003,.004)*caustic*exp(-depth*.65);
- float path=mix(depth/max(dot(V,vec3(0,1,0)),.32),opticalDistance,topExposure);vec3 transmit=exp(-mix(vec3(.70,.32,.20),vec3(.09,.09,.09),topExposure)*path);
- vec3 waterColor=vec3(.055,.132,.187);vec3 color=floorColor*transmit+waterColor*(1.0-transmit);
+ float path=mix(depth/max(dot(V,vec3(0,1,0)),.32),opticalDistance,topExposure);vec3 transmit=exp(-mix(vec3(.52,.22,.23),vec3(.09,.09,.09),topExposure)*path);
+ vec3 waterColor=vec3(.08,.30,.29);vec3 color=floorColor*transmit+waterColor*(1.0-transmit);
  vec3 reflection=sky(reflect(-V,N));color=mix(color,reflection,clamp(fresnel,0.0,.96));
  float glint=pow(max(dot(reflect(-normalize(uSun),N),V),0.0),mix(100.0,650.0,microFade));color+=vec3(1.0,.89,.67)*glint*.65;
  float shallow=1.-smoothstep(.025,.25,depth);
@@ -96,7 +96,7 @@ void main(){
  float fanTexture=smoothstep(.27,.46,coarseOpenings)*mix(.56+.26*denseClusters,fineLace,fineFoamFade);
  float surf=shallow*smoothstep(.42,.64,shorePatches)*smoothstep(.27,.62,lace+broad*.12)+max(breaking*smoothstep(.31,.62,lace)*.88,fan*fanTexture*.88);
  float rock=readMap(uRocks,uv),rockFoam=smoothstep(.15,.6,rock)*(1.-smoothstep(.62,.96,rock))*smoothstep(.30,.65,lace)*.62;
- rockFoam*=1.-smoothstep(.55,1.3,depth);float foam=clamp(surf+rockFoam,0.,1.);color=mix(color,vec3(.83,.90,.92),foam*.91);
+ rockFoam*=1.-smoothstep(.55,1.3,depth);float foam=clamp(surf+rockFoam,0.,1.);color=mix(color,vec3(.89,.94,.84),foam*.91);
  gl_FragColor=vec4(color,1);
  #include <tonemapping_fragment>
  #include <colorspace_fragment>

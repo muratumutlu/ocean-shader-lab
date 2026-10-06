@@ -4,7 +4,7 @@ This records the existing scene and controls before the final Caretta pass. Reus
 
 ## Controls
 
-The source of truth is `src/styles.css`. Colors, pixel lengths and font families are exposed as CSS custom properties in `:root`; their values preserve the existing rendered appearance. The dark blue-grey controls use translucent toolbar/panel surfaces, pale warm text, muted teal labels, a teal selected state and a pale mint focus outline. The canvas background is owned by the renderer.
+The source of truth is `src/styles.css`. Colors, pixel lengths and font families are exposed as CSS custom properties in `:root`; the palette update retains their existing roles and layout. The dark blue-grey controls use translucent toolbar/panel surfaces, pale warm text, muted teal labels, a teal selected state and a pale mint focus outline. The canvas background is owned by the renderer. The reference-led coastal palette uses warm ivory, golden sand and mint-turquoise water; heading, credit and navigation text use dark teal for contrast on the lighter scene. The control panels remain dark.
 
 - Body: Avenir Next, Trebuchet MS, sans-serif. Display: Georgia, Times New Roman, serif.
 - Labels: 9–13 px; toolbar: 11–12 px. Title: responsive 32–46 px, 36 px on narrow screens.
@@ -57,17 +57,17 @@ Run `npm run design:check` for control token compliance. Visual acceptance also 
 | `--color-standalone-surface` | `#23383a` |
 | `--color-fallback-link` | `#b9d8cf` |
 | `--color-title-shadow-coast` | `#173b4966` |
-| `--color-text-light` | `#fff` |
-| `--color-light-shadow` | `#0c273e` |
+| `--color-text-light` | `#203b35` |
+| `--color-light-shadow` | `#ffffff99` |
 | `--color-heading-wash-coast` | `#16304455` |
 | `--color-text-day` | `#203e49` |
 | `--color-day-shadow` | `#ffffff80` |
 | `--color-heading-wash-day` | `#ffffff33` |
-| `--color-text-heading` | `#e7e5da` |
-| `--color-heading-shadow` | `#17202b80` |
-| `--color-heading-wash` | `#15202a33` |
-| `--color-canvas-focus` | `#e8d5b5` |
-| `--color-navigation-hint` | `#c3c8c9` |
+| `--color-text-heading` | `#29433f` |
+| `--color-heading-shadow` | `#ffffff80` |
+| `--color-heading-wash` | `#eeeae544` |
+| `--color-canvas-focus` | `#397d73` |
+| `--color-navigation-hint` | `#24423b` |
 | `--color-control-selected` | `#3c5357` |
 | `--color-touch-border` | `#536e73` |
 | `--color-touch-surface` | `#243b40db` |
