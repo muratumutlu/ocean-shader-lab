@@ -9,7 +9,7 @@ import type {Vec3} from '../scene/cove-data';
 export const PRODUCTION_CONTACT_MOTION_PROFILE=Object.freeze({
  assetFileSha256:'aac6c43d7238a3035f57efdd57b71385249c861ede3e9f7dfb18983d384cade4',
  frontStance:.58,rearStance:.28,frontLift:CRAWL_FRONT_LIFT,rearLift:CRAWL_REAR_LIFT,
- maxStanceCorrection:.012,maxRecoveryCorrection:.04,targetGap:.003,
+ maxStanceCorrection:.012,maxRecoveryCorrection:.04,maxRestCorrection:.04,targetGap:.003,
 });
 export type TurtleSkinContact=Readonly<{key:string;plantId:string;limb:'front'|'rear';side:-1|1;position:Readonly<Vec3>;skinPosition:Readonly<Vec3>;heading:number;gap:number;minimumLimbGap:number;samples:number;stance:boolean}>;
 export type TurtleContactFrame=Readonly<{time:number;tide:number;paused:boolean;discontinuity:boolean;contacts:readonly TurtleSkinContact[]}>;
@@ -41,7 +41,7 @@ export function createTurtleContactMotion({view,cove,asset}:Options){
   });cache.set(limb+side,entries);
  }
  const ready=identity&&[...cache.values()].every(entries=>entries.length>0);
- let disposed=false,paused=false,previousTime:number|null=null,previousPosition:Vec3|null=null,acceptedCorrections=0,rejectedCorrections=0,lastRecoveryCorrection=0,lastStanceCorrection=0,groundedSeconds=0;
+ let disposed=false,paused=false,previousTime:number|null=null,previousPosition:Vec3|null=null,acceptedCorrections=0,rejectedCorrections=0,lastRecoveryCorrection=0,lastStanceCorrection=0,lastRestCorrection=0,groundedSeconds=0;
  let measurements:readonly Readonly<{key:string;gap:number;minimumLimbGap:number;samples:number;accepted:boolean}>[]=Object.freeze([]);
  let lastFrame:TurtleContactFrame=Object.freeze({time:0,tide:0,paused:false,discontinuity:true,contacts:Object.freeze([])});
  const touching=new Set<string>(),point=new THREE.Vector3();
@@ -57,7 +57,7 @@ export function createTurtleContactMotion({view,cove,asset}:Options){
   return {gap,minimum,position,heading:Math.atan2(axis.x,axis.z),samples:support.length};
  }
  function apply(state:TurtleState,dt:number,options:{poseEnabled?:boolean}={}){
-  if(disposed)return;view.apply(state,dt);lastRecoveryCorrection=lastStanceCorrection=0;
+  if(disposed)return;view.apply(state,dt);lastRecoveryCorrection=lastStanceCorrection=lastRestCorrection=0;
   // The legacy view slerps partial IK from current bones. Re-evaluating it at
   // an unchanged animation phase can compound that blend, so corrections start
   // only after the transition reaches exactly grounded; ramp in without a snap.
@@ -81,13 +81,48 @@ export function createTurtleContactMotion({view,cove,asset}:Options){
    if(Math.hypot(deltaX,deltaY,deltaZ)<1e-6)return foot;
    position.x+=deltaX;position.y+=deltaY;position.z+=deltaZ;changed=true;return {...foot,position};
   });
-  if(!changed)return;
-  // IK still runs in the original view against the original animated Body frame.
-  const candidate={...state,feet};view.apply(candidate,0);view.group.updateMatrixWorld(true);let rejected=false;
-  for(let i=0;i<feet.length;i++){if(feet[i]===state.feet[i])continue;const key=keyOf(feet[i]),before=originals.get(key)!,after=measure(key);
-   if(!after||after.minimum<Math.min(.002,before.minimum)-.0005){feet[i]=state.feet[i];rejectedCorrections++;rejected=true;}else acceptedCorrections++;
+  const applyFeet=()=>{view.apply({...state,feet},0);view.group.updateMatrixWorld(true);};
+  if(changed){
+   // IK still runs in the original view against the original animated Body frame.
+   applyFeet();let rejected=false;
+   for(let i=0;i<feet.length;i++){if(feet[i]===state.feet[i])continue;const key=keyOf(feet[i]),before=originals.get(key)!,after=measure(key);
+    if(!after||after.minimum<Math.min(.002,before.minimum)-.0005){feet[i]=state.feet[i];rejectedCorrections++;rejected=true;}else acceptedCorrections++;
+   }
+   if(rejected)applyFeet();
   }
-  if(rejected)view.apply({...state,feet},0);
+  // Rest lowers recovery goals while the animated body also settles. The old
+  // no-worsening guard cannot repair a baseline that already intersects sand.
+  // Keep measured clearance through the recovery -> rested-stance handoff;
+  // ordinary moving poses (restBlend=0) retain the original correction path.
+  const restLift=profile.maxRestCorrection*clamp(state.restBlend,0,1)*fade;
+  if(restLift<1e-6)return;
+  for(let i=0;i<feet.length;i++){
+   const foot=feet[i],original=state.feet[i],key=keyOf(foot),before=measure(key);
+   if(!before||before.minimum>=profile.targetGap-.0005)continue;
+   const dx=foot.position.x-original.position.x,dz=foot.position.z-original.position.z;
+   // Bound the COMPLETE copied-goal displacement, including recovery smoothing.
+   const remaining=profile.maxRestCorrection**2*fade**2-dx*dx-dz*dz;
+   if(remaining<=0)continue;
+   let low=foot.position.y,high=Math.min(low+restLift,original.position.y+Math.sqrt(remaining));
+   if(high<=low+1e-6)continue;
+   const probe=(y:number)=>{feet[i]={...foot,position:{...foot.position,y}};applyFeet();return measure(key);};
+   const upper=probe(high);
+   if(!upper||upper.minimum<profile.targetGap){feet[i]=foot;applyFeet();rejectedCorrections++;continue;}
+   let best=feet[i];
+   // A bounded search avoids assuming a metre of IK-goal lift is a metre of
+   // skin clearance on sloped sand. Retain the lowest verified clear pose.
+   for(let step=0;step<8;step++){
+    const middle=(low+high)/2,result=probe(middle);
+    if(result&&result.minimum>=profile.targetGap){high=middle;best=feet[i];}else low=middle;
+   }
+   feet[i]=best;applyFeet();const settled=measure(key);
+   // A proximal vertex clearing terrain must not leave a planted pad floating.
+   if(!settled||settled.minimum<profile.targetGap||original.stance&&settled.gap>.012){feet[i]=foot;applyFeet();rejectedCorrections++;continue;}
+   acceptedCorrections++;
+   const correction=Math.hypot(dx,best.position.y-original.position.y,dz);
+   lastRestCorrection=Math.max(lastRestCorrection,correction);
+   if(!original.stance)lastRecoveryCorrection=Math.max(lastRecoveryCorrection,correction);
+  }
  }
  function sampleContacts(state:TurtleState,time:number,tide:number):TurtleContactFrame{
   if(disposed)return lastFrame;
@@ -108,5 +143,5 @@ export function createTurtleContactMotion({view,cove,asset}:Options){
   if(finite){previousTime=time;previousPosition={...state.position};}
   measurements=Object.freeze(observed);lastFrame=Object.freeze({time:finite?time:lastFrame.time,tide:finite?tide:lastFrame.tide,paused,discontinuity,contacts:Object.freeze(contacts)});return lastFrame;
  }
- return {apply,sampleContacts,setPaused(value:boolean){if(!disposed)paused=value;},reset(){if(disposed)return;touching.clear();previousTime=null;previousPosition=null;acceptedCorrections=rejectedCorrections=lastRecoveryCorrection=lastStanceCorrection=groundedSeconds=0;measurements=Object.freeze([]);lastFrame=Object.freeze({time:0,tide:0,paused,discontinuity:true,contacts:Object.freeze([])});},diagnostics(){return {ready,identity,paused,disposed,acceptedCorrections,rejectedCorrections,lastRecoveryCorrection,lastStanceCorrection,groundedSeconds,measurements,frame:lastFrame};},dispose(){if(disposed)return;disposed=true;cache.clear();touching.clear();previousTime=null;previousPosition=null;measurements=Object.freeze([]);lastFrame=Object.freeze({...lastFrame,paused:true,discontinuity:true,contacts:Object.freeze([])});}};
+ return {apply,sampleContacts,setPaused(value:boolean){if(!disposed)paused=value;},reset(){if(disposed)return;touching.clear();previousTime=null;previousPosition=null;acceptedCorrections=rejectedCorrections=lastRecoveryCorrection=lastStanceCorrection=lastRestCorrection=groundedSeconds=0;measurements=Object.freeze([]);lastFrame=Object.freeze({time:0,tide:0,paused,discontinuity:true,contacts:Object.freeze([])});},diagnostics(){return {ready,identity,paused,disposed,acceptedCorrections,rejectedCorrections,lastRecoveryCorrection,lastStanceCorrection,lastRestCorrection,groundedSeconds,measurements,frame:lastFrame};},dispose(){if(disposed)return;disposed=true;cache.clear();touching.clear();previousTime=null;previousPosition=null;measurements=Object.freeze([]);lastFrame=Object.freeze({...lastFrame,paused:true,discontinuity:true,contacts:Object.freeze([])});}};
 }
