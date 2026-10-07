@@ -10,7 +10,7 @@ struct OceanFocusApp: App {
         MenuBarExtra {
             MenuContent(store: store)
         } label: {
-            Text(store.menuTitle).monospacedDigit()
+            MenuBarLabel(title: store.menuTitle)
         }
         .menuBarExtraStyle(.menu)
 
@@ -64,5 +64,22 @@ struct MenuContent: View {
         alert.addButton(withTitle: "Devam et")
         alert.addButton(withTitle: "Vazgeç")
         if alert.runModal() == .alertSecondButtonReturn { store.abandon() }
+    }
+}
+
+/// The menu bar label exists from launch, so it also opens the game window once at startup.
+struct MenuBarLabel: View {
+    let title: String
+    @Environment(\.openWindow) private var openWindow
+    @State private var opened = false
+
+    var body: some View {
+        Text(title).monospacedDigit()
+            .task {
+                guard !opened else { return }
+                opened = true
+                openWindow(id: "game")
+                NSApp.activate(ignoringOtherApps: true)
+            }
     }
 }
