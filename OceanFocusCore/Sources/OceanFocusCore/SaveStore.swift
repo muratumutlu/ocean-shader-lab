@@ -42,18 +42,22 @@ public struct SaveStore: Sendable {
     public func load(now: Date = Date()) -> LoadResult {
         let fm = FileManager.default
         guard fm.fileExists(atPath: saveURL.path) else {
-            return LoadResult(state: .fresh(catalog: catalog), source: .fresh)
+            return loadFromBackups() ?? LoadResult(state: .fresh(catalog: catalog), source: .fresh)
         }
         if let data = try? Data(contentsOf: saveURL), let state = try? Self.decode(data) {
             return LoadResult(state: state, source: .primary)
         }
         _ = try? moveAside(saveURL, now: now, fm)
+        return loadFromBackups() ?? LoadResult(state: .fresh(catalog: catalog), source: .freshAfterCorruption)
+    }
+
+    private func loadFromBackups() -> LoadResult? {
         for n in 1...Self.backupCount {
             if let data = try? Data(contentsOf: backupURL(n)), let state = try? Self.decode(data) {
                 return LoadResult(state: state, source: .backup(n))
             }
         }
-        return LoadResult(state: .fresh(catalog: catalog), source: .freshAfterCorruption)
+        return nil
     }
 
     public func save(_ state: GameState, now: Date = Date()) throws {

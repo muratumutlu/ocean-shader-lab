@@ -134,6 +134,13 @@ final class SaveStoreTests: XCTestCase {
         XCTAssertEqual(store.load(), .init(state: state(money: 1), source: .backup(2)))
     }
 
+    func testMissingPrimaryRecoversFromBackups() throws {
+        try store.save(state(money: 1))
+        try store.save(state(money: 2))
+        try FileManager.default.removeItem(at: directory.appendingPathComponent("save.json"))
+        XCTAssertEqual(store.load(), .init(state: state(money: 1), source: .backup(1)))
+    }
+
     func testDefaultDirectoryIsInApplicationSupport() throws {
         let url = try SaveStore.defaultDirectory()
         XCTAssertEqual(url.lastPathComponent, "OceanFocus")
