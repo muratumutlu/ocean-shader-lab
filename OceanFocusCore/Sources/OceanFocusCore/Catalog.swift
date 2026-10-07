@@ -71,9 +71,3 @@ public struct Catalog: Codable, Equatable, Sendable {
         return result
     }
 }
-
-// Temporary home until Task 4 creates Clock.swift.
-public protocol FocusClock: Sendable {
-    var now: Date { get }
-    var uptime: TimeInterval { get }
-}
