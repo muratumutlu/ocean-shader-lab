@@ -21,5 +21,6 @@ xcrun simctl boot "$UDID" 2>/dev/null || true
 xcrun simctl bootstatus "$UDID" -b >/dev/null
 APP="$APP_DIR/build/Build/Products/Debug-iphonesimulator/Ocean Focus.app"
 xcrun simctl install "$UDID" "$APP"
+xcrun simctl terminate "$UDID" ai.muum.oceanfocus 2>/dev/null || true
 xcrun simctl launch "$UDID" ai.muum.oceanfocus >/dev/null
 echo "Running on $DEVICE ($UDID)"
