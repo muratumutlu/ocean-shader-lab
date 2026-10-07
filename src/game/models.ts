@@ -11,9 +11,9 @@ function stripeTexture(a:string,b:string,stripes:number,vertical=false){
 
 export type Figure={group:THREE.Group;rightArm:THREE.Group;leftArm:THREE.Group;torso:THREE.Mesh;head:THREE.Group};
 /** A stylised person ~1.05 units tall, origin at the feet, facing +Z. */
-export function createFigure(options:{shirt:'breton'|number;trousers:number;hat:'cap'|'captain'|'beanie'|'none';skin?:number;beard?:boolean}):Figure{
+export function createFigure(options:{shirt:'breton'|number;trousers:number;hat:'cap'|'captain'|'beanie'|'hood'|'none';skin?:number;beard?:boolean;parka?:number}):Figure{
  const group=new THREE.Group(),skin=mat(options.skin??0xd9a27e,.7);
- const shirt=options.shirt==='breton'?new THREE.MeshStandardMaterial({map:stripeTexture('#f4f1e8','#1f3b63',8),roughness:.85}):mat(options.shirt,.85);
+ const shirt=options.parka!==undefined?mat(options.parka,.95):options.shirt==='breton'?new THREE.MeshStandardMaterial({map:stripeTexture('#f4f1e8','#1f3b63',8),roughness:.85}):mat(options.shirt,.85);
  const trousers=mat(options.trousers,.9);
  for(const side of [-1,1]){const leg=new THREE.Mesh(new THREE.CapsuleGeometry(.075,.34,4,8),trousers);leg.position.set(side*.09,.25,0);group.add(leg);
   const boot=new THREE.Mesh(new THREE.BoxGeometry(.13,.08,.2),mat(0x2b2420,.9));boot.position.set(side*.09,.04,.03);group.add(boot);}
@@ -29,6 +29,13 @@ export function createFigure(options:{shirt:'breton'|number;trousers:number;hat:
  if(options.beard){const beard=new THREE.Mesh(new THREE.SphereGeometry(.12,12,10,0,Math.PI*2,Math.PI*.45,Math.PI*.55),mat(0xd8d4cc,1));beard.position.set(0,-.02,.02);head.add(beard);}
  if(options.hat==='cap'){const cap=new THREE.Mesh(new THREE.CylinderGeometry(.12,.14,.08,16),mat(0x22344f,.9));cap.position.y=.1;head.add(cap);const brim=new THREE.Mesh(new THREE.BoxGeometry(.2,.015,.1),mat(0x1a1a1a,.6));brim.position.set(0,.07,.13);head.add(brim);}
  if(options.hat==='captain'){const top=new THREE.Mesh(new THREE.CylinderGeometry(.15,.13,.07,16),mat(0xf4f1e8,.6));top.position.y=.12;head.add(top);const band=new THREE.Mesh(new THREE.CylinderGeometry(.132,.132,.04,16),mat(0x1b2a44,.7));band.position.y=.08;head.add(band);const brim=new THREE.Mesh(new THREE.BoxGeometry(.2,.015,.1),mat(0x111111,.4));brim.position.set(0,.07,.13);head.add(brim);}
+ if(options.hat==='hood'){
+  // Parka hood with a fluffy fur rim framing the face.
+  const hood=new THREE.Mesh(new THREE.SphereGeometry(.16,16,12,0,Math.PI*2,0,Math.PI*.62),shirt);hood.position.set(0,.02,-.02);hood.rotation.x=-.25;head.add(hood);
+  const fur=new THREE.Mesh(new THREE.TorusGeometry(.12,.04,8,20),mat(0xf2ede4,1));fur.position.set(0,0,.07);head.add(fur);
+  const hem=new THREE.Mesh(new THREE.TorusGeometry(.2,.035,6,20),mat(0xf2ede4,1));hem.rotation.x=Math.PI/2;hem.position.y=.47;group.add(hem);
+  for(const pivot of [rightArm,leftArm]){const mitten=new THREE.Mesh(new THREE.SphereGeometry(.065,10,8),mat(0x3d5a73,.9));mitten.position.y=-.34;pivot.add(mitten);}
+ }
  if(options.hat==='beanie'){const beanie=new THREE.Mesh(new THREE.SphereGeometry(.135,14,10,0,Math.PI*2,0,Math.PI*.55),mat(0xb3462f,1));beanie.position.y=.02;head.add(beanie);}
  group.traverse(o=>{if(o instanceof THREE.Mesh)o.castShadow=false;});
  return {group,rightArm,leftArm,torso,head};
@@ -54,10 +61,10 @@ export function createBucket(){
 
 export type Boat={group:THREE.Group;deck:THREE.Group;length:number;sternZ:number;bowZ:number;tier:number};
 /** Boat tiers: 0 dinghy · 1 dinghy+oars · 2 rowboat · 3 outboard · 4 cabin · 5 gulet · 6 gulet with sail. Bow points to +Z. */
-export function createBoat(tier:number):Boat{
+export function createBoat(tier:number,palette:{hull:number[];trim:number}={hull:[0x8b5a3c,0x8b5a3c,0x2f6f8f,0x2f6f8f,0xf1ece0,0x9a6a43,0x9a6a43],trim:0xf4f1e8}):Boat{
  const group=new THREE.Group(),deck=new THREE.Group();group.add(deck);
  const length=[2,2,2.5,2.6,3,3.8,3.8][tier],beam=[.85,.85,1,1,1.15,1.35,1.35][tier],height=tier>=5?.55:.4;
- const hullColor=[0x8b5a3c,0x8b5a3c,0x2f6f8f,0x2f6f8f,0xf1ece0,0x9a6a43,0x9a6a43][tier];
+ const hullColor=palette.hull[tier];
  const L=length/2,B=beam/2;
  const outline=(k:number)=>{const o=new THREE.Shape();o.moveTo(0,L*k);o.bezierCurveTo(B*.9*k,L*.55*k,B*k,L*.05*k,B*k,-L*.55*k);o.quadraticCurveTo(B*.95*k,-L*k,0,-L*k);o.quadraticCurveTo(-B*.95*k,-L*k,-B*k,-L*.55*k);o.bezierCurveTo(-B*k,L*.05*k,-B*.9*k,L*.55*k,0,L*k);return o;};
  const ring=(outer:number,inner:number)=>{const o=outline(outer);o.holes.push(new THREE.Path(outline(inner).getPoints(48).reverse()));return o;};
@@ -67,7 +74,7 @@ export function createBoat(tier:number):Boat{
  const hull=new THREE.Mesh(extrude(ring(1,.88),height),hullMaterial);hull.position.y=-.08;
  const keel=new THREE.Mesh(extrude(outline(1),.08,false),hullMaterial);keel.position.y=-.08;
  for(const mesh of [hull,keel]){const p=mesh.geometry.attributes.position as THREE.BufferAttribute;for(let i=0;i<p.count;i++){const y=p.getY(i);if(y<height*.5){const t=1-y/(height*.5);p.setX(i,p.getX(i)*(1-.4*t));}}mesh.geometry.computeVertexNormals();group.add(mesh);}
- const trim=new THREE.Mesh(extrude(ring(1.02,.86),.05),mat(tier>=5?0x5b3a24:0xf4f1e8,.7));trim.position.y=-.08+height;group.add(trim);
+ const trim=new THREE.Mesh(extrude(ring(1.02,.86),.05),mat(tier>=5?0x5b3a24:palette.trim,.7));trim.position.y=-.08+height;group.add(trim);
  const floor=new THREE.Mesh(extrude(outline(.86),.02,false),mat(0xb08457,.85));floor.position.y=-.08+height*.45;group.add(floor);
  deck.position.y=-.08+height*.45+.02;
  const wood=mat(0x7a5236,.85);
@@ -132,3 +139,26 @@ export function createRing(){
 }
 export function createBuoy(color=0xe8742a){const b=new THREE.Mesh(new THREE.SphereGeometry(.09,10,8),mat(color,.5));return b;}
 export function disposeTree(root:THREE.Object3D){root.traverse(o=>{if(o instanceof THREE.Mesh){o.geometry.dispose();const m=o.material as THREE.Material&{map?:THREE.Texture|null};m.map?.dispose();m.dispose();}});}
+
+/** Snow-block igloo used as the Arctic sales counter; same contract as createStall. */
+export function createIgloo(){
+ const group=new THREE.Group(),snow=mat(0xf4f8fb,.9);
+ const dome=new THREE.Mesh(new THREE.SphereGeometry(1,24,14,0,Math.PI*2,0,Math.PI/2),snow);dome.scale.set(1.05,.85,1.05);group.add(dome);
+ // Block seams: thin darker rings and meridians.
+ const seam=mat(0xc9d7e1,1);
+ for(const y of [.22,.45,.65]){const r=Math.sqrt(1-(y/.85)**2)*1.05;const ring=new THREE.Mesh(new THREE.TorusGeometry(r,.012,4,48),seam);ring.rotation.x=Math.PI/2;ring.position.y=y;group.add(ring);}
+ const arch=new THREE.Mesh(new THREE.TorusGeometry(.4,.14,8,16,Math.PI),snow);arch.position.set(0,0,1.02);group.add(arch);
+ const door=new THREE.Mesh(new THREE.CircleGeometry(.3,16,0,Math.PI),mat(0x24384a,1));door.position.set(0,.02,1.06);group.add(door);
+ const counter=new THREE.Mesh(new THREE.BoxGeometry(1.2,.5,.45),mat(0xe3ecf2,.8));counter.position.set(1.2,.25,.7);group.add(counter);
+ const sign=new THREE.Mesh(new THREE.PlaneGeometry(.8,.24),new THREE.MeshStandardMaterial({map:signTexture(),roughness:.8}));sign.position.set(0,.95,.62);sign.rotation.x=-.5;group.add(sign);
+ const coins=new THREE.Group();coins.position.set(1.4,.52,.7);group.add(coins);
+ const fishOnIce=new THREE.Group();fishOnIce.position.set(.95,.56,.7);group.add(fishOnIce);
+ return {group,coins,fishOnIce};
+}
+/** A flat irregular ice floe floating at the waterline. */
+export function createIceFloe(radius:number,random:()=>number=Math.random){
+ const shape=new THREE.Shape(),n=9;
+ for(let i=0;i<=n;i++){const a=i/n*Math.PI*2,r=radius*(.7+random()*.45);if(i===0)shape.moveTo(Math.cos(a)*r,Math.sin(a)*r);else shape.lineTo(Math.cos(a)*r,Math.sin(a)*r);}
+ const geometry=new THREE.ExtrudeGeometry(shape,{depth:.12,bevelEnabled:true,bevelSize:.05,bevelThickness:.04,bevelSegments:1});geometry.rotateX(-Math.PI/2);
+ return new THREE.Mesh(geometry,new THREE.MeshStandardMaterial({color:0xf2f7fa,roughness:.55,emissive:0x9fb8c8,emissiveIntensity:.12}));
+}

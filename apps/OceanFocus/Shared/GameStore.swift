@@ -61,7 +61,7 @@ final class GameStore: ObservableObject {
             if let state = result.state { loaded = state } else { loadProblem = "Kayıt dosyası şu an okunamıyor. Tekrar denenecek." }
         }
         state = loaded
-        _ = FocusTimer(engine: engine, clock: clock).prepareLoadedState(&state, licensed: false)
+        _ = FocusTimer(engine: engine, clock: clock).prepareLoadedState(&state, licensed: licensed)
         persist()
         ticker = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [weak self] _ in
             MainActor.assumeIsolated { self?.tick() }
@@ -111,6 +111,19 @@ final class GameStore: ObservableObject {
 
     func buy(_ id: String) {
         do { try engine.purchase(id, in: &state) } catch { return }
+        persist()
+    }
+
+    /// Until StoreKit lands every build counts as licensed (spec §5b).
+    let licensed = true
+
+    func unlockRegion(_ id: String) {
+        do { try engine.unlockRegion(id, licensed: licensed, in: &state) } catch { return }
+        persist()
+    }
+
+    func switchRegion(_ id: String) {
+        do { try engine.switchRegion(id, licensed: licensed, in: &state) } catch { return }
         persist()
     }
 
@@ -203,7 +216,7 @@ final class GameStore: ObservableObject {
              "outcome": $0.outcome == .completed ? "completed" : "abandoned",
              "fish": $0.fish, "money": $0.money, "regionId": $0.regionId]
         }
-        return ["version": 1, "currentRegionId": state.currentRegionId, "regions": regions,
+        return ["version": 1, "currentRegionId": state.currentRegionId, "regions": regions, "unlocked": state.unlockedRegionIds,
                 "active": state.activeSession.map(sessionJSON) ?? NSNull(), "history": history]
     }
 
@@ -216,6 +229,8 @@ final class GameStore: ObservableObject {
         case "abandon": abandon()
         case "buy": if let id = message["id"] as? String { buy(id) }
         case "setSpeed": if let s = message["speed"] as? Double { setSpeed(s) }
+        case "unlockRegion": if let id = message["id"] as? String { unlockRegion(id) }
+        case "switchRegion": if let id = message["id"] as? String { switchRegion(id) }
         default: break
         }
     }

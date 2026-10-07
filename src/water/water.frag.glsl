@@ -1,3 +1,4 @@
+uniform vec3 uWaterTint;
 uniform float uTime,uTide,uSwell,uCaptured,uUnderwater,uOrbitResponse;uniform sampler2D uHeight,uRocks,uSceneColor,uSceneDepth,uRockTransmission;uniform vec3 uSun;uniform vec2 uResolution,uCameraRange;uniform float uOrthographic;varying vec2 vXZ;varying vec3 vWorld,vNormal;varying float vCrest;
 float readMap(sampler2D map,vec2 uv){
  vec2 f=clamp(uv,0.0,1.0)*128.0;vec2 cell=floor(f),blend=fract(f),p=(cell+0.5)/129.0,s=vec2(1.0/129.0);
@@ -24,7 +25,7 @@ void main(){
  vec2 screenUV=gl_FragCoord.xy/uResolution;float foreground=texture2D(uSceneDepth,screenUV).r;if(uCaptured>.5&&gl_FragCoord.z>foreground+.000004)discard;vec3 viewN=mat3(viewMatrix)*N;vec2 bend=viewN.xy*.010*smoothstep(.03,1.4,depth);vec2 refractedUV=clamp(screenUV+bend,vec2(.002),vec2(.998));if(texture2D(uSceneDepth,refractedUV).r<gl_FragCoord.z)refractedUV=screenUV;
  if(uUnderwater>.5&&!gl_FrontFacing){
   vec3 escape=refract(-V,N,1.333);vec3 reflection=vec3(.08,.30,.29);vec3 color=length(escape)<.001?reflection:mix(sky(escape)*1.45,reflection,fresnel);
-  gl_FragColor=vec4(color,1.);
+  gl_FragColor=vec4(color*uWaterTint,1.);
   #include <tonemapping_fragment>
   #include <colorspace_fragment>
   return;
@@ -97,7 +98,7 @@ void main(){
  float surf=shallow*smoothstep(.42,.64,shorePatches)*smoothstep(.27,.62,lace+broad*.12)+max(breaking*smoothstep(.31,.62,lace)*.88,fan*fanTexture*.88);
  float rock=readMap(uRocks,uv),rockFoam=smoothstep(.15,.6,rock)*(1.-smoothstep(.62,.96,rock))*smoothstep(.30,.65,lace)*.62;
  rockFoam*=1.-smoothstep(.55,1.3,depth);float foam=clamp(surf+rockFoam,0.,1.);color=mix(color,vec3(.89,.94,.84),foam*.91);
- gl_FragColor=vec4(color,1);
+ gl_FragColor=vec4(color*uWaterTint,1);
  #include <tonemapping_fragment>
  #include <colorspace_fragment>
 }

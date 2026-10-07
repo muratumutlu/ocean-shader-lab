@@ -1,10 +1,12 @@
 // Scene director for game mode: boat, fisherman, catch, sale and spill animations.
 // It only reacts to host events and progress; it never changes game state.
 import * as THREE from 'three';
-import type {CoveResources} from '../scene/cove';
+import type {SceneContext} from '../runtime/demo';
+import {createRegionEnvironment} from './environment';
+import {roleOf,themeFor,type RegionTheme} from './regions';
 import type {GameSave,HostEvent} from './host';
 import {createFishSchools} from './fish-schools';
-import {createBoat,createBucket,createBuoy,createCoin,createFigure,createFish,createFloat,createLabel,createRing,createStall,disposeTree,type Boat,type Figure} from './models';
+import {createBoat,createBucket,createBuoy,createCoin,createFigure,createFish,createFloat,createIgloo,createLabel,createRing,createStall,disposeTree,type Boat,type Figure} from './models';
 
 type Task={update(dt:number):boolean};
 const MOORING=new THREE.Vector3(.4,0,4.2);
@@ -18,14 +20,17 @@ const ease=(t:number)=>t<.5?2*t*t:1-(-2*t+2)**2/2;
 const FISH_TINTS=[0x8fb2c4,0xa7b6a0,0xc9a27a,0x9fa9c9,0xb8c4c9];
 
 export type FishingScene=ReturnType<typeof createFishingScene>;
-export function createFishingScene(cove:CoveResources){
+export function createFishingScene(context:SceneContext){
+ const cove=context.cove;
+ let theme:RegionTheme=themeFor('med');
  const root=new THREE.Group();root.name='fishing-game';
  const world=new THREE.Group();root.add(world);
  let tide=0,swell=.55,time=0;
  // Boat rig: `boatRoot` carries position/heading; the boat model can be swapped per tier.
  const boatRoot=new THREE.Group();world.add(boatRoot);boatRoot.position.copy(MOORING);boatRoot.rotation.y=MOORING_HEADING;boatRoot.scale.setScalar(HERO_SCALE);
  let boat:Boat=createBoat(0);boatRoot.add(boat.group);
- const fisher:Figure=createFigure({shirt:'breton',trousers:0x3b4a5c,hat:'cap',beard:true});
+ const makeFisher=(t:RegionTheme)=>createFigure(t.outfit==='parka'?{shirt:'breton',parka:0xc8452f,trousers:0x3b4a5c,hat:'hood',beard:true}:{shirt:'breton',trousers:0x3b4a5c,hat:'cap',beard:true});
+ let fisher:Figure=makeFisher(theme);
  const bucket=createBucket();
  const rod=new THREE.Group(),rodPole=new THREE.Mesh(new THREE.CylinderGeometry(.008,.018,1.7,6),new THREE.MeshStandardMaterial({color:0x4a3524,roughness:.6}));rodPole.position.y=.85;rod.add(rodPole);
  const reel=new THREE.Mesh(new THREE.CylinderGeometry(.04,.04,.04,10),new THREE.MeshStandardMaterial({color:0x9aa3a6,metalness:.7,roughness:.4}));reel.rotation.z=Math.PI/2;reel.position.set(.03,.25,0);reel.visible=false;rod.add(reel);
@@ -33,8 +38,10 @@ export function createFishingScene(cove:CoveResources){
  const float=createFloat();float.scale.setScalar(HERO_SCALE);world.add(float);float.visible=false;
  const lineGeometry=new THREE.BufferGeometry().setAttribute('position',new THREE.BufferAttribute(new Float32Array(6),3));
  const line=new THREE.Line(lineGeometry,new THREE.LineBasicMaterial({color:0x2a2a2a,transparent:true,opacity:.7}));line.frustumCulled=false;world.add(line);line.visible=false;
- const stall=createStall();world.add(stall.group);
- const stallPos=new THREE.Vector3(-2.2,0,-4.6);stallPos.y=cove.sampleHeight(stallPos.x,stallPos.z);stall.group.position.copy(stallPos);stall.group.rotation.y=.25;stall.group.scale.setScalar(1.4);
+ let stall:ReturnType<typeof createStall>=createStall();world.add(stall.group);
+ const stallPos=new THREE.Vector3(-2.2,0,-4.6);stallPos.y=cove.sampleHeight(stallPos.x,stallPos.z);
+ const placeStall=()=>{stall.group.position.copy(stallPos);stall.group.rotation.y=.25;stall.group.scale.setScalar(theme.stall==='igloo'?1.25:1.4);};placeStall();
+ const environment=createRegionEnvironment(cove);world.add(environment.group);
  const crew:Record<string,Figure>={};
  const gear=new THREE.Group();world.add(gear);
  const effects=new THREE.Group();world.add(effects);
@@ -55,33 +62,49 @@ export function createFishingScene(cove:CoveResources){
   // Boats with a cabin keep its footprint (roughly k .39–.87) clear of crew.
   const cabin=boat.tier>=4;
   const spots:Record<string,[number,number,number]>=cabin
-   ?{'med.crew.deckhand':[0,0,at(.93)],'med.crew.net-mender':[-.22,0,at(.3)],'med.crew.skipper':[.22,0,at(.33)]}
-   :{'med.crew.deckhand':[0,0,at(.86)],'med.crew.net-mender':[-.2,0,at(.5)],'med.crew.skipper':[.18,0,at(.68)]};
-  for(const [id,figure] of Object.entries(crew)){const s=spots[id];boat.deck.add(figure.group);figure.group.position.set(s[0],s[1],s[2]);figure.group.rotation.y=id==='med.crew.deckhand'?0:id==='med.crew.net-mender'?Math.PI/2:-Math.PI/2;}
+   ?{'crew.deckhand':[0,0,at(.93)],'crew.net-mender':[-.22,0,at(.3)],'crew.skipper':[.22,0,at(.33)]}
+   :{'crew.deckhand':[0,0,at(.86)],'crew.net-mender':[-.2,0,at(.5)],'crew.skipper':[.18,0,at(.68)]};
+  for(const [id,figure] of Object.entries(crew)){const s=spots[id];boat.deck.add(figure.group);figure.group.position.set(s[0],s[1],s[2]);figure.group.rotation.y=id==='crew.deckhand'?0:id==='crew.net-mender'?Math.PI/2:-Math.PI/2;}
  }
  mountOnBoat();
 
  /** Rebuild boat tier, crew and gear from the owned upgrade list. */
  function applyOwned(owned:string[]){
-  const key=owned.slice().sort().join(',');if(key===ownedKey)return;ownedKey=key;const has=new Set(owned);
-  const tier=owned.filter(id=>id.startsWith('med.boat.')).length;
-  if(tier!==boat.tier){boatRoot.remove(boat.group);fisher.group.removeFromParent();bucket.group.removeFromParent();for(const f of Object.values(crew))f.group.removeFromParent();disposeBoat(boat);boat=createBoat(Math.min(6,tier));boatRoot.add(boat.group);mountOnBoat();}
-  const crewSpecs:Record<string,Parameters<typeof createFigure>[0]>={'med.crew.deckhand':{shirt:0xb5432f,trousers:0x34404c,hat:'beanie'},'med.crew.net-mender':{shirt:0x4f7a5a,trousers:0x4a4136,hat:'none',skin:0xb98563},'med.crew.skipper':{shirt:0xf4f1e8,trousers:0x1b2a44,hat:'captain',beard:true}};
+  const key=theme.id+':'+owned.slice().sort().join(',');if(key===ownedKey)return;ownedKey=key;
+  // Roles let every region reuse the same visuals (e.g. arctic.eq.sonar acts as the fish finder).
+  const has=new Set(owned.map(roleOf));
+  const tier=owned.filter(id=>roleOf(id).startsWith('boat.')).length;
+  if(tier!==boat.tier||boat.group.userData.theme!==theme.id){boatRoot.remove(boat.group);fisher.group.removeFromParent();bucket.group.removeFromParent();for(const f of Object.values(crew))f.group.removeFromParent();disposeBoat(boat);boat=createBoat(Math.min(6,tier),theme);boat.group.userData.theme=theme.id;boatRoot.add(boat.group);mountOnBoat();}
+  const parka=theme.outfit==='parka';
+  const crewSpecs:Record<string,Parameters<typeof createFigure>[0]>={'crew.deckhand':{shirt:0xb5432f,trousers:0x34404c,hat:parka?'hood':'beanie',parka:parka?0xe0a63a:undefined},'crew.net-mender':{shirt:0x4f7a5a,trousers:0x4a4136,hat:parka?'hood':'none',skin:0xb98563,parka:parka?0x4f7a5a:undefined},'crew.skipper':{shirt:0xf4f1e8,trousers:0x1b2a44,hat:parka?'hood':'captain',beard:true,parka:parka?0x2f5d7c:undefined}};
   for(const [id,spec] of Object.entries(crewSpecs))if(has.has(id)&&!crew[id])crew[id]=createFigure(spec);
   placeCrew();
-  reel.visible=has.has('med.eq.reel-rod');
+  reel.visible=has.has('eq.reel-rod');
   disposeTree(gear);gear.clear();
   const ring=(count:number,radius:number,color:number)=>{for(let i=0;i<count;i++){const b=createBuoy(color);const a=i/count*Math.PI*2;b.position.set(MOORING.x+Math.cos(a)*radius,0,MOORING.z+1.4+Math.sin(a)*radius*.6);b.userData.phase=a;gear.add(b);}};
-  if(has.has('med.eq.longline'))ring(6,2.2,0xe8742a);
-  if(has.has('med.eq.purse-seine'))ring(10,3,0xf2c94c);
+  if(has.has('eq.longline'))ring(6,2.2,0xe8742a);
+  if(has.has('eq.purse-seine'))ring(10,3,0xf2c94c);
   const extras:[string,THREE.Mesh,[number,number,number]][]=[
-   ['med.eq.bait-box',new THREE.Mesh(new THREE.BoxGeometry(.2,.12,.16),new THREE.MeshStandardMaterial({color:0x4f7a5a,roughness:.8})),[.3,.06,0]],
-   ['med.eq.ice-chest',new THREE.Mesh(new THREE.BoxGeometry(.36,.22,.24),new THREE.MeshStandardMaterial({color:0xf4f6f6,roughness:.5})),[-.28,.11,.25]],
-   ['med.eq.fish-finder',new THREE.Mesh(new THREE.BoxGeometry(.18,.14,.05),new THREE.MeshStandardMaterial({color:0x1d2a30,emissive:0x2bd17e,emissiveIntensity:.35,roughness:.4})),[.32,.3,.5]],
-   ['med.eq.cast-net',new THREE.Mesh(new THREE.SphereGeometry(.2,10,6,0,Math.PI*2,0,Math.PI/2),new THREE.MeshStandardMaterial({color:0xcfc6a8,roughness:1,wireframe:true})),[.05,.02,.85]],
-   ['med.eq.trammel-net',new THREE.Mesh(new THREE.BoxGeometry(.3,.12,.3),new THREE.MeshStandardMaterial({color:0x6b8f7a,roughness:1,wireframe:true})),[-.25,.06,.75]],
+   ['eq.bait-box',new THREE.Mesh(new THREE.BoxGeometry(.2,.12,.16),new THREE.MeshStandardMaterial({color:0x4f7a5a,roughness:.8})),[.3,.06,0]],
+   ['eq.ice-chest',new THREE.Mesh(new THREE.BoxGeometry(.36,.22,.24),new THREE.MeshStandardMaterial({color:0xf4f6f6,roughness:.5})),[-.28,.11,.25]],
+   ['eq.fish-finder',new THREE.Mesh(new THREE.BoxGeometry(.18,.14,.05),new THREE.MeshStandardMaterial({color:0x1d2a30,emissive:0x2bd17e,emissiveIntensity:.35,roughness:.4})),[.32,.3,.5]],
+   ['eq.cast-net',new THREE.Mesh(new THREE.SphereGeometry(.2,10,6,0,Math.PI*2,0,Math.PI/2),new THREE.MeshStandardMaterial({color:0xcfc6a8,roughness:1,wireframe:true})),[.05,.02,.85]],
+   ['eq.trammel-net',new THREE.Mesh(new THREE.BoxGeometry(.3,.12,.3),new THREE.MeshStandardMaterial({color:0x6b8f7a,roughness:1,wireframe:true})),[-.25,.06,.75]],
   ];
   for(const [id,mesh,[x,y,z]] of extras){const old=boat.deck.getObjectByName(id);if(old){boat.deck.remove(old);disposeTree(old);}if(has.has(id)){mesh.name=id;mesh.position.set(x,y,boat.sternZ+.6+z);boat.deck.add(mesh);}else disposeTree(mesh);}
+ }
+ /** Re-dresses the cove, fisherman, crew, stall and fish for a region. */
+ function applyTheme(regionId:string){
+  const next=themeFor(regionId);if(next.id===theme.id&&environment.group.userData.applied)return;
+  theme=next;environment.group.userData.applied=true;
+  context.setBackground(theme.background);context.setWaterTint(theme.waterTint);context.setPalmsVisible(theme.palms);
+  environment.apply(theme);schools.setTints(theme.fishTints);
+  // New outfit: swap the fisherman (the rod moves with him) and let crew be rebuilt by applyOwned.
+  const parent=fisher.group.parent,pos=fisher.group.position.clone();fisher.group.removeFromParent();disposeTree(fisher.group);
+  fisher=makeFisher(theme);if(parent){parent.add(fisher.group);fisher.group.position.copy(pos);}fisher.rightArm.add(rod);rod.position.set(0,-.34,0);
+  for(const [role,figure] of Object.entries(crew)){figure.group.removeFromParent();disposeTree(figure.group);delete crew[role];}
+  world.remove(stall.group);disposeTree(stall.group);stall=theme.stall==='igloo'?createIgloo():createStall();world.add(stall.group);placeStall();coinCount=0;
+  ownedKey='';
  }
  function disposeBoat(b:Boat){b.group.traverse(o=>{if(o instanceof THREE.Mesh&&!isShared(o)){o.geometry.dispose();(o.material as THREE.Material).dispose();}});}
  const isShared=(o:THREE.Object3D)=>{let p:THREE.Object3D|null=o;while(p){if(p===fisher.group||p===bucket.group||Object.values(crew).some(c=>c.group===p))return true;p=p.parent;}return false;};
@@ -215,6 +238,7 @@ export function createFishingScene(cove:CoveResources){
    // Tasks may schedule new tasks while running; collect those separately so none are dropped.
    const running=tasks;tasks=[];const alive=running.filter(task=>!task.update(Math.min(dt,.1)));tasks=alive.concat(tasks);
    schools.update(time,dt,tide);
+   environment.update(time,dt,tide);
    animateActors(dt);
   },
   /** Progress of the running focus session; reveals one catch per expected fish. */
@@ -225,7 +249,7 @@ export function createFishingScene(cove:CoveResources){
   },
   handle(event:HostEvent){
    switch(event.type){
-    case 'state':applyOwned(event.save.regions[event.save.currentRegionId]?.owned??[]);syncCoins(event.save.regions[event.save.currentRegionId]?.money??0);break;
+    case 'state':applyTheme(event.save.currentRegionId);applyOwned(event.save.regions[event.save.currentRegionId]?.owned??[]);syncCoins(event.save.regions[event.save.currentRegionId]?.money??0);break;
     case 'started':if(event.session.kind==='focus'){shownFish=0;setBucketFish(0);cast();}break;
     case 'completed':shownFish=0;sell(event.fish,event.money);break;
     case 'abandoned':shownFish=0;spill();break;
@@ -238,6 +262,6 @@ export function createFishingScene(cove:CoveResources){
    fishing=true;floatSettled=true;float.visible=true;line.visible=true;castPoint.copy(MOORING).add(CAST_OFFSET);rodPitch=.75;
   },
   debug(){return {tasks:tasks.length,busy,fishing,boat:boatRoot.position.toArray().map(v=>+v.toFixed(2))};},
-  dispose(){tasks=[];schools.dispose();disposeTree(root);lineGeometry.dispose();},
+  dispose(){tasks=[];schools.dispose();environment.dispose();disposeTree(root);lineGeometry.dispose();},
  };
 }

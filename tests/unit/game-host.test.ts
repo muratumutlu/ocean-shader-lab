@@ -54,4 +54,18 @@ describe('browser host',()=>{
   host.startFocus(25);advance(25*60_000);host.tick();
   expect(createHost({storage,now:()=>0}).money()).toBe(30);
  });
+
+ it('unlocks the Arctic with saved coins and switches back freely',()=>{
+  const {host}=setup();
+  expect(host.regions().map(e=>[e.region.id,e.status])).toEqual([['med','current'],['arctic','locked'],['indian','soon'],['atlantic','soon']]);
+  host.save.regions.med.money=4500;
+  expect(host.regions()[1].status).toBe('unlockable');
+  host.unlockRegion('arctic');
+  expect(host.save.currentRegionId).toBe('arctic');
+  expect(host.save.regions.med.money).toBe(500);
+  expect(host.shop().every(item=>item.upgrade.id.startsWith('arctic.'))).toBe(true);
+  host.switchRegion('med');
+  expect(host.save.currentRegionId).toBe('med');
+  expect(()=>host.switchRegion('indian')).toThrow('kilitli');
+ });
 });

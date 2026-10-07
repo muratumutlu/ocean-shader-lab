@@ -41,6 +41,8 @@ export function createFishSchools(cove:CoveResources,count=6,random:()=>number=M
     }
    }
   },
+  /** Recolours every school, e.g. when moving to a region with different species. */
+  setTints(tints:number[]){schools.forEach((school,i)=>{for(const m of school.members)m.fish.traverse(o=>{if(o instanceof THREE.Mesh&&(o.material as THREE.MeshStandardMaterial).color.getHex()!==0x111111)(o.material as THREE.MeshStandardMaterial).color.setHex(tints[i%tints.length]);});});},
   dispose(){disposeTree(group);},
  };
 }

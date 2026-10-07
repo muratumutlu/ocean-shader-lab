@@ -1,9 +1,9 @@
 // Host backed by the native Ocean Focus app (macOS/iOS). Swift owns the timer, save and rules
 // (OceanFocusCore); this side only mirrors the snapshot it receives and forwards commands.
 import {fishFor,modifiersFor,purchasable,region,type Preset} from './economy';
-import type {GameSave,Host,HostEvent} from './host';
+import {regionEntries,type GameSave,type Host,type HostEvent} from './host';
 
-type NativeCommand={type:'ready'}|{type:'startFocus';minutes:Preset}|{type:'startBreak'}|{type:'abandon'}|{type:'buy';id:string}|{type:'setSpeed';speed:number};
+type NativeCommand={type:'ready'}|{type:'startFocus';minutes:Preset}|{type:'startBreak'}|{type:'abandon'}|{type:'buy';id:string}|{type:'setSpeed';speed:number}|{type:'unlockRegion';id:string}|{type:'switchRegion';id:string};
 /** Messages Swift sends through `window.oceanFocusNative.receive(...)`. */
 export type NativeMessage=HostEvent|{type:'clock';now:number;speed:number};
 type Bridge={postMessage(message:NativeCommand):void};
@@ -38,6 +38,9 @@ export function createNativeHost(bridge:Bridge):Host&{receive(message:NativeMess
   shop(){const money=host.money(),focusing=save.active?.kind==='focus';return purchasable(save.currentRegionId,owned()).map(upgrade=>({upgrade,affordable:upgrade.price<=money&&!focusing}));},
   buy(id){bridge.postMessage({type:'buy',id});},
   reset(){/* Not exposed in the native app. */},
+  regions(){return regionEntries(save);},
+  unlockRegion(id){bridge.postMessage({type:'unlockRegion',id});},
+  switchRegion(id){bridge.postMessage({type:'switchRegion',id});},
   receive(message){
    if(message.type==='clock'){clock={now:message.now,speed:message.speed,receivedAt:performance.now()};return;}
    if(message.type==='state')save=message.save;

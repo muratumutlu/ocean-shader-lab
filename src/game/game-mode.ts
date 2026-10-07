@@ -1,7 +1,7 @@
 // Wires host, scene director and HUD together for `?mode=game`.
 import type * as THREE from 'three';
 import type {CoveResources} from '../scene/cove';
-import type {SceneExtension} from '../runtime/demo';
+import type {SceneContext,SceneExtension} from '../runtime/demo';
 import {createHost,type Host} from './host';
 import {createNativeHost,nativeBridge} from './native-host';
 import {createFishingScene} from './fishing-scene';
@@ -37,8 +37,8 @@ export function createGameExtension(app:HTMLElement){
  const hud=createHud(host,app);
  // Dev-only handle for visual QA (e.g. finishing a session on demand). Stripped from production builds.
  if(import.meta.env.DEV)(window as unknown as {oceanFocus:unknown}).oceanFocus={host,finish(){const a=host.save.active;if(a){a.endsAt=a.startedAt;host.tick();}}};
- return (context:{group:THREE.Group;cove:CoveResources}):SceneExtension=>{
-  const scene=createFishingScene(context.cove);context.group.add(scene.group);
+ return (context:SceneContext):SceneExtension=>{
+  const scene=createFishingScene(context);context.group.add(scene.group);
   if(import.meta.env.DEV)Object.assign((window as unknown as {oceanFocus:object}).oceanFocus,{scene});
   const unsubscribe=host.subscribe(event=>scene.handle(event));
   scene.resume(host.save,host.progress(),host.expectedFish());

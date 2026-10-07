@@ -45,4 +45,13 @@ for(const [step,name] of [[2,'12-rowboat'],[2,'13-cabin'],[2,'14-gulet-sail']]){
 // High tide and swell: the boat interior must stay dry.
 await page.evaluate(()=>{for(const [id,v] of [['tide','0.35'],['swell','1']]){const el=document.querySelector('#'+id);el.value=v;el.dispatchEvent(new Event('input'));}});
 await page.waitForTimeout(1500);await shot('15-high-tide');
+// Arctic: save up, move north, fish and upgrade.
+await page.evaluate(()=>{for(const [id,v] of [['tide','0'],['swell','0.55']]){const el=document.querySelector('#'+id);el.value=v;el.dispatchEvent(new Event('input'));}oceanFocus.host.save.regions.med.money=5000;oceanFocus.host.unlockRegion('arctic');});
+await page.waitForTimeout(2500);await shot('20-arctic');
+await page.evaluate(()=>oceanFocus.host.startFocus(25));await page.waitForTimeout(1500);
+await page.evaluate(()=>{const a=oceanFocus.host.save.active;const span=a.endsAt-a.startedAt;a.startedAt-=span*.5;a.endsAt-=span*.5;});
+await page.waitForTimeout(3000);await shot('21-arctic-fishing');
+await page.evaluate(()=>{oceanFocus.host.abandon();oceanFocus.host.save.regions.arctic.money=30000;});
+for(let i=0;i<4;i++){await buyAll('arctic.boat.',2);await buyAll('arctic.crew.',1);await buyAll('arctic.eq.',3);}
+await page.waitForTimeout(1500);await shot('22-arctic-upgraded');
 await browser.close();

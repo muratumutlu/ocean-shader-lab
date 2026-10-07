@@ -1,10 +1,10 @@
 // Browser host for game mode. It owns the focus timer and the save, mirroring OceanFocusCore.
 // The native macOS/iOS hosts replace it later; the scene only reacts to the events below.
-import {CATALOG,fishFor,modifiersFor,moneyFor,purchasable,region,type Preset,type Upgrade} from './economy';
+import {CATALOG,fishFor,modifiersFor,moneyFor,purchasable,region,type Preset,type Region,type Upgrade} from './economy';
 
 export type ActiveSession={kind:'focus'|'break';durationMin:number;startedAt:number;endsAt:number;regionId:string};
 export type SessionRecord={endedAt:number;durationMin:number;outcome:'completed'|'abandoned';fish:number;money:number;regionId:string};
-export type GameSave={version:1;currentRegionId:string;regions:Record<string,{money:number;owned:string[]}>;active:ActiveSession|null;history:SessionRecord[]};
+export type GameSave={version:1;currentRegionId:string;regions:Record<string,{money:number;owned:string[]}>;unlocked?:string[];active:ActiveSession|null;history:SessionRecord[]};
 export type HostEvent=
  |{type:'state';save:GameSave}
  |{type:'started';session:ActiveSession;expectedFish:number}
@@ -15,7 +15,7 @@ export type HostEvent=
 export const BREAK_MINUTES=5;
 const KEY='ocean-focus-save-v1';
 const starter=CATALOG.regions.find(r=>r.available&&!r.requiresLicense)!.id;
-const fresh=():GameSave=>({version:1,currentRegionId:starter,regions:{[starter]:{money:0,owned:[]}},active:null,history:[]});
+const fresh=():GameSave=>({version:1,currentRegionId:starter,regions:{[starter]:{money:0,owned:[]}},unlocked:[starter],active:null,history:[]});
 
 /** What the HUD and scene need from whoever owns the timer: the browser host or the native app. */
 export interface Host{
@@ -36,7 +36,20 @@ export interface Host{
  shop():{upgrade:Upgrade;affordable:boolean}[];
  buy(id:string):void;
  reset():void;
+ regions():RegionEntry[];
+ unlockRegion(id:string):void;
+ switchRegion(id:string):void;
 }
+export type RegionStatus='current'|'unlocked'|'unlockable'|'locked'|'soon';
+export type RegionEntry={region:Region;status:RegionStatus};
+/** Until StoreKit lands every build counts as licensed (see spec §5b). */
+export const LICENSED=true;
+export function regionEntries(save:GameSave):RegionEntry[]{
+ const money=save.regions[save.currentRegionId]?.money??0;
+ return CATALOG.regions.map(r=>({region:r,status:r.id===save.currentRegionId?'current':save.regions[r.id]&&isUnlocked(save,r.id)?'unlocked':!r.available?'soon':money>=r.unlockPrice&&(LICENSED||!r.requiresLicense)?'unlockable':'locked'}));
+}
+const isUnlocked=(save:GameSave,id:string)=>(save.unlocked??[starterId()]).includes(id);
+const starterId=()=>CATALOG.regions.find(r=>r.available&&!r.requiresLicense)!.id;
 export function createHost(options:{storage?:Storage;now?:()=>number;speed?:number}={}):Host{
  const storage=options.storage??localStorage;
  const realNow=options.now??(()=>Date.now());
@@ -101,5 +114,18 @@ export function createHost(options:{storage?:Storage;now?:()=>number;speed?:numb
    p.money-=item.price;p.owned.push(id);changed();
   },
   reset(){save=fresh();changed();},
+  regions(){return regionEntries(save);},
+  unlockRegion(id:string){
+   if(save.active?.kind==='focus')throw Error('Odaklanırken taşınamazsın.');
+   const target=region(id),entry=regionEntries(save).find(e=>e.region.id===id);
+   if(entry?.status!=='unlockable')throw Error('Bu bölge henüz açılamaz.');
+   progressOf(save.currentRegionId).money-=target.unlockPrice;
+   save.unlocked=[...(save.unlocked??[starter]),id];progressOf(id);save.currentRegionId=id;changed();
+  },
+  switchRegion(id:string){
+   if(save.active?.kind==='focus')throw Error('Odaklanırken taşınamazsın.');
+   if(!(save.unlocked??[starter]).includes(id))throw Error('Bu bölge kilitli.');
+   save.currentRegionId=id;changed();
+  },
  };
 }

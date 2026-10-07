@@ -21,7 +21,9 @@ import {createRenderPacer} from './render-pacer';
 import {DEFAULT_CONTROLS} from '../types';
 import type {DemoController,DemoControls,QualityMode,QualityProfile,ControlMode,TurtleRoutineStatus} from '../types';
 export type SceneExtension={update(time:number,delta:number,controls:DemoControls):void;dispose():void};
-export function createDemo(canvas:HTMLCanvasElement,options:{reducedMotion:boolean;quality:QualityMode;onFatal(error:Error):void;onNavigation?(ready:boolean,error?:string):void;onTurtle?(ready:boolean,error?:string):void;onTurtleState?(state:string):void;onTurtleRoutine?(status:TurtleRoutineStatus):void;extend?(context:{group:THREE.Group;cove:ReturnType<typeof createCove>}):SceneExtension;ambientTurtle?:boolean}):DemoController{
+/** What a page mode may change in the scene: its own dynamic objects plus a few environment knobs. */
+export type SceneContext={group:THREE.Group;cove:ReturnType<typeof createCove>;setBackground(color:THREE.ColorRepresentation):void;setWaterTint(color:THREE.ColorRepresentation):void;setPalmsVisible(visible:boolean):void};
+export function createDemo(canvas:HTMLCanvasElement,options:{reducedMotion:boolean;quality:QualityMode;onFatal(error:Error):void;onNavigation?(ready:boolean,error?:string):void;onTurtle?(ready:boolean,error?:string):void;onTurtleState?(state:string):void;onTurtleRoutine?(status:TurtleRoutineStatus):void;extend?(context:SceneContext):SceneExtension;ambientTurtle?:boolean}):DemoController{
  const gl=canvas.getContext('webgl2',{antialias:true,alpha:false,preserveDrawingBuffer:true});if(!gl)throw Error('WebGL2 is unavailable on this browser.');
  const scene=new THREE.Scene();scene.background=new THREE.Color(0xeeeae5);
  let renderer:THREE.WebGLRenderer|null=null,cove:ReturnType<typeof createCove>|null=null,water:ReturnType<typeof createWater>|null=null;
@@ -88,7 +90,11 @@ export function createDemo(canvas:HTMLCanvasElement,options:{reducedMotion:boole
  try{
   renderer=new THREE.WebGLRenderer({canvas,context:gl,antialias:true,preserveDrawingBuffer:true});renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=.94;renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.shadowMap.autoUpdate=false;renderer.shadowMap.needsUpdate=true;
   cove=createCove(7);seabed=createSeabedProps(7,cove.data);trails=createTurtleTrails(cove);dynamicGroup.add(trails.group);water=createWater(cove);water.setDynamicGroup(dynamicGroup);scene.add(cove.group,seabed.group,water.mesh,dynamicGroup,new THREE.HemisphereLight(0xdff4ff,0x746a56,1));
-  if(options.extend)extension=options.extend({group:dynamicGroup,cove});
+  if(options.extend)extension=options.extend({group:dynamicGroup,cove,
+   setBackground(color){(scene.background as THREE.Color).set(color);water?.setDynamicGroup(dynamicGroup);render();},
+   setWaterTint(color){water?.setTint(color);render();},
+   // The static coast is cached, so refresh the capture after changing it.
+   setPalmsVisible(visible){const palms=cove?.group.getObjectByName('cove-mint-palms');if(palms){palms.visible=visible;renderer!.shadowMap.needsUpdate=true;water?.setDynamicGroup(dynamicGroup);render();}}});
   if(options.ambientTurtle)wander=createTurtleWander(cove.sampleHeight);
   const sun=new THREE.DirectionalLight(0xfff1db,3.4);sun.position.set(Math.cos(DEFAULT_CONTROLS.sunAzimuth*Math.PI/180)*22,25,Math.sin(DEFAULT_CONTROLS.sunAzimuth*Math.PI/180)*22);sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);Object.assign(sun.shadow.camera,{left:-24,right:24,top:24,bottom:-24,near:1,far:100});sun.shadow.bias=-.0003;sun.shadow.normalBias=.025;scene.add(sun);
   const applyQuality=(profile:QualityProfile)=>{if(disposed)return;currentProfile=profile;turtle?.setQuality(profile);seabed?.setQuality(profile);water!.setDetail(profile);cove!.setQuality(profile);renderer!.shadowMap.needsUpdate=true;renderer!.setPixelRatio(Math.min(devicePixelRatio,{low:1,balanced:1.5,high:2}[profile]));renderer!.setSize(canvas.clientWidth,canvas.clientHeight,false);canvas.dataset.quality=profile;render();};

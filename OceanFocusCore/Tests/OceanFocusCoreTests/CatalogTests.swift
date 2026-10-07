@@ -8,7 +8,8 @@ final class CatalogTests: XCTestCase {
         XCTAssertEqual(catalog.regions.map(\.id), ["med", "arctic", "indian", "atlantic"])
         XCTAssertEqual(catalog.starterRegionId, "med")
         XCTAssertEqual(catalog.region("med")?.upgrades.count, 18)
-        XCTAssertEqual(catalog.regions.filter(\.available).map(\.id), ["med"])
+        XCTAssertEqual(catalog.region("arctic")?.upgrades.count, 18)
+        XCTAssertEqual(catalog.regions.filter(\.available).map(\.id), ["med", "arctic"])
     }
 
     func testFixtureCatalogIsValid() {

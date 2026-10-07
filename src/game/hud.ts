@@ -54,6 +54,16 @@ export function createHud(host:Host,parent:HTMLElement){
   const focusing=host.save.active?.kind==='focus',items=host.shop();
   if(focusing)shopList.append(el('p',{className:'focus-note',textContent:'Odaklanırken dükkân kapalı.'}));
   if(!items.length)shopList.append(el('p',{className:'focus-note',textContent:'Buradaki her şey senin! 🏆'}));
+  // Regions: move on once enough coins are saved; unlocked regions can be revisited any time.
+  shopList.append(el('p',{className:'panel-title focus-regions-title',textContent:'🧭 BÖLGELER'}));
+  for(const {region,status} of host.regions()){
+   const action=status==='unlockable'?el('button',{type:'button',className:'focus-primary',textContent:'Taşın · '+region.unlockPrice+' 💰',disabled:focusing})
+    :status==='unlocked'?el('button',{type:'button',textContent:'Git',disabled:focusing})
+    :el('span',{className:'focus-region-state',textContent:status==='current'?'📍 Buradasın':status==='soon'?'Yakında':'🔒 '+region.unlockPrice+' 💰'});
+   if(action instanceof HTMLButtonElement)action.addEventListener('click',()=>{try{status==='unlockable'?host.unlockRegion(region.id):host.switchRegion(region.id);say('🧭 '+region.name+' bölgesine taşındın!');}catch(error){say((error as Error).message);}});
+   shopList.append(el('div',{className:'focus-item'},el('div',{},el('strong',{textContent:region.name}),el('span',{textContent:'Balık fiyatı '+region.fishPrice+' 💰'})),action));
+  }
+  if(items.length)shopList.append(el('p',{className:'panel-title focus-regions-title',textContent:'🛠 GELİŞTİRMELER'}));
   for(const {upgrade,affordable} of items){
    const buy=el('button',{type:'button',textContent:upgrade.price+' 💰',disabled:!affordable||focusing});
    buy.addEventListener('click',()=>{try{host.buy(upgrade.id);say(upgrade.name+' alındı!');}catch(error){say((error as Error).message);}});
