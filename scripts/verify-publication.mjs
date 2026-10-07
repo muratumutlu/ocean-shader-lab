@@ -3,7 +3,7 @@ import {resolve,relative} from 'node:path';
 import {pathToFileURL} from 'node:url';
 import {createHash} from 'node:crypto';
 export function assertPublication(files){
- const allowed=/^(index\.html|poster\.webp|PROMPT\.md|_headers|assets\/turtle\.glb|assets\/[A-Za-z0-9_-]+\.(js|css))$/;
+ const allowed=/^(index\.html|game\.html|poster\.webp|PROMPT\.md|_headers|assets\/turtle\.glb|assets\/[A-Za-z0-9_-]+\.(js|css))$/;
  for(const file of files)if(!allowed.test(file))throw new Error('Unapproved publication file: '+file);
  if(!files.includes('index.html')||!files.includes('PROMPT.md')||!files.includes('poster.webp')||!files.includes('assets/turtle.glb'))throw new Error('Missing demo publication asset');
 }

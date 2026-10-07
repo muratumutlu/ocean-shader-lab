@@ -51,7 +51,7 @@ enum GameWebViewFactory {
                   let json = String(data: data, encoding: .utf8) else { return }
             webView.evaluateJavaScript("window.oceanFocusNative&&window.oceanFocusNative.receive(\(json))")
         }
-        webView.load(URLRequest(url: URL(string: "\(BundledWebSchemeHandler.scheme)://app/index.html?mode=game")!))
+        webView.load(URLRequest(url: URL(string: "\(BundledWebSchemeHandler.scheme)://app/game.html")!))
         return webView
     }
 

@@ -8,18 +8,18 @@ import {createFishingScene} from './fishing-scene';
 import {createHud} from './hud';
 import {setCameraHome} from '../scene/camera';
 
-export const isGameMode=()=>new URLSearchParams(location.search).get('mode')==='game';
+// game.html (used by the native apps) is game-only; index.html?mode=game opts in on the website.
+export const isGameMode=()=>document.body.classList.contains('game-mode')||new URLSearchParams(location.search).get('mode')==='game';
 
 export function prepareGamePage(){
  document.body.classList.add('game-mode');
  // Frame the boat and the beach stall, leaving room for the HUD on the right.
  // Portrait screens (phones, iPhone Duo inner screen) look along the cove so boat and stall stack vertically.
- if(innerWidth/innerHeight<1)setCameraHome({x:3.4,y:19,z:21.5},{x:-.3,y:0,z:1.9});
+ // At startup inside WKWebView the viewport may not be laid out yet; fall back to the screen's shape.
+ const width=innerWidth||screen.width,height=innerHeight||screen.height;
+ if(width/height<1)setCameraHome({x:3.4,y:19,z:21.5},{x:-.3,y:0,z:1.9});
  else setCameraHome({x:9.5,y:11,z:14},{x:1.8,y:.2,z:.4});
  document.title='Ocean Focus — odaklan, balık tut';
- const heading=document.querySelector('.scene-heading')!;
- heading.querySelector('p')!.textContent='OCEAN FOCUS · POMODORO';
- heading.querySelector('h1')!.replaceChildren('Odaklan.',document.createElement('br'),'Balık tut.');
  // The coast controls move into the HUD's settings gear; give them Turkish labels there.
  const label=(id:string,text:string)=>{const node=document.querySelector(`label[for="${id}"]`);if(node?.firstChild)node.firstChild.textContent=text+' ';};
  label('swell','Dalga boyu');label('tide','Su seviyesi');label('light','Güneş yönü');label('quality','Görüntü kalitesi');

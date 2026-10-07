@@ -5,7 +5,7 @@ const out=process.argv[2]??'output/game-qa';
 const browser=await chromium.launch({headless:true,args:['--use-angle=metal']});
 const page=await browser.newPage({viewport:{width:1280,height:800}});
 page.on('pageerror',e=>console.error('pageerror',e.message));
-await page.goto('http://127.0.0.1:4173/?mode=game');
+await page.goto('http://127.0.0.1:4173/game.html');
 await page.evaluate(()=>localStorage.removeItem('ocean-focus-save-v1'));
 await page.reload();
 await page.waitForFunction(()=>window.oceanFocus?.scene,null,{timeout:20000});
