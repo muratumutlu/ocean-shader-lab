@@ -138,6 +138,27 @@ final class FocusTimerTests: XCTestCase {
         XCTAssertEqual(state.history, [])
     }
 
+    func testPrepareLoadedStateReconcilesEnforcesLicenseThenSettlesSession() throws {
+        state.regions["med"]?.ownedUpgrades = [OwnedUpgrade(id: "med.retired", pricePaid: 45)]
+        state.unlockedRegionIds.append("arctic")
+        state.currentRegionId = "arctic"
+        state.regions["arctic"] = RegionProgress()
+        try timer.startFocus(.minutes25, in: &state)
+        clock.advance(1600)
+        let endsAt = try XCTUnwrap(state.activeSession).endsAt
+        let result = timer.prepareLoadedState(&state, licensed: false)
+        let record = SessionRecord(endedAt: endsAt, durationSec: 1500, outcome: .completed,
+                                   fish: 10, money: 50, regionId: "arctic")
+        XCTAssertEqual(result, FocusTimer.LaunchResult(refunded: 45, event: .focusCompleted(record)))
+        XCTAssertEqual(state.currentRegionId, "med")
+        XCTAssertEqual(state.progress(for: "med").money, 45)
+        XCTAssertEqual(state.progress(for: "arctic").money, 50)
+    }
+
+    func testPrepareLoadedStateOnFreshStateDoesNothing() {
+        XCTAssertEqual(timer.prepareLoadedState(&state, licensed: true), FocusTimer.LaunchResult(refunded: 0, event: nil))
+    }
+
     func testSystemClockIsMonotonic() {
         let clock = SystemClock()
         let first = clock.uptime

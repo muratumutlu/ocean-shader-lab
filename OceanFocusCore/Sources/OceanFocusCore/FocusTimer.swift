@@ -21,6 +21,18 @@ public struct FocusTimer: Sendable {
         self.clock = clock
     }
 
+    public struct LaunchResult: Equatable, Sendable {
+        public let refunded: Int
+        public let event: TimerEvent?
+    }
+
+    /// Call once after SaveStore.load(): reconcile catalog changes, apply the license, then settle the session.
+    public func prepareLoadedState(_ state: inout GameState, licensed: Bool) -> LaunchResult {
+        let refunded = engine.reconcile(&state)
+        engine.enforceLicense(licensed: licensed, in: &state)
+        return LaunchResult(refunded: refunded, event: tick(&state))
+    }
+
     public func startFocus(_ preset: FocusPreset, in state: inout GameState) throws {
         try start(kind: .focus, durationSec: preset.durationSec, in: &state)
     }
