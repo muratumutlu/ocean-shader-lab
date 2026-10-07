@@ -47,8 +47,7 @@ public struct SaveStore: Sendable {
         if let data = try? Data(contentsOf: saveURL), let state = try? Self.decode(data) {
             return LoadResult(state: state, source: .primary)
         }
-        let stamp = now.formatted(Date.ISO8601FormatStyle()).replacingOccurrences(of: ":", with: "-")
-        try? fm.moveItem(at: saveURL, to: directory.appendingPathComponent("save.corrupt-\(stamp).json"))
+        _ = try? moveAside(saveURL, now: now, fm)
         for n in 1...Self.backupCount {
             if let data = try? Data(contentsOf: backupURL(n)), let state = try? Self.decode(data) {
                 return LoadResult(state: state, source: .backup(n))
@@ -57,16 +56,36 @@ public struct SaveStore: Sendable {
         return LoadResult(state: .fresh(catalog: catalog), source: .freshAfterCorruption)
     }
 
-    public func save(_ state: GameState) throws {
+    public func save(_ state: GameState, now: Date = Date()) throws {
         let fm = FileManager.default
         try fm.createDirectory(at: directory, withIntermediateDirectories: true)
         try Self.encode(state).write(to: tmpURL, options: .atomic)
         if fm.fileExists(atPath: saveURL.path) {
-            try rotateBackups(fm)
+            if let data = try? Data(contentsOf: saveURL), (try? Self.decode(data)) != nil {
+                try rotateBackups(fm)
+            } else {
+                try moveAside(saveURL, now: now, fm)
+                try fm.moveItem(at: tmpURL, to: saveURL)
+                return
+            }
             _ = try fm.replaceItemAt(saveURL, withItemAt: tmpURL)
         } else {
             try fm.moveItem(at: tmpURL, to: saveURL)
         }
+    }
+
+    /// Moves an unreadable file to save.corrupt-<stamp>[-n].json without ever overwriting.
+    @discardableResult
+    private func moveAside(_ url: URL, now: Date, _ fm: FileManager) throws -> URL {
+        let stamp = now.formatted(Date.ISO8601FormatStyle()).replacingOccurrences(of: ":", with: "-")
+        var target = directory.appendingPathComponent("save.corrupt-\(stamp).json")
+        var n = 2
+        while fm.fileExists(atPath: target.path) {
+            target = directory.appendingPathComponent("save.corrupt-\(stamp)-\(n).json")
+            n += 1
+        }
+        try fm.moveItem(at: url, to: target)
+        return target
     }
 
     private func rotateBackups(_ fm: FileManager) throws {

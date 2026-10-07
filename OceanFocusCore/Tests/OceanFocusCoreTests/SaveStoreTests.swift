@@ -82,6 +82,58 @@ final class SaveStoreTests: XCTestCase {
         }
     }
 
+    func corruptFiles() throws -> [String] { try files().filter { $0.hasPrefix("save.corrupt-") } }
+
+    func money(_ name: String) throws -> Int? {
+        let data = try Data(contentsOf: directory.appendingPathComponent(name))
+        return try SaveStore.decode(data).regions["med"]?.money
+    }
+
+    func testCorruptPrimaryNeverDisplacesGoodBackups() throws {
+        for m in 1...3 { try store.save(state(money: m)) }
+        let garbage = Data("garbage".utf8)
+        try garbage.write(to: directory.appendingPathComponent("save.json"))
+        try store.save(state(money: 4), now: Date(timeIntervalSince1970: 1_800_000_000))
+        XCTAssertEqual(try money("save.bak1.json"), 2)
+        XCTAssertEqual(try money("save.bak2.json"), 1)
+        XCTAssertEqual(try money("save.json"), 4)
+        let corrupt = try corruptFiles()
+        XCTAssertEqual(corrupt.count, 1, "\(corrupt)")
+        XCTAssertEqual(try Data(contentsOf: directory.appendingPathComponent(corrupt[0])), garbage)
+    }
+
+    func testMovedAsideFileKeepsItsBytes() throws {
+        var future = state(money: 9)
+        future.schemaVersion = 2
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        let bytes = try SaveStore.encode(future)
+        try bytes.write(to: directory.appendingPathComponent("save.json"))
+        _ = store.load()
+        let corrupt = try corruptFiles()
+        XCTAssertEqual(corrupt.count, 1)
+        XCTAssertEqual(try Data(contentsOf: directory.appendingPathComponent(corrupt[0])), bytes)
+    }
+
+    func testCorruptNamesNeverCollide() throws {
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        let now = Date(timeIntervalSince1970: 1_800_000_000)
+        let a = Data("first".utf8), b = Data("second".utf8)
+        try a.write(to: directory.appendingPathComponent("save.json"))
+        _ = store.load(now: now)
+        try b.write(to: directory.appendingPathComponent("save.json"))
+        _ = store.load(now: now)
+        XCTAssertEqual(try corruptFiles(), ["save.corrupt-2027-01-15T08-00-00Z-2.json", "save.corrupt-2027-01-15T08-00-00Z.json"])
+        XCTAssertEqual(try Data(contentsOf: directory.appendingPathComponent("save.corrupt-2027-01-15T08-00-00Z.json")), a)
+        XCTAssertEqual(try Data(contentsOf: directory.appendingPathComponent("save.corrupt-2027-01-15T08-00-00Z-2.json")), b)
+    }
+
+    func testFallsBackToSecondBackupWhenFirstIsCorrupt() throws {
+        for m in 1...3 { try store.save(state(money: m)) }
+        try Data("x".utf8).write(to: directory.appendingPathComponent("save.json"))
+        try Data("y".utf8).write(to: directory.appendingPathComponent("save.bak1.json"))
+        XCTAssertEqual(store.load(), .init(state: state(money: 1), source: .backup(2)))
+    }
+
     func testDefaultDirectoryIsInApplicationSupport() throws {
         let url = try SaveStore.defaultDirectory()
         XCTAssertEqual(url.lastPathComponent, "OceanFocus")
