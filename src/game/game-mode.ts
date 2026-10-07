@@ -13,7 +13,9 @@ export const isGameMode=()=>new URLSearchParams(location.search).get('mode')==='
 export function prepareGamePage(){
  document.body.classList.add('game-mode');
  // Frame the boat and the beach stall, leaving room for the HUD on the right.
- setCameraHome({x:9.5,y:11,z:14},{x:1.8,y:.2,z:.4});
+ // Portrait screens (phones, iPhone Duo inner screen) look along the cove so boat and stall stack vertically.
+ if(innerWidth/innerHeight<1)setCameraHome({x:3.4,y:19,z:21.5},{x:-.3,y:0,z:1.9});
+ else setCameraHome({x:9.5,y:11,z:14},{x:1.8,y:.2,z:.4});
  document.title='Ocean Focus — odaklan, balık tut';
  const heading=document.querySelector('.scene-heading')!;
  heading.querySelector('p')!.textContent='OCEAN FOCUS · POMODORO';

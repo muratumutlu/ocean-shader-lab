@@ -91,17 +91,20 @@ final class GameStore: ObservableObject {
         guard let preset = FocusPreset(rawValue: minutes) else { return }
         do { try timer.startFocus(preset, in: &state) } catch { return }
         persist()
+        schedule(title: "Seans tamam! 🎣", body: "Balıklar kıyıda seni bekliyor. Gel, sat!")
         send(["type": "started", "session": sessionJSON(state.activeSession!), "expectedFish": expectedFish])
     }
 
     func startBreak() {
         do { try timer.startBreak(in: &state) } catch { return }
         persist()
+        schedule(title: "Mola bitti ☕️", body: "Yeni bir seansa hazır mısın?")
         send(["type": "started", "session": sessionJSON(state.activeSession!), "expectedFish": 0])
     }
 
     func abandon() {
         let fishLost = Int(Double(expectedFish) * progress)
+        UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [Self.sessionNotification])
         guard let event = try? timer.abandon(&state) else { persist(); return }
         handle(event, fishLost: fishLost)
     }
@@ -129,7 +132,6 @@ final class GameStore: ObservableObject {
         switch event {
         case .focusCompleted(let record):
             send(["type": "completed", "fish": record.fish, "money": record.money])
-            notify(title: "Seans tamam! 🎣", body: "\(record.fish) balık satıldı, +\(record.money) 💰")
             // A short break follows every successful focus session.
             startBreak()
         case .focusAbandoned:
@@ -139,7 +141,6 @@ final class GameStore: ObservableObject {
             notify(title: "Seans doğrulanamadı", body: "Saat değiştiği için bu seansın ödülü verilmedi.")
         case .breakCompleted:
             send(["type": "breakDone"])
-            notify(title: "Mola bitti ☕️", body: "Yeni bir seansa hazır mısın?")
         }
     }
 
@@ -147,6 +148,20 @@ final class GameStore: ObservableObject {
         do { try store?.save(state) } catch { loadProblem = "Kayıt yazılamadı: \(error.localizedDescription)" }
         tickDate = Date()
         send(["type": "state", "save": saveJSON()])
+    }
+
+    static let sessionNotification = "session-end"
+
+    /// Schedules the end-of-session alert up front so it fires even if the app is suspended (iOS) or closed.
+    private func schedule(title: String, body: String) {
+        guard remaining > 0 else { return }
+        let content = UNMutableNotificationContent()
+        content.title = title
+        content.body = body
+        content.sound = .default
+        // Demo speed compresses time, so convert the remaining game time back to real seconds.
+        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: max(1, remaining / clock.speed), repeats: false)
+        UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: Self.sessionNotification, content: content, trigger: trigger))
     }
 
     private func notify(title: String, body: String) {
