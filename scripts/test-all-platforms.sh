@@ -37,7 +37,9 @@ echo "==> OceanFocusCore on macOS"
 swift test --package-path OceanFocusCore
 
 echo "==> OceanFocusCore on $IOS_DEVICE ($runtime)"
-(cd OceanFocusCore && xcodebuild test -quiet -scheme OceanFocusCore -destination "id=$udid")
+# Full xcodebuild output is long; keep the test summary and any errors. pipefail keeps failures fatal.
+(cd OceanFocusCore && xcodebuild test -scheme OceanFocusCore -destination "id=$udid" 2>&1 \
+  | grep -E "Executed [0-9]+ tests|\*\* TEST (SUCCEEDED|FAILED) \*\*|error:")
 
 echo "==> Web scene"
 npm test -- --maxWorkers=1
