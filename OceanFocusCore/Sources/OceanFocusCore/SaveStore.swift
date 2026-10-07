@@ -2,6 +2,8 @@ import Foundation
 
 public enum SaveStoreError: Error, Equatable, Sendable {
     case unsupportedSchema(Int)
+    /// save.json exists but its bytes cannot be read (I/O or permission error). Nothing was changed.
+    case primaryUnreadable
 }
 
 /// Persists GameState as JSON. Writes are atomic and keep rotating backups.
@@ -12,6 +14,9 @@ public struct SaveStore: Sendable {
         case backup(Int)
         case fresh
         case freshAfterCorruption
+        /// save.json exists but could not be read (e.g. iOS file protection while locked).
+        /// Nothing was moved or deleted. The app must not save while in this state and should retry later.
+        case unreadable
     }
 
     public struct LoadResult: Equatable, Sendable {
@@ -44,7 +49,11 @@ public struct SaveStore: Sendable {
         guard fm.fileExists(atPath: saveURL.path) else {
             return loadFromBackups() ?? LoadResult(state: .fresh(catalog: catalog), source: .fresh)
         }
-        if let data = try? Data(contentsOf: saveURL), let state = try? Self.decode(data) {
+        let data: Data
+        do { data = try Data(contentsOf: saveURL) } catch {
+            return LoadResult(state: .fresh(catalog: catalog), source: .unreadable)
+        }
+        if let state = try? Self.decode(data) {
             return LoadResult(state: state, source: .primary)
         }
         _ = try? moveAside(saveURL, now: now, fm)
@@ -63,9 +72,13 @@ public struct SaveStore: Sendable {
     public func save(_ state: GameState, now: Date = Date()) throws {
         let fm = FileManager.default
         try fm.createDirectory(at: directory, withIntermediateDirectories: true)
+        var existing: Data?
+        if fm.fileExists(atPath: saveURL.path) {
+            do { existing = try Data(contentsOf: saveURL) } catch { throw SaveStoreError.primaryUnreadable }
+        }
         try Self.encode(state).write(to: tmpURL, options: .atomic)
         if fm.fileExists(atPath: saveURL.path) {
-            if let data = try? Data(contentsOf: saveURL), (try? Self.decode(data)) != nil {
+            if let data = existing, (try? Self.decode(data)) != nil {
                 try rotateBackups(fm)
             } else {
                 try moveAside(saveURL, now: now, fm)

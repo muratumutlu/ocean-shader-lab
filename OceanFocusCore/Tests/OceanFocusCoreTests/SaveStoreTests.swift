@@ -194,6 +194,48 @@ final class SaveStoreTests: XCTestCase {
         XCTAssertEqual(decoded.history.first?.endedAt, Date(timeIntervalSince1970: 1_799_996_400))
     }
 
+    /// chmod 000 on save.json. Skips when the process can read it anyway (e.g. root).
+    func makeUnreadablePrimary() throws -> (url: URL, bytes: Data) {
+        try store.save(state(money: 1))
+        try store.save(state(money: 2))
+        let url = directory.appendingPathComponent("save.json")
+        let bytes = try Data(contentsOf: url)
+        try FileManager.default.setAttributes([.posixPermissions: 0o000], ofItemAtPath: url.path)
+        if (try? Data(contentsOf: url)) != nil {
+            try FileManager.default.setAttributes([.posixPermissions: 0o644], ofItemAtPath: url.path)
+            throw XCTSkip("This process can read a mode-000 file (running as root?), cannot simulate an unreadable save.")
+        }
+        return (url, bytes)
+    }
+
+    func restore(_ url: URL) {
+        try? FileManager.default.setAttributes([.posixPermissions: 0o644], ofItemAtPath: url.path)
+    }
+
+    func testUnreadablePrimaryIsNotQuarantined() throws {
+        let (url, bytes) = try makeUnreadablePrimary()
+        defer { restore(url) }
+        let result = store.load()
+        XCTAssertEqual(result, .init(state: .fresh(catalog: Fixtures.catalog), source: .unreadable))
+        XCTAssertTrue(try corruptFiles().isEmpty)
+        restore(url)
+        XCTAssertEqual(try Data(contentsOf: url), bytes)
+    }
+
+    func testSaveWithUnreadablePrimaryThrowsAndTouchesNothing() throws {
+        let (url, bytes) = try makeUnreadablePrimary()
+        defer { restore(url) }
+        let bak1 = try Data(contentsOf: directory.appendingPathComponent("save.bak1.json"))
+        let namesBefore = try files()
+        XCTAssertThrowsError(try store.save(state(money: 9))) {
+            XCTAssertEqual($0 as? SaveStoreError, .primaryUnreadable)
+        }
+        restore(url)
+        XCTAssertEqual(try Data(contentsOf: url), bytes)
+        XCTAssertEqual(try Data(contentsOf: directory.appendingPathComponent("save.bak1.json")), bak1)
+        XCTAssertEqual(try files(), namesBefore)
+    }
+
     func testDefaultDirectoryIsInApplicationSupport() throws {
         let url = try SaveStore.defaultDirectory()
         XCTAssertEqual(url.lastPathComponent, "OceanFocus")
