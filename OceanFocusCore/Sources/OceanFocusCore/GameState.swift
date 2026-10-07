@@ -44,6 +44,9 @@ public struct SessionRecord: Codable, Equatable, Sendable {
     public var regionId: String
 }
 
+/// Saved as JSON (schema v1). Evolution rule: fields added after schema v1 must be optional or decoded
+/// with `decodeIfPresent` and a default, so old saves keep loading. Incompatible changes bump
+/// `currentSchemaVersion` and add a migration in SaveStore.
 public struct GameState: Codable, Equatable, Sendable {
     public static let currentSchemaVersion = 1
 

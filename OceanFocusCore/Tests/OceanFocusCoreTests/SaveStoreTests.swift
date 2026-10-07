@@ -141,6 +141,59 @@ final class SaveStoreTests: XCTestCase {
         XCTAssertEqual(store.load(), .init(state: state(money: 1), source: .backup(1)))
     }
 
+    func testFullStateRoundTripsThroughEncodeAndDecode() throws {
+        var full = state(money: 7)
+        full.regions["med"]?.ownedUpgrades = [OwnedUpgrade(id: "med.rod", pricePaid: 20)]
+        full.history = [SessionRecord(endedAt: Date(timeIntervalSince1970: 1_800_000_000), durationSec: 1500,
+                                      outcome: .completed, fish: 10, money: 30, regionId: "med")]
+        XCTAssertEqual(try SaveStore.decode(SaveStore.encode(full)), full)
+    }
+
+    /// Pins the v1 on-disk format. If this fails, a field was renamed: add a migration, do not edit the fixture.
+    func testGoldenV1SaveDecodes() throws {
+        let json = """
+        {
+          "activeSession" : {
+            "bootSessionId" : "boot-1",
+            "durationSec" : 1500,
+            "endsAt" : "2027-01-15T08:25:00.000Z",
+            "kind" : "focus",
+            "monotonicStart" : 42.5,
+            "regionId" : "med",
+            "startedAt" : "2027-01-15T08:00:00.000Z"
+          },
+          "currentRegionId" : "med",
+          "history" : [
+            {
+              "durationSec" : 1500,
+              "endedAt" : "2027-01-15T07:00:00.000Z",
+              "fish" : 10,
+              "money" : 30,
+              "outcome" : "completed",
+              "regionId" : "med"
+            }
+          ],
+          "regions" : {
+            "med" : {
+              "money" : 7,
+              "ownedUpgrades" : [
+                { "id" : "med.rod", "pricePaid" : 20 }
+              ]
+            }
+          },
+          "schemaVersion" : 1,
+          "unlockedRegionIds" : [ "med" ]
+        }
+        """
+        let decoded = try SaveStore.decode(Data(json.utf8))
+        XCTAssertEqual(decoded.schemaVersion, 1)
+        XCTAssertEqual(decoded.activeSession?.bootSessionId, "boot-1")
+        XCTAssertEqual(decoded.activeSession?.kind, .focus)
+        XCTAssertEqual(decoded.progress(for: "med").ownedUpgrades, [OwnedUpgrade(id: "med.rod", pricePaid: 20)])
+        XCTAssertEqual(decoded.history.first?.outcome, .completed)
+        XCTAssertEqual(decoded.history.first?.endedAt, Date(timeIntervalSince1970: 1_799_996_400))
+    }
+
     func testDefaultDirectoryIsInApplicationSupport() throws {
         let url = try SaveStore.defaultDirectory()
         XCTAssertEqual(url.lastPathComponent, "OceanFocus")
