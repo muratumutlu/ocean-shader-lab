@@ -1,5 +1,7 @@
 import type {DemoControls,QualityMode,TurtleRoutineStatus} from '../types';
-export function bindControls(options:{paused:boolean;onPause(value:boolean):void;onControls(patch:Partial<DemoControls>):void;onQuality(mode:QualityMode):void;onReset():void;onInputBlocked?(blocked:boolean):void;onMode?(mode:'camera'|'turtle'):void;onReturnTurtle?():void;onTurtleRoutine?(enabled:boolean):void;onTouch?(code:string,pressed:boolean):void}){
+export type ControlLabels={play:string;pause:string};
+const ENGLISH_LABELS:ControlLabels={play:'▶ Play waves',pause:'Ⅱ Pause waves'};
+export function bindControls(options:{labels?:ControlLabels;paused:boolean;onPause(value:boolean):void;onControls(patch:Partial<DemoControls>):void;onQuality(mode:QualityMode):void;onReset():void;onInputBlocked?(blocked:boolean):void;onMode?(mode:'camera'|'turtle'):void;onReturnTurtle?():void;onTurtleRoutine?(enabled:boolean):void;onTouch?(code:string,pressed:boolean):void}){
  const abort=new AbortController(),signal=abort.signal;
  const listen=(element:Element,type:string,fn:EventListener)=>element.addEventListener(type,fn,{signal});
  const play=document.querySelector<HTMLButtonElement>('#play')!;
@@ -14,7 +16,8 @@ export function bindControls(options:{paused:boolean;onPause(value:boolean):void
  listen(routineButton,'click',()=>{if(!routineButton.disabled)options.onTurtleRoutine?.(!routineEnabled);});
 
  let paused=options.paused;
- const update=()=>{play.textContent=paused?'▶ Play waves':'Ⅱ Pause waves';play.setAttribute('aria-label',paused?'Play waves':'Pause waves');play.setAttribute('aria-pressed',String(!paused));};
+ const labels=options.labels??ENGLISH_LABELS;
+ const update=()=>{play.textContent=paused?labels.play:labels.pause;play.setAttribute('aria-label',paused?'Play waves':'Pause waves');play.setAttribute('aria-pressed',String(!paused));};
  for(const mode of ['camera','turtle'] as const)listen(document.querySelector('#mode-'+mode)!,'click',()=>{for(const name of ['camera','turtle'])document.querySelector('#mode-'+name)!.setAttribute('aria-pressed',String(name===mode));document.querySelector<HTMLElement>('#return-turtle')!.hidden=mode!=='turtle';document.querySelector<HTMLElement>('#turtle-touch')!.hidden=mode!=='turtle';options.onMode?.(mode);});
  listen(document.querySelector('#return-turtle')!,'click',()=>options.onReturnTurtle?.());
  for(const button of document.querySelectorAll<HTMLButtonElement>('[data-turtle-key]')){

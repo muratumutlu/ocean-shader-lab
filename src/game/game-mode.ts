@@ -18,6 +18,13 @@ export function prepareGamePage(){
  const heading=document.querySelector('.scene-heading')!;
  heading.querySelector('p')!.textContent='OCEAN FOCUS · POMODORO';
  heading.querySelector('h1')!.replaceChildren('Odaklan.',document.createElement('br'),'Balık tut.');
+ // The coast controls move into the HUD's settings gear; give them Turkish labels there.
+ const label=(id:string,text:string)=>{const node=document.querySelector(`label[for="${id}"]`);if(node?.firstChild)node.firstChild.textContent=text+' ';};
+ label('swell','Dalga boyu');label('tide','Su seviyesi');label('light','Güneş yönü');label('quality','Görüntü kalitesi');
+ document.querySelector('#reset')!.textContent='Kamerayı sıfırla';
+ document.querySelector('#fullscreen')!.textContent='⛶ Tam ekran';
+ const quality:Record<string,string>={auto:'Otomatik',low:'Düşük',balanced:'Dengeli',high:'Yüksek'};
+ for(const option of document.querySelectorAll<HTMLOptionElement>('#quality option'))option.textContent=quality[option.value]??option.textContent;
 }
 
 export function createGameExtension(app:HTMLElement){

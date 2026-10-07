@@ -12,6 +12,8 @@ await page.waitForFunction(()=>window.oceanFocus?.scene,null,{timeout:20000});
 await page.waitForTimeout(2500);
 const shot=async name=>{await page.screenshot({path:`${out}/${name}.png`});console.log('saved',name,JSON.stringify(await page.evaluate(()=>oceanFocus.scene.debug())));};
 await shot('01-idle');
+await page.click('.focus-gear');await page.waitForTimeout(300);await shot('01c-settings');await page.click('.focus-gear');
+await page.evaluate(()=>{oceanFocus.host.save.regions.med.money=400;});await page.click('.focus-top .focus-round');await page.waitForTimeout(300);await shot('01d-shop');await page.click('.focus-top .focus-round');
 await page.waitForTimeout(4000);await shot('01b-life');
 await page.evaluate(()=>oceanFocus.host.startFocus(25));
 await page.waitForTimeout(1600);await shot('02-cast');

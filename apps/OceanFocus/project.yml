@@ -1,0 +1,37 @@
+name: OceanFocus
+options:
+  bundleIdPrefix: ai.muum
+  deploymentTarget:
+    macOS: "14.0"
+packages:
+  OceanFocusCore:
+    path: ../../OceanFocusCore
+targets:
+  OceanFocusMac:
+    type: application
+    platform: macOS
+    sources:
+      - path: Mac
+      - path: Resources/web
+        type: folder
+        buildPhase: resources
+    dependencies:
+      - package: OceanFocusCore
+    info:
+      path: Mac/Info.plist
+      properties:
+        LSUIElement: true
+        CFBundleDisplayName: Ocean Focus
+        CFBundleShortVersionString: "0.1.0"
+        CFBundleVersion: "1"
+        NSHumanReadableCopyright: "© 2026 Murat Umutlu"
+    settings:
+      base:
+        PRODUCT_NAME: Ocean Focus
+        PRODUCT_BUNDLE_IDENTIFIER: ai.muum.oceanfocus
+        CODE_SIGN_IDENTITY: "-"
+        CODE_SIGN_STYLE: Manual
+        ENABLE_HARDENED_RUNTIME: NO
+        SWIFT_VERSION: "6.0"
+        MACOSX_DEPLOYMENT_TARGET: "14.0"
+        GENERATE_INFOPLIST_FILE: NO

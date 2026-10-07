@@ -12,3 +12,6 @@ output/
 tools/sculpt/
 .build/
 .swiftpm/
+apps/OceanFocus/Resources/web/
+apps/OceanFocus/OceanFocus.xcodeproj/
+apps/OceanFocus/build/

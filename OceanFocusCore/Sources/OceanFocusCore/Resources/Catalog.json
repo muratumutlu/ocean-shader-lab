@@ -2,31 +2,31 @@
   "version": 1,
   "regions": [
     {
-      "id": "med", "name": "Mediterranean", "fishPrice": 3, "unlockPrice": 0,
+      "id": "med", "name": "Akdeniz", "fishPrice": 3, "unlockPrice": 0,
       "available": true, "requiresLicense": false,
       "upgrades": [
-        { "id": "med.eq.sturdy-line", "name": "Sturdy hand line", "category": "equipment", "price": 20, "effect": { "fishMultiplier": 1.15 }, "requires": [] },
-        { "id": "med.eq.reel-rod", "name": "Reel rod", "category": "equipment", "price": 50, "effect": { "fishMultiplier": 1.2 }, "requires": ["med.eq.sturdy-line"] },
-        { "id": "med.eq.bait-box", "name": "Bait box", "category": "equipment", "price": 100, "effect": { "fishMultiplier": 1.15 }, "requires": [] },
-        { "id": "med.eq.cast-net", "name": "Cast net", "category": "equipment", "price": 210, "effect": { "fishMultiplier": 1.3 }, "requires": ["med.eq.reel-rod"] },
-        { "id": "med.eq.trammel-net", "name": "Trammel net", "category": "equipment", "price": 380, "effect": { "fishMultiplier": 1.25 }, "requires": ["med.eq.cast-net"] },
-        { "id": "med.eq.longline", "name": "Longline", "category": "equipment", "price": 630, "effect": { "fishMultiplier": 1.3 }, "requires": ["med.eq.trammel-net"] },
-        { "id": "med.eq.fish-finder", "name": "Fish finder", "category": "equipment", "price": 760, "effect": { "fishMultiplier": 1.2 }, "requires": ["med.boat.motor"] },
-        { "id": "med.eq.ice-chest", "name": "Ice chest", "category": "equipment", "price": 840, "effect": { "moneyBonus": 0.1 }, "requires": [] },
-        { "id": "med.eq.purse-seine", "name": "Purse seine", "category": "equipment", "price": 1260, "effect": { "fishMultiplier": 1.25 }, "requires": ["med.eq.longline"] },
-        { "id": "med.boat.oars", "name": "Dinghy oars", "category": "boat", "price": 30, "effect": { "fishMultiplier": 1.05 }, "requires": [] },
-        { "id": "med.boat.rowboat", "name": "Rowboat", "category": "boat", "price": 130, "effect": { "fishMultiplier": 1.1 }, "requires": ["med.boat.oars"] },
-        { "id": "med.boat.motor", "name": "Outboard motor", "category": "boat", "price": 290, "effect": { "fishMultiplier": 1.1 }, "requires": ["med.boat.rowboat"] },
-        { "id": "med.boat.cabin", "name": "Cabin boat", "category": "boat", "price": 500, "effect": { "fishMultiplier": 1.1 }, "requires": ["med.boat.motor"] },
+        { "id": "med.eq.sturdy-line", "name": "Sağlam el oltası", "category": "equipment", "price": 20, "effect": { "fishMultiplier": 1.15 }, "requires": [] },
+        { "id": "med.eq.reel-rod", "name": "Makaralı olta", "category": "equipment", "price": 50, "effect": { "fishMultiplier": 1.2 }, "requires": ["med.eq.sturdy-line"] },
+        { "id": "med.eq.bait-box", "name": "Yem kutusu", "category": "equipment", "price": 100, "effect": { "fishMultiplier": 1.15 }, "requires": [] },
+        { "id": "med.eq.cast-net", "name": "Serpme ağ", "category": "equipment", "price": 210, "effect": { "fishMultiplier": 1.3 }, "requires": ["med.eq.reel-rod"] },
+        { "id": "med.eq.trammel-net", "name": "Uzatma ağı", "category": "equipment", "price": 380, "effect": { "fishMultiplier": 1.25 }, "requires": ["med.eq.cast-net"] },
+        { "id": "med.eq.longline", "name": "Paragat", "category": "equipment", "price": 630, "effect": { "fishMultiplier": 1.3 }, "requires": ["med.eq.trammel-net"] },
+        { "id": "med.eq.fish-finder", "name": "Balık bulucu", "category": "equipment", "price": 760, "effect": { "fishMultiplier": 1.2 }, "requires": ["med.boat.motor"] },
+        { "id": "med.eq.ice-chest", "name": "Buz sandığı", "category": "equipment", "price": 840, "effect": { "moneyBonus": 0.1 }, "requires": [] },
+        { "id": "med.eq.purse-seine", "name": "Gırgır ağı", "category": "equipment", "price": 1260, "effect": { "fishMultiplier": 1.25 }, "requires": ["med.eq.longline"] },
+        { "id": "med.boat.oars", "name": "Sandal kürekleri", "category": "boat", "price": 30, "effect": { "fishMultiplier": 1.05 }, "requires": [] },
+        { "id": "med.boat.rowboat", "name": "Kayık", "category": "boat", "price": 130, "effect": { "fishMultiplier": 1.1 }, "requires": ["med.boat.oars"] },
+        { "id": "med.boat.motor", "name": "Dıştan takma motor", "category": "boat", "price": 290, "effect": { "fishMultiplier": 1.1 }, "requires": ["med.boat.rowboat"] },
+        { "id": "med.boat.cabin", "name": "Kabinli tekne", "category": "boat", "price": 500, "effect": { "fishMultiplier": 1.1 }, "requires": ["med.boat.motor"] },
         { "id": "med.boat.gulet", "name": "Gulet", "category": "boat", "price": 920, "effect": { "fishMultiplier": 1.15 }, "requires": ["med.boat.cabin"] },
-        { "id": "med.boat.sail-rig", "name": "Sail rig", "category": "boat", "price": 1090, "effect": { "fishMultiplier": 1.1 }, "requires": ["med.boat.gulet"] },
-        { "id": "med.crew.deckhand", "name": "Deckhand", "category": "crew", "price": 80, "effect": { "moneyBonus": 0.15 }, "requires": ["med.boat.rowboat"] },
-        { "id": "med.crew.net-mender", "name": "Net mender", "category": "crew", "price": 250, "effect": { "moneyBonus": 0.15 }, "requires": ["med.crew.deckhand", "med.boat.motor"] },
-        { "id": "med.crew.skipper", "name": "Skipper", "category": "crew", "price": 590, "effect": { "moneyBonus": 0.2 }, "requires": ["med.crew.net-mender", "med.boat.cabin"] }
+        { "id": "med.boat.sail-rig", "name": "Latin yelkeni", "category": "boat", "price": 1090, "effect": { "fishMultiplier": 1.1 }, "requires": ["med.boat.gulet"] },
+        { "id": "med.crew.deckhand", "name": "Tayfa", "category": "crew", "price": 80, "effect": { "moneyBonus": 0.15 }, "requires": ["med.boat.rowboat"] },
+        { "id": "med.crew.net-mender", "name": "Ağ ustası", "category": "crew", "price": 250, "effect": { "moneyBonus": 0.15 }, "requires": ["med.crew.deckhand", "med.boat.motor"] },
+        { "id": "med.crew.skipper", "name": "Kaptan", "category": "crew", "price": 590, "effect": { "moneyBonus": 0.2 }, "requires": ["med.crew.net-mender", "med.boat.cabin"] }
       ]
     },
-    { "id": "arctic", "name": "Arctic", "fishPrice": 5, "unlockPrice": 4000, "available": false, "requiresLicense": true, "upgrades": [] },
-    { "id": "indian", "name": "Indian Ocean", "fishPrice": 6, "unlockPrice": 9000, "available": false, "requiresLicense": true, "upgrades": [] },
-    { "id": "atlantic", "name": "Atlantic", "fishPrice": 7, "unlockPrice": 16000, "available": false, "requiresLicense": true, "upgrades": [] }
+    { "id": "arctic", "name": "Kutup Denizi", "fishPrice": 5, "unlockPrice": 4000, "available": false, "requiresLicense": true, "upgrades": [] },
+    { "id": "indian", "name": "Hint Okyanusu", "fishPrice": 6, "unlockPrice": 9000, "available": false, "requiresLicense": true, "upgrades": [] },
+    { "id": "atlantic", "name": "Atlas Okyanusu", "fishPrice": 7, "unlockPrice": 16000, "available": false, "requiresLicense": true, "upgrades": [] }
   ]
 }
