@@ -33,6 +33,17 @@ COVE_GPU=metal npm run test:e2e
 npm run build
 ```
 
+### Ocean Focus (Apple apps)
+
+The shared Swift package `OceanFocusCore` holds the focus timer, economy, catalog and save logic for the macOS and iOS apps. It needs Xcode 27.1 or later (iPhone Duo simulator) and an iOS simulator runtime (`xcodebuild -downloadPlatform iOS`).
+
+```sh
+swift test --package-path OceanFocusCore
+scripts/test-all-platforms.sh
+```
+
+The second command runs the package on macOS and on the iPhone Duo simulator, then the web unit tests. Prices in `OceanFocusCore/Sources/OceanFocusCore/Resources/Catalog.json` are guarded by a pacing simulation: every available region must take a median of 40–60 successful 25-minute-equivalent sessions to complete.
+
 Browser tests use a separate Chromium instance. If required, run `npx playwright install chromium` once. `COVE_GPU=metal` selects the Mac GPU path used for this review; omit it on other platforms. The release checks passed 121 unit tests and 33 browser tests, including navigation and embedded texture loading under the production build's actual CSP. The repeatable visual review uses `node scripts/qa/review-release.mjs anatomy`, then `node scripts/qa/review-release.mjs suite`. Its screenshots, contact samples and crawl recording go into ignored local evidence. Set `QA_URL` and use `production` mode to review a built or deployed page.
 
 Installed stack: Three.js 0.186.1, Rapier 0.12.0, Vite 8.3.2, TypeScript 7.0.2, Vitest 5.0.3 and Playwright 1.63.0. There is no backend, database or paid generation API. Control tokens and their check are documented in [the design system](./docs/design-system.md).
