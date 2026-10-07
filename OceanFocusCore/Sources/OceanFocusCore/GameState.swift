@@ -25,6 +25,8 @@ public struct ActiveSession: Codable, Equatable, Sendable {
     public var endsAt: Date
     /// FocusClock.uptime when the session started. Used to detect wall-clock tampering.
     public var monotonicStart: TimeInterval
+    /// FocusClock.bootSessionId when the session started. A different value means a reboot.
+    public var bootSessionId: String
     /// Region the catch is credited to, fixed at start.
     public var regionId: String
 }

@@ -101,7 +101,7 @@ final class GameEngineTests: XCTestCase {
         var state = makeState(medMoney: 500)
         state.unlockedRegionIds.append("arctic")
         state.activeSession = ActiveSession(kind: .focus, durationSec: 1500, startedAt: Date(),
-                                            endsAt: Date().addingTimeInterval(1500), monotonicStart: 0, regionId: "med")
+                                            endsAt: Date().addingTimeInterval(1500), monotonicStart: 0, bootSessionId: "boot-1", regionId: "med")
         XCTAssertThrowsError(try engine.switchRegion("arctic", licensed: true, in: &state)) {
             XCTAssertEqual($0 as? GameError, .sessionAlreadyActive)
         }

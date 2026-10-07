@@ -27,6 +27,7 @@ enum Fixtures {
 final class TestClock: FocusClock, @unchecked Sendable {
     var now: Date
     var uptime: TimeInterval
+    var bootSessionId = "boot-1"
 
     init(now: Date = Date(timeIntervalSince1970: 1_800_000_000), uptime: TimeInterval = 1_000) {
         self.now = now

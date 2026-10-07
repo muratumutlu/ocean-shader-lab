@@ -21,7 +21,7 @@ final class SaveStoreTests: XCTestCase {
         state.activeSession = ActiveSession(kind: .focus, durationSec: 1500,
                                             startedAt: Date(timeIntervalSince1970: 1_800_000_000),
                                             endsAt: Date(timeIntervalSince1970: 1_800_001_500),
-                                            monotonicStart: 42.5, regionId: "med")
+                                            monotonicStart: 42.5, bootSessionId: "boot-1", regionId: "med")
         return state
     }
 

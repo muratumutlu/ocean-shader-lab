@@ -98,6 +98,17 @@ final class FocusTimerTests: XCTestCase {
         }
     }
 
+    func testRebootWithLongDowntimeStillCompletes() throws {
+        clock.uptime = 300
+        try timer.startFocus(.minutes25, in: &state)
+        clock.bootSessionId = "boot-2"
+        clock.now = clock.now.addingTimeInterval(3 * 3600)
+        clock.uptime = 3600
+        guard case .focusCompleted? = timer.tick(&state) else {
+            return XCTFail("expected completion after reboot with long downtime")
+        }
+    }
+
     func testBreakHasNoRewardAndNoHistory() throws {
         try timer.startBreak(in: &state)
         XCTAssertEqual(state.activeSession?.durationSec, 300)
@@ -120,5 +131,9 @@ final class FocusTimerTests: XCTestCase {
         let first = clock.uptime
         XCTAssertGreaterThan(first, 0)
         XCTAssertGreaterThanOrEqual(clock.uptime, first)
+    }
+
+    func testSystemClockHasBootSessionId() {
+        XCTAssertFalse(SystemClock().bootSessionId.isEmpty)
     }
 }

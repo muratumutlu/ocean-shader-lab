@@ -53,8 +53,9 @@ public struct FocusTimer: Sendable {
         let now = clock.now
         let wallElapsed = now.timeIntervalSince(session.startedAt)
         let monotonicElapsed = clock.uptime - session.monotonicStart
-        // Negative monotonic elapsed means a reboot happened: only the wall clock is left.
-        if monotonicElapsed >= 0 && wallElapsed - monotonicElapsed > Self.tamperTolerance {
+        // After a reboot only the wall clock is left, so the tamper check does not apply.
+        let rebooted = session.bootSessionId != clock.bootSessionId || monotonicElapsed < 0
+        if !rebooted && wallElapsed - monotonicElapsed > Self.tamperTolerance {
             return finish(session, outcome: .unverified, fish: 0, money: 0, at: now, in: &state)
         }
         guard now >= session.endsAt else { return nil }
@@ -84,7 +85,8 @@ public struct FocusTimer: Sendable {
         let now = clock.now
         state.activeSession = ActiveSession(kind: kind, durationSec: durationSec, startedAt: now,
                                             endsAt: now.addingTimeInterval(TimeInterval(durationSec)),
-                                            monotonicStart: clock.uptime, regionId: state.currentRegionId)
+                                            monotonicStart: clock.uptime,
+                                            bootSessionId: clock.bootSessionId, regionId: state.currentRegionId)
     }
 
     private func finish(_ session: ActiveSession, outcome: SessionOutcome, fish: Int, money: Int,
