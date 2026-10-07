@@ -8,7 +8,7 @@ let package = Package(
         .library(name: "OceanFocusCore", targets: ["OceanFocusCore"]),
     ],
     targets: [
-        .target(name: "OceanFocusCore"),
+        .target(name: "OceanFocusCore", resources: [.process("Resources")]),
         .testTarget(name: "OceanFocusCoreTests", dependencies: ["OceanFocusCore"]),
     ]
 )
