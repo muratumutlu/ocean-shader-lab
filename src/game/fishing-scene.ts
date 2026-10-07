@@ -3,6 +3,7 @@
 import * as THREE from 'three';
 import type {CoveResources} from '../scene/cove';
 import type {GameSave,HostEvent} from './host';
+import {createFishSchools} from './fish-schools';
 import {createBoat,createBucket,createBuoy,createCoin,createFigure,createFish,createFloat,createLabel,createRing,createStall,disposeTree,type Boat,type Figure} from './models';
 
 type Task={update(dt:number):boolean};
@@ -37,6 +38,7 @@ export function createFishingScene(cove:CoveResources){
  const crew:Record<string,Figure>={};
  const gear=new THREE.Group();world.add(gear);
  const effects=new THREE.Group();world.add(effects);
+ const schools=createFishSchools(cove);world.add(schools.group);
  let tasks:Task[]=[];
  let floatSettled=false,dipping=false,fishing=false,shownFish=0,targetFish=0,ownedKey='',busy=false,rodPitch=.15,headNod=0,coinCount=0;
  const castPoint=new THREE.Vector3();
@@ -83,6 +85,34 @@ export function createFishingScene(cove:CoveResources){
  }
  function disposeBoat(b:Boat){b.group.traverse(o=>{if(o instanceof THREE.Mesh&&!isShared(o)){o.geometry.dispose();(o.material as THREE.Material).dispose();}});}
  const isShared=(o:THREE.Object3D)=>{let p:THREE.Object3D|null=o;while(p){if(p===fisher.group||p===bucket.group||Object.values(crew).some(c=>c.group===p))return true;p=p.parent;}return false;};
+
+ // ---- playful idle actions ----
+ type Action='wave'|'stretch'|'hop'|'look'|'dance'|'cheer';
+ type Acting={figure:Figure;action:Action;t:number;duration:number};
+ let acting:Acting[]=[],nextAction=3;
+ const crewTimers=new Map<Figure,number>();
+ /** Actions the fisherman can do while his right hand holds the rod. */
+ const ROD_SAFE:Action[]=['wave','hop','look','cheer'];
+ const FREE:Action[]=['wave','stretch','hop','look','dance','cheer'];
+ function act(figure:Figure,action:Action){if(acting.some(a=>a.figure===figure))return;acting.push({figure,action,t:0,duration:{wave:2.2,stretch:1.8,hop:.7,look:2.4,dance:3,cheer:1.4}[action]});}
+ function animateActors(dt:number){
+  if(!busy){nextAction-=dt;if(nextAction<=0){nextAction=4+Math.random()*6;const pool=fishing||dipping?ROD_SAFE:FREE;act(fisher,pool[Math.floor(Math.random()*pool.length)]);}}
+  for(const figure of Object.values(crew)){const left=(crewTimers.get(figure)??2+Math.random()*6)-dt;if(left<=0){crewTimers.set(figure,5+Math.random()*8);act(figure,FREE[Math.floor(Math.random()*FREE.length)]);}else crewTimers.set(figure,left);}
+  acting=acting.filter(a=>{
+   a.t+=dt;const k=Math.min(1,a.t/a.duration),env=Math.sin(k*Math.PI),f=a.figure,isFisher=f===fisher;
+   switch(a.action){
+    case 'wave':f.leftArm.rotation.x=-2.6*env;f.leftArm.rotation.z=-.4*env+Math.sin(a.t*14)*.35*env;break;
+    case 'stretch':f.leftArm.rotation.x=-2.9*env;if(!isFisher||!fishing)f.rightArm.rotation.x=-2.9*env;f.torso.rotation.x=-.15*env;break;
+    case 'hop':f.group.position.y=Math.max(0,Math.sin(k*Math.PI))*.28;f.leftArm.rotation.x=-1.2*env;break;
+    case 'look':f.head.rotation.y=Math.sin(k*Math.PI*2)*.9;break;
+    case 'dance':f.torso.rotation.z=Math.sin(a.t*8)*.18*env;f.group.rotation.y+=Math.sin(a.t*6)*.03;f.leftArm.rotation.x=-1.6*env+Math.sin(a.t*10)*.3;if(!isFisher||!fishing)f.rightArm.rotation.x=-1.6*env-Math.sin(a.t*10)*.3;f.group.position.y=Math.abs(Math.sin(a.t*8))*.06*env;break;
+    case 'cheer':f.leftArm.rotation.x=-2.8*env;f.group.position.y=Math.abs(Math.sin(a.t*9))*.12*env;break;
+   }
+   if(k>=1){f.leftArm.rotation.z=0;f.torso.rotation.x=0;f.torso.rotation.z=0;f.group.position.y=0;f.head.rotation.y=0;return false;}
+   return true;
+  });
+ }
+ const isActing=(figure:Figure)=>acting.some(a=>a.figure===figure);
 
  // ---- bucket contents ----
  function setBucketFish(count:number){
@@ -138,6 +168,7 @@ export function createFishingScene(cove:CoveResources){
  function coinBurst(money:number){
   const bursts=Math.max(4,Math.min(24,Math.round(money/3)));const origin=worldOf(stall.coins);
   floatLabel('+'+money+' 💰',worldOf(stall.group).add(new THREE.Vector3(0,2.6,0)));
+  acting=acting.filter(x=>x.figure!==fisher);act(fisher,'cheer');for(const f of Object.values(crew))act(f,'hop');
   for(let i=0;i<bursts;i++)wait(i*.06,()=>{const coin=createCoin();const a=Math.random()*Math.PI*2,r=.15+Math.random()*.25;
    const pile=nextCoinSpot();arc(coin,toLocal(origin.clone().add(new THREE.Vector3(Math.cos(a)*r,.1,Math.sin(a)*r))),toLocal(worldOf(stall.coins).add(pile)),1.2+Math.random()*.6,.9,()=>{effects.remove(coin);coin.position.copy(pile);coin.rotation.set(0,0,0);stall.coins.add(coin);},14);});
   wait(bursts*.06+2.2,()=>{for(const f of [...stall.fishOnIce.children]){stall.fishOnIce.remove(f);disposeTree(f);}
@@ -173,15 +204,18 @@ export function createFishingScene(cove:CoveResources){
    boatRoot.position.y=tide+Math.sin(time*1.3)*bob*.6-.02;
    boat.group.rotation.x=Math.sin(time*.9+.4)*bob*.35;boat.group.rotation.z=Math.sin(time*1.1)*bob*.5;
    // rodPitch is the rod's tilt from vertical toward the bow; subtract the arm so the rod ignores arm pose.
-   fisher.rightArm.rotation.x=fishing||rodPitch<-.3?-1.05:-.2;
-   rod.rotation.x=THREE.MathUtils.lerp(rod.rotation.x,rodPitch-fisher.rightArm.rotation.x,Math.min(1,dt*10));fisher.leftArm.rotation.x=fishing?-.6:Math.sin(time*.8)*.05;
-   fisher.head.rotation.x=headNod;fisher.torso.rotation.z=Math.sin(time*.7)*.02;
-   for(const f of Object.values(crew)){f.leftArm.rotation.x=Math.sin(time*1.4+f.group.position.z)*.4-.3;f.head.rotation.y=Math.sin(time*.5+f.group.position.z)*.3;}
+   const fisherActing=isActing(fisher);
+   if(!fisherActing||fishing)fisher.rightArm.rotation.x=fishing||rodPitch<-.3?-1.05:-.2;
+   rod.rotation.x=THREE.MathUtils.lerp(rod.rotation.x,rodPitch-fisher.rightArm.rotation.x,Math.min(1,dt*10));if(!fisherActing)fisher.leftArm.rotation.x=fishing?-.6:Math.sin(time*.8)*.05;
+   fisher.head.rotation.x=headNod;if(!fisherActing)fisher.torso.rotation.z=Math.sin(time*.7)*.02;
+   for(const f of Object.values(crew)){if(isActing(f))continue;f.leftArm.rotation.x=Math.sin(time*1.4+f.group.position.z)*.4-.3;f.head.rotation.y=Math.sin(time*.5+f.group.position.z)*.3;}
    for(const b of gear.children)b.position.y=tide+Math.sin(time*1.7+(b.userData.phase as number))*.03;
    if(floatSettled&&!dipping){float.position.set(castPoint.x,tide+Math.sin(time*2.1)*.015,castPoint.z);}
    if(line.visible){const a=world.worldToLocal(worldOf(rodTip)),b=float.position,p=lineGeometry.attributes.position as THREE.BufferAttribute;p.setXYZ(0,a.x,a.y,a.z);p.setXYZ(1,b.x,b.y,b.z);p.needsUpdate=true;}
    // Tasks may schedule new tasks while running; collect those separately so none are dropped.
    const running=tasks;tasks=[];const alive=running.filter(task=>!task.update(Math.min(dt,.1)));tasks=alive.concat(tasks);
+   schools.update(time,dt,tide);
+   animateActors(dt);
   },
   /** Progress of the running focus session; reveals one catch per expected fish. */
   setProgress(progress:number,expectedFish:number){
@@ -204,6 +238,6 @@ export function createFishingScene(cove:CoveResources){
    fishing=true;floatSettled=true;float.visible=true;line.visible=true;castPoint.copy(MOORING).add(CAST_OFFSET);rodPitch=.75;
   },
   debug(){return {tasks:tasks.length,busy,fishing,boat:boatRoot.position.toArray().map(v=>+v.toFixed(2))};},
-  dispose(){tasks=[];disposeTree(root);lineGeometry.dispose();},
+  dispose(){tasks=[];schools.dispose();disposeTree(root);lineGeometry.dispose();},
  };
 }

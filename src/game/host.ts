@@ -17,8 +17,27 @@ const KEY='ocean-focus-save-v1';
 const starter=CATALOG.regions.find(r=>r.available&&!r.requiresLicense)!.id;
 const fresh=():GameSave=>({version:1,currentRegionId:starter,regions:{[starter]:{money:0,owned:[]}},active:null,history:[]});
 
-export type Host=ReturnType<typeof createHost>;
-export function createHost(options:{storage?:Storage;now?:()=>number;speed?:number}={}){
+/** What the HUD and scene need from whoever owns the timer: the browser host or the native app. */
+export interface Host{
+ subscribe(fn:(event:HostEvent)=>void):()=>void;
+ readonly save:GameSave;
+ readonly speed:number;
+ setSpeed(next:number):void;
+ money():number;
+ ownedIds(regionId?:string):Set<string>;
+ region():ReturnType<typeof region>;
+ remainingMs():number;
+ progress():number;
+ expectedFish():number;
+ startFocus(minutes:Preset):void;
+ startBreak():void;
+ tick():void;
+ abandon():void;
+ shop():{upgrade:Upgrade;affordable:boolean}[];
+ buy(id:string):void;
+ reset():void;
+}
+export function createHost(options:{storage?:Storage;now?:()=>number;speed?:number}={}):Host{
  const storage=options.storage??localStorage;
  const realNow=options.now??(()=>Date.now());
  let speed=options.speed??1,anchorReal=realNow(),anchorGame=anchorReal;
@@ -42,7 +61,7 @@ export function createHost(options:{storage?:Storage;now?:()=>number;speed?:numb
   changed();emit({type:'started',session:save.active,expectedFish:expectedFish(save.active)});
  };
  return {
-  subscribe(fn:(event:HostEvent)=>void){listeners.add(fn);fn({type:'state',save});return ()=>listeners.delete(fn);},
+  subscribe(fn:(event:HostEvent)=>void){listeners.add(fn);fn({type:'state',save});return ()=>{listeners.delete(fn);};},
   get save(){return save;},
   get speed(){return speed;},
   setSpeed(next:number){anchorGame=now();anchorReal=realNow();speed=next;},

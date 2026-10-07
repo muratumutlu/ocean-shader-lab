@@ -15,12 +15,13 @@ import {createWater} from '../water/water';
 import {createOrbitWaterResponse,stepOrbitWaterResponse} from '../water/orbit-response';
 import {createTurtleRoutine,PRODUCTION_TURTLE_ROUTINE_PROFILE} from './turtle-activities';
 import {createFrameLoop} from './frame-loop';
+import {createTurtleWander} from './turtle-wander';
 import {createQualityController} from './quality';
 import {createRenderPacer} from './render-pacer';
 import {DEFAULT_CONTROLS} from '../types';
 import type {DemoController,DemoControls,QualityMode,QualityProfile,ControlMode,TurtleRoutineStatus} from '../types';
 export type SceneExtension={update(time:number,delta:number,controls:DemoControls):void;dispose():void};
-export function createDemo(canvas:HTMLCanvasElement,options:{reducedMotion:boolean;quality:QualityMode;onFatal(error:Error):void;onNavigation?(ready:boolean,error?:string):void;onTurtle?(ready:boolean,error?:string):void;onTurtleState?(state:string):void;onTurtleRoutine?(status:TurtleRoutineStatus):void;extend?(context:{group:THREE.Group;cove:ReturnType<typeof createCove>}):SceneExtension}):DemoController{
+export function createDemo(canvas:HTMLCanvasElement,options:{reducedMotion:boolean;quality:QualityMode;onFatal(error:Error):void;onNavigation?(ready:boolean,error?:string):void;onTurtle?(ready:boolean,error?:string):void;onTurtleState?(state:string):void;onTurtleRoutine?(status:TurtleRoutineStatus):void;extend?(context:{group:THREE.Group;cove:ReturnType<typeof createCove>}):SceneExtension;ambientTurtle?:boolean}):DemoController{
  const gl=canvas.getContext('webgl2',{antialias:true,alpha:false,preserveDrawingBuffer:true});if(!gl)throw Error('WebGL2 is unavailable on this browser.');
  const scene=new THREE.Scene();scene.background=new THREE.Color(0xeeeae5);
  let renderer:THREE.WebGLRenderer|null=null,cove:ReturnType<typeof createCove>|null=null,water:ReturnType<typeof createWater>|null=null;
@@ -33,7 +34,7 @@ export function createDemo(canvas:HTMLCanvasElement,options:{reducedMotion:boole
  const resetOrbitResponse=()=>{orbitResponse=createOrbitWaterResponse();orbitRevision=rig?.orbitState().revision??-1;water?.setOrbitResponse(0);};
  let turtle:TurtleView|null=null,turtleController:ReturnType<typeof createTurtleController>|null=null,turtleLoading=false,mode:ControlMode='camera',accumulator=0,currentProfile:QualityProfile='balanced',lastLocomotion='';
  let controls:DemoControls={...DEFAULT_CONTROLS};
- let turtleRoutine:ReturnType<typeof createTurtleRoutine>|null=null,lastRoutineStatus='',routineInitializationFailed=false,extension:SceneExtension|null=null;
+ let turtleRoutine:ReturnType<typeof createTurtleRoutine>|null=null,lastRoutineStatus='',routineInitializationFailed=false,extension:SceneExtension|null=null,wander:ReturnType<typeof createTurtleWander>|null=null;
  const publishRoutine=(startReason?:string)=>{
   const state=turtleRoutine?.diagnostics(),phase=state?.phase??'off';let message='';
   if(startReason||routineInitializationFailed)message=startReason==='paused'?'Play the scene to start the routine.':startReason==='nest-present'?'Return the turtle to reset the nest before starting another routine.':startReason==='no-safe-route'?'Move the turtle into clear water and try again.':'The turtle routine is not ready yet.';
@@ -88,6 +89,7 @@ export function createDemo(canvas:HTMLCanvasElement,options:{reducedMotion:boole
   renderer=new THREE.WebGLRenderer({canvas,context:gl,antialias:true,preserveDrawingBuffer:true});renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=.94;renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.shadowMap.autoUpdate=false;renderer.shadowMap.needsUpdate=true;
   cove=createCove(7);seabed=createSeabedProps(7,cove.data);trails=createTurtleTrails(cove);dynamicGroup.add(trails.group);water=createWater(cove);water.setDynamicGroup(dynamicGroup);scene.add(cove.group,seabed.group,water.mesh,dynamicGroup,new THREE.HemisphereLight(0xdff4ff,0x746a56,1));
   if(options.extend)extension=options.extend({group:dynamicGroup,cove});
+  if(options.ambientTurtle)wander=createTurtleWander(cove.sampleHeight);
   const sun=new THREE.DirectionalLight(0xfff1db,3.4);sun.position.set(Math.cos(DEFAULT_CONTROLS.sunAzimuth*Math.PI/180)*22,25,Math.sin(DEFAULT_CONTROLS.sunAzimuth*Math.PI/180)*22);sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);Object.assign(sun.shadow.camera,{left:-24,right:24,top:24,bottom:-24,near:1,far:100});sun.shadow.bias=-.0003;sun.shadow.normalBias=.025;scene.add(sun);
   const applyQuality=(profile:QualityProfile)=>{if(disposed)return;currentProfile=profile;turtle?.setQuality(profile);seabed?.setQuality(profile);water!.setDetail(profile);cove!.setQuality(profile);renderer!.shadowMap.needsUpdate=true;renderer!.setPixelRatio(Math.min(devicePixelRatio,{low:1,balanced:1.5,high:2}[profile]));renderer!.setSize(canvas.clientWidth,canvas.clientHeight,false);canvas.dataset.quality=profile;render();};
   const quality=createQualityController(options.quality,targetFps,applyQuality);
@@ -96,7 +98,9 @@ export function createDemo(canvas:HTMLCanvasElement,options:{reducedMotion:boole
    time=elapsed;const snapshot=input!.snapshot();
    if(turtleController&&turtle){
     const forward=new THREE.Vector3();camera.getWorldDirection(forward);
-    const manual=mode==='turtle'?snapshot:{...snapshot,forward:0,right:0,vertical:0,active:false};
+    let manual=mode==='turtle'?snapshot:{...snapshot,forward:0,right:0,vertical:0,active:false};
+    // Ambient mode lets the turtle roam the water on its own while the camera is free.
+    if(wander&&mode!=='turtle'&&simulationDelta>0){const roam=wander.step(turtleController.state.position,controls.tide,simulationDelta);manual={...roam.input,mode:snapshot.mode};forward.set(roam.forward.x,roam.forward.y,roam.forward.z);}
     // Observe manual takeover even while the simulation is paused.
     turtleRoutine?.resolveInput(manual,forward,controls.tide,paused);
     if(simulationDelta>0){accumulator+=Math.min(.1,simulationDelta);let steps=0;

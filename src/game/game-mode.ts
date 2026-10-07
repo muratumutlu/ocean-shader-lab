@@ -2,7 +2,8 @@
 import type * as THREE from 'three';
 import type {CoveResources} from '../scene/cove';
 import type {SceneExtension} from '../runtime/demo';
-import {createHost} from './host';
+import {createHost,type Host} from './host';
+import {createNativeHost,nativeBridge} from './native-host';
 import {createFishingScene} from './fishing-scene';
 import {createHud} from './hud';
 import {setCameraHome} from '../scene/camera';
@@ -21,7 +22,9 @@ export function prepareGamePage(){
 
 export function createGameExtension(app:HTMLElement){
  const speed=Number(new URLSearchParams(location.search).get('speed')??'1')||1;
- const host=createHost({speed});
+ // Inside the native app Swift owns the timer; in a plain browser the page hosts it itself.
+ const bridge=nativeBridge();
+ const host:Host=bridge?createNativeHost(bridge):createHost({speed});
  const hud=createHud(host,app);
  // Dev-only handle for visual QA (e.g. finishing a session on demand). Stripped from production builds.
  if(import.meta.env.DEV)(window as unknown as {oceanFocus:unknown}).oceanFocus={host,finish(){const a=host.save.active;if(a){a.endsAt=a.startedAt;host.tick();}}};

@@ -64,12 +64,12 @@ export function createBoat(tier:number):Boat{
  const extrude=(s:THREE.Shape,depth:number,bevel=true)=>{const g=new THREE.ExtrudeGeometry(s,{depth,bevelEnabled:bevel,bevelThickness:.03,bevelSize:.03,bevelSegments:2,curveSegments:24});g.rotateX(-Math.PI/2);return g;};
  // Hollow hull walls plus a separate bottom so the boat is open from above.
  const hullMaterial=mat(hullColor,.75);
- const hull=new THREE.Mesh(extrude(ring(1,.88),height),hullMaterial);hull.position.y=-.22;
- const keel=new THREE.Mesh(extrude(outline(1),.08,false),hullMaterial);keel.position.y=-.22;
+ const hull=new THREE.Mesh(extrude(ring(1,.88),height),hullMaterial);hull.position.y=-.08;
+ const keel=new THREE.Mesh(extrude(outline(1),.08,false),hullMaterial);keel.position.y=-.08;
  for(const mesh of [hull,keel]){const p=mesh.geometry.attributes.position as THREE.BufferAttribute;for(let i=0;i<p.count;i++){const y=p.getY(i);if(y<height*.5){const t=1-y/(height*.5);p.setX(i,p.getX(i)*(1-.4*t));}}mesh.geometry.computeVertexNormals();group.add(mesh);}
- const trim=new THREE.Mesh(extrude(ring(1.02,.86),.05),mat(tier>=5?0x5b3a24:0xf4f1e8,.7));trim.position.y=-.22+height;group.add(trim);
- const floor=new THREE.Mesh(extrude(outline(.86),.02,false),mat(0xb08457,.85));floor.position.y=-.22+height*.45;group.add(floor);
- deck.position.y=-.22+height*.45+.02;
+ const trim=new THREE.Mesh(extrude(ring(1.02,.86),.05),mat(tier>=5?0x5b3a24:0xf4f1e8,.7));trim.position.y=-.08+height;group.add(trim);
+ const floor=new THREE.Mesh(extrude(outline(.86),.02,false),mat(0xb08457,.85));floor.position.y=-.08+height*.45;group.add(floor);
+ deck.position.y=-.08+height*.45+.02;
  const wood=mat(0x7a5236,.85);
  const thwart=new THREE.Mesh(new THREE.BoxGeometry(beam*.9,.05,.18),wood);thwart.position.set(0,.12,-L*.25);deck.add(thwart);
  if(tier>=1&&tier<3)for(const side of [-1,1]){const oar=new THREE.Mesh(new THREE.CylinderGeometry(.018,.018,1.5,6),wood);oar.rotation.set(Math.PI/2.3,0,side*1.2);oar.position.set(side*(B+.25),.05,-L*.15);deck.add(oar);
@@ -110,14 +110,14 @@ export function createStall(){
 }
 function signTexture(){
  const canvas=document.createElement('canvas');canvas.width=256;canvas.height=76;const g=canvas.getContext('2d')!;
- g.fillStyle='#1f3b63';g.fillRect(0,0,256,76);g.fillStyle='#f3efe4';g.font='bold 40px Georgia, serif';g.textAlign='center';g.textBaseline='middle';g.fillText('BALIK',128,40);
+ g.fillStyle='#1f3b63';g.fillRect(0,0,256,76);g.fillStyle='#f3efe4';g.font="bold 40px ui-rounded, 'Arial Rounded MT Bold', 'Nunito', sans-serif";g.textAlign='center';g.textBaseline='middle';g.fillText('BALIK',128,40);
  const texture=new THREE.CanvasTexture(canvas);texture.colorSpace=THREE.SRGBColorSpace;return texture;
 }
 export function createCoin(){const coin=new THREE.Mesh(new THREE.CylinderGeometry(.09,.09,.025,18),new THREE.MeshStandardMaterial({color:0xf0c445,roughness:.35,metalness:.3,emissive:0x6b4a00,emissiveIntensity:.35}));return coin;}
 /** Floating text label (e.g. "+30") that always faces the camera. */
 export function createLabel(text:string,color='#f2cf6b'){
  const canvas=document.createElement('canvas');canvas.width=256;canvas.height=96;const g=canvas.getContext('2d')!;
- g.font='bold 64px Georgia, serif';g.textAlign='center';g.textBaseline='middle';g.lineWidth=10;g.strokeStyle='rgba(23,40,44,.85)';g.strokeText(text,128,50);g.fillStyle=color;g.fillText(text,128,50);
+ g.font="bold 60px ui-rounded, 'Arial Rounded MT Bold', 'Nunito', sans-serif";g.textAlign='center';g.textBaseline='middle';g.lineWidth=10;g.strokeStyle='rgba(23,40,44,.85)';g.strokeText(text,128,50);g.fillStyle=color;g.fillText(text,128,50);
  const texture=new THREE.CanvasTexture(canvas);texture.colorSpace=THREE.SRGBColorSpace;
  const sprite=new THREE.Sprite(new THREE.SpriteMaterial({map:texture,transparent:true,depthWrite:false,depthTest:false}));sprite.scale.set(1.6,.6,1);sprite.renderOrder=10;return sprite;
 }

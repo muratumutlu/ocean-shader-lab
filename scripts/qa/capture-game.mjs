@@ -12,6 +12,7 @@ await page.waitForFunction(()=>window.oceanFocus?.scene,null,{timeout:20000});
 await page.waitForTimeout(2500);
 const shot=async name=>{await page.screenshot({path:`${out}/${name}.png`});console.log('saved',name,JSON.stringify(await page.evaluate(()=>oceanFocus.scene.debug())));};
 await shot('01-idle');
+await page.waitForTimeout(4000);await shot('01b-life');
 await page.evaluate(()=>oceanFocus.host.startFocus(25));
 await page.waitForTimeout(1600);await shot('02-cast');
 // Fast-forward to 60% so several fish are caught.
@@ -39,4 +40,7 @@ const buyAll=async(prefix,limit)=>page.evaluate(([prefix,limit])=>{let n=0;while
 for(const [step,name] of [[2,'12-rowboat'],[2,'13-cabin'],[2,'14-gulet-sail']]){
  await buyAll('med.boat.',step);await buyAll('med.crew.',1);await buyAll('med.eq.',4);await page.waitForTimeout(800);await shot(name);
 }
+// High tide and swell: the boat interior must stay dry.
+await page.evaluate(()=>{for(const [id,v] of [['tide','0.35'],['swell','1']]){const el=document.querySelector('#'+id);el.value=v;el.dispatchEvent(new Event('input'));}});
+await page.waitForTimeout(1500);await shot('15-high-tide');
 await browser.close();
