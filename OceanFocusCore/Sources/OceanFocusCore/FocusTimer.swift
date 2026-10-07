@@ -71,8 +71,10 @@ public struct FocusTimer: Sendable {
     }
 
     /// Explicit give-up. Focus sessions spill their catch. Breaks simply end (returns nil).
+    /// Abandoning a session whose time has already run out completes it instead.
     public func abandon(_ state: inout GameState) throws -> TimerEvent? {
         guard let session = state.activeSession else { throw GameError.noActiveSession }
+        if let event = tick(&state) { return event }
         guard session.kind == .focus else {
             state.activeSession = nil
             return nil

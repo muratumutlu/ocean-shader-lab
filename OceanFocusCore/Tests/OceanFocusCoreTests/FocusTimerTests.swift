@@ -78,6 +78,18 @@ final class FocusTimerTests: XCTestCase {
         }
     }
 
+    func testAbandonAfterEndsAtCompletesTheSession() throws {
+        try timer.startFocus(.minutes25, in: &state)
+        clock.advance(1510)
+        guard case .focusCompleted(let record)? = try timer.abandon(&state) else {
+            return XCTFail("expected completion")
+        }
+        XCTAssertEqual(record.fish, 10)
+        XCTAssertEqual(record.money, 30)
+        XCTAssertEqual(state.progress(for: "med").money, 30)
+        XCTAssertNil(state.activeSession)
+    }
+
     func testWallClockJumpIsUnverified() throws {
         try timer.startFocus(.minutes25, in: &state)
         clock.now = clock.now.addingTimeInterval(1800)
