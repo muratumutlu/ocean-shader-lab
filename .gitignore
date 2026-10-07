@@ -10,3 +10,5 @@ docs/superpowers/
 assets/archaeology/source/
 output/
 tools/sculpt/
+.build/
+.swiftpm/
