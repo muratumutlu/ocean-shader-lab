@@ -121,6 +121,16 @@ final class FocusTimerTests: XCTestCase {
         }
     }
 
+    func testMissingBootIdOnSessionDoesNotSkipTamperDetection() throws {
+        try timer.startFocus(.minutes25, in: &state)
+        state.activeSession?.bootSessionId = ""
+        clock.now = clock.now.addingTimeInterval(1800)
+        clock.uptime += 60
+        guard case .focusUnverified? = timer.tick(&state) else {
+            return XCTFail("expected unverified")
+        }
+    }
+
     func testBreakHasNoRewardAndNoHistory() throws {
         try timer.startBreak(in: &state)
         XCTAssertEqual(state.activeSession?.durationSec, 300)

@@ -66,7 +66,9 @@ public struct FocusTimer: Sendable {
         let wallElapsed = now.timeIntervalSince(session.startedAt)
         let monotonicElapsed = clock.uptime - session.monotonicStart
         // After a reboot only the wall clock is left, so the tamper check does not apply.
-        let rebooted = session.bootSessionId != clock.bootSessionId || monotonicElapsed < 0
+        let bootIdsDiffer = !session.bootSessionId.isEmpty && !clock.bootSessionId.isEmpty
+            && session.bootSessionId != clock.bootSessionId
+        let rebooted = bootIdsDiffer || monotonicElapsed < 0
         if !rebooted && wallElapsed - monotonicElapsed > Self.tamperTolerance {
             return finish(session, outcome: .unverified, fish: 0, money: 0, at: now, in: &state)
         }
