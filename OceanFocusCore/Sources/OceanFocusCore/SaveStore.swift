@@ -14,13 +14,14 @@ public struct SaveStore: Sendable {
         case backup(Int)
         case fresh
         case freshAfterCorruption
-        /// save.json exists but could not be read (e.g. iOS file protection while locked).
-        /// Nothing was moved or deleted. The app must not save while in this state and should retry later.
+        /// A save file exists but its bytes could not be read (e.g. iOS file protection while locked).
+        /// `LoadResult.state` is nil. Nothing was moved or deleted. The app must not save and should retry later.
         case unreadable
     }
 
     public struct LoadResult: Equatable, Sendable {
-        public let state: GameState
+        /// nil only for `.unreadable`, so a placeholder state can never be saved over real progress.
+        public let state: GameState?
         public let source: Source
     }
 
@@ -51,7 +52,7 @@ public struct SaveStore: Sendable {
         }
         let data: Data
         do { data = try Data(contentsOf: saveURL) } catch {
-            return LoadResult(state: .fresh(catalog: catalog), source: .unreadable)
+            return LoadResult(state: nil, source: .unreadable)
         }
         if let state = try? Self.decode(data) {
             return LoadResult(state: state, source: .primary)
@@ -61,8 +62,12 @@ public struct SaveStore: Sendable {
     }
 
     private func loadFromBackups() -> LoadResult? {
-        for n in 1...Self.backupCount {
-            if let data = try? Data(contentsOf: backupURL(n)), let state = try? Self.decode(data) {
+        for n in 1...Self.backupCount where FileManager.default.fileExists(atPath: backupURL(n).path) {
+            let data: Data
+            do { data = try Data(contentsOf: backupURL(n)) } catch {
+                return LoadResult(state: nil, source: .unreadable)
+            }
+            if let state = try? Self.decode(data) {
                 return LoadResult(state: state, source: .backup(n))
             }
         }

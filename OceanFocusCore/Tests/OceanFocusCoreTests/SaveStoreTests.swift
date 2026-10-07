@@ -216,10 +216,31 @@ final class SaveStoreTests: XCTestCase {
         let (url, bytes) = try makeUnreadablePrimary()
         defer { restore(url) }
         let result = store.load()
-        XCTAssertEqual(result, .init(state: .fresh(catalog: Fixtures.catalog), source: .unreadable))
+        XCTAssertNil(result.state)
+        XCTAssertEqual(result.source, .unreadable)
         XCTAssertTrue(try corruptFiles().isEmpty)
         restore(url)
         XCTAssertEqual(try Data(contentsOf: url), bytes)
+    }
+
+    func testUnreadableBackupWithMissingPrimaryIsUnreadableNotFresh() throws {
+        try store.save(state(money: 1))
+        try store.save(state(money: 2))
+        let primary = directory.appendingPathComponent("save.json")
+        try FileManager.default.removeItem(at: primary)
+        let bak = directory.appendingPathComponent("save.bak1.json")
+        let bytes = try Data(contentsOf: bak)
+        try FileManager.default.setAttributes([.posixPermissions: 0o000], ofItemAtPath: bak.path)
+        defer { restore(bak) }
+        if (try? Data(contentsOf: bak)) != nil {
+            throw XCTSkip("This process can read a mode-000 file (running as root?), cannot simulate an unreadable backup.")
+        }
+        let result = store.load()
+        XCTAssertNil(result.state)
+        XCTAssertEqual(result.source, .unreadable)
+        XCTAssertTrue(try corruptFiles().isEmpty)
+        restore(bak)
+        XCTAssertEqual(try Data(contentsOf: bak), bytes)
     }
 
     func testSaveWithUnreadablePrimaryThrowsAndTouchesNothing() throws {
