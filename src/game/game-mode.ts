@@ -1,0 +1,41 @@
+// Wires host, scene director and HUD together for `?mode=game`.
+import type * as THREE from 'three';
+import type {CoveResources} from '../scene/cove';
+import type {SceneExtension} from '../runtime/demo';
+import {createHost} from './host';
+import {createFishingScene} from './fishing-scene';
+import {createHud} from './hud';
+import {setCameraHome} from '../scene/camera';
+
+export const isGameMode=()=>new URLSearchParams(location.search).get('mode')==='game';
+
+export function prepareGamePage(){
+ document.body.classList.add('game-mode');
+ // Frame the boat and the beach stall, leaving room for the HUD on the right.
+ setCameraHome({x:9.5,y:11,z:14},{x:1.8,y:.2,z:.4});
+ document.title='Ocean Focus — odaklan, balık tut';
+ const heading=document.querySelector('.scene-heading')!;
+ heading.querySelector('p')!.textContent='OCEAN FOCUS · POMODORO';
+ heading.querySelector('h1')!.replaceChildren('Odaklan.',document.createElement('br'),'Balık tut.');
+}
+
+export function createGameExtension(app:HTMLElement){
+ const speed=Number(new URLSearchParams(location.search).get('speed')??'1')||1;
+ const host=createHost({speed});
+ const hud=createHud(host,app);
+ // Dev-only handle for visual QA (e.g. finishing a session on demand). Stripped from production builds.
+ if(import.meta.env.DEV)(window as unknown as {oceanFocus:unknown}).oceanFocus={host,finish(){const a=host.save.active;if(a){a.endsAt=a.startedAt;host.tick();}}};
+ return (context:{group:THREE.Group;cove:CoveResources}):SceneExtension=>{
+  const scene=createFishingScene(context.cove);context.group.add(scene.group);
+  if(import.meta.env.DEV)Object.assign((window as unknown as {oceanFocus:object}).oceanFocus,{scene});
+  const unsubscribe=host.subscribe(event=>scene.handle(event));
+  scene.resume(host.save,host.progress(),host.expectedFish());
+  // Settle only after the scene listens, so a session that ended while the page was closed still plays its sale.
+  // The interval keeps the timer honest when the render loop is paused or the tab is hidden.
+  const interval=window.setInterval(()=>{host.tick();hud.frame();},500);
+  return {
+   update(time,delta,controls){host.tick();scene.setProgress(host.progress(),host.expectedFish());scene.update(time,delta,controls);hud.frame();},
+   dispose(){unsubscribe();window.clearInterval(interval);hud.dispose();context.group.remove(scene.group);scene.dispose();},
+  };
+ };
+}

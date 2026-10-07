@@ -19,7 +19,8 @@ import {createQualityController} from './quality';
 import {createRenderPacer} from './render-pacer';
 import {DEFAULT_CONTROLS} from '../types';
 import type {DemoController,DemoControls,QualityMode,QualityProfile,ControlMode,TurtleRoutineStatus} from '../types';
-export function createDemo(canvas:HTMLCanvasElement,options:{reducedMotion:boolean;quality:QualityMode;onFatal(error:Error):void;onNavigation?(ready:boolean,error?:string):void;onTurtle?(ready:boolean,error?:string):void;onTurtleState?(state:string):void;onTurtleRoutine?(status:TurtleRoutineStatus):void}):DemoController{
+export type SceneExtension={update(time:number,delta:number,controls:DemoControls):void;dispose():void};
+export function createDemo(canvas:HTMLCanvasElement,options:{reducedMotion:boolean;quality:QualityMode;onFatal(error:Error):void;onNavigation?(ready:boolean,error?:string):void;onTurtle?(ready:boolean,error?:string):void;onTurtleState?(state:string):void;onTurtleRoutine?(status:TurtleRoutineStatus):void;extend?(context:{group:THREE.Group;cove:ReturnType<typeof createCove>}):SceneExtension}):DemoController{
  const gl=canvas.getContext('webgl2',{antialias:true,alpha:false,preserveDrawingBuffer:true});if(!gl)throw Error('WebGL2 is unavailable on this browser.');
  const scene=new THREE.Scene();scene.background=new THREE.Color(0xeeeae5);
  let renderer:THREE.WebGLRenderer|null=null,cove:ReturnType<typeof createCove>|null=null,water:ReturnType<typeof createWater>|null=null;
@@ -32,7 +33,7 @@ export function createDemo(canvas:HTMLCanvasElement,options:{reducedMotion:boole
  const resetOrbitResponse=()=>{orbitResponse=createOrbitWaterResponse();orbitRevision=rig?.orbitState().revision??-1;water?.setOrbitResponse(0);};
  let turtle:TurtleView|null=null,turtleController:ReturnType<typeof createTurtleController>|null=null,turtleLoading=false,mode:ControlMode='camera',accumulator=0,currentProfile:QualityProfile='balanced',lastLocomotion='';
  let controls:DemoControls={...DEFAULT_CONTROLS};
- let turtleRoutine:ReturnType<typeof createTurtleRoutine>|null=null,lastRoutineStatus='',routineInitializationFailed=false;
+ let turtleRoutine:ReturnType<typeof createTurtleRoutine>|null=null,lastRoutineStatus='',routineInitializationFailed=false,extension:SceneExtension|null=null;
  const publishRoutine=(startReason?:string)=>{
   const state=turtleRoutine?.diagnostics(),phase=state?.phase??'off';let message='';
   if(startReason||routineInitializationFailed)message=startReason==='paused'?'Play the scene to start the routine.':startReason==='nest-present'?'Return the turtle to reset the nest before starting another routine.':startReason==='no-safe-route'?'Move the turtle into clear water and try again.':'The turtle routine is not ready yet.';
@@ -82,10 +83,11 @@ export function createDemo(canvas:HTMLCanvasElement,options:{reducedMotion:boole
   finally{loading=false;}
  };
  const retryNavigation=()=>void navigation();
- const dispose=()=>{if(disposed)return;disposed=true;assetAbort.abort();contactMotion?.dispose();contactTrails?.dispose();turtleRoutine?.dispose();turtleController?.dispose();turtle?.dispose();trails?.dispose();seabed?.dispose();loop?.dispose();input?.dispose();rig?.dispose();world?.dispose();canvas.removeEventListener('webglcontextlost',lost);canvas.removeEventListener('retrynavigation',retryNavigation);canvas.removeEventListener('retryturtle',retryTurtle);document.removeEventListener('visibilitychange',visibility);water?.dispose();cove?.dispose();initialCamera.dispose();renderer?.renderLists.dispose();renderer?.dispose();if(renderer)renderer.forceContextLoss();else gl.getExtension('WEBGL_lose_context')?.loseContext();scene.clear();};
+ const dispose=()=>{if(disposed)return;disposed=true;assetAbort.abort();extension?.dispose();extension=null;contactMotion?.dispose();contactTrails?.dispose();turtleRoutine?.dispose();turtleController?.dispose();turtle?.dispose();trails?.dispose();seabed?.dispose();loop?.dispose();input?.dispose();rig?.dispose();world?.dispose();canvas.removeEventListener('webglcontextlost',lost);canvas.removeEventListener('retrynavigation',retryNavigation);canvas.removeEventListener('retryturtle',retryTurtle);document.removeEventListener('visibilitychange',visibility);water?.dispose();cove?.dispose();initialCamera.dispose();renderer?.renderLists.dispose();renderer?.dispose();if(renderer)renderer.forceContextLoss();else gl.getExtension('WEBGL_lose_context')?.loseContext();scene.clear();};
  try{
   renderer=new THREE.WebGLRenderer({canvas,context:gl,antialias:true,preserveDrawingBuffer:true});renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=.94;renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.shadowMap.autoUpdate=false;renderer.shadowMap.needsUpdate=true;
   cove=createCove(7);seabed=createSeabedProps(7,cove.data);trails=createTurtleTrails(cove);dynamicGroup.add(trails.group);water=createWater(cove);water.setDynamicGroup(dynamicGroup);scene.add(cove.group,seabed.group,water.mesh,dynamicGroup,new THREE.HemisphereLight(0xdff4ff,0x746a56,1));
+  if(options.extend)extension=options.extend({group:dynamicGroup,cove});
   const sun=new THREE.DirectionalLight(0xfff1db,3.4);sun.position.set(Math.cos(DEFAULT_CONTROLS.sunAzimuth*Math.PI/180)*22,25,Math.sin(DEFAULT_CONTROLS.sunAzimuth*Math.PI/180)*22);sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);Object.assign(sun.shadow.camera,{left:-24,right:24,top:24,bottom:-24,near:1,far:100});sun.shadow.bias=-.0003;sun.shadow.normalBias=.025;scene.add(sun);
   const applyQuality=(profile:QualityProfile)=>{if(disposed)return;currentProfile=profile;turtle?.setQuality(profile);seabed?.setQuality(profile);water!.setDetail(profile);cove!.setQuality(profile);renderer!.shadowMap.needsUpdate=true;renderer!.setPixelRatio(Math.min(devicePixelRatio,{low:1,balanced:1.5,high:2}[profile]));renderer!.setSize(canvas.clientWidth,canvas.clientHeight,false);canvas.dataset.quality=profile;render();};
   const quality=createQualityController(options.quality,targetFps,applyQuality);
@@ -113,6 +115,7 @@ export function createDemo(canvas:HTMLCanvasElement,options:{reducedMotion:boole
     }
     publishRoutine();
    }
+   extension?.update(time,simulationDelta,controls);
    const changed=rig?.update(snapshot,mode==='turtle'&&turtleController?turtleController.state.position:null,inputDelta)??false,now=performance.now();
    const orbitPose=rig?.orbitState();
    // The live paused state already includes user, host, and reduced-motion pauses.
