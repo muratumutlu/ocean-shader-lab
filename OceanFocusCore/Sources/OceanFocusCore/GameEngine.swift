@@ -34,8 +34,11 @@ public struct GameEngine: Sendable {
         return region.upgrades.filter { !owned.contains($0.id) && $0.requires.allSatisfy(owned.contains) }
     }
 
+    /// Shop and region changes are blocked while a focus session runs (they would change its payout).
+    /// Breaks still allow them.
     public func purchase(_ upgradeId: String, in state: inout GameState) throws {
         guard let match = catalog.upgrade(upgradeId) else { throw GameError.unknownUpgrade(upgradeId) }
+        guard state.activeSession?.kind != .focus else { throw GameError.sessionAlreadyActive }
         guard match.region.id == state.currentRegionId else { throw GameError.wrongRegion(upgradeId) }
         var progress = state.progress(for: match.region.id)
         let owned = progress.ownedIds
@@ -54,7 +57,7 @@ public struct GameEngine: Sendable {
     /// Pays `unlockPrice` from the current region's money, then switches to the new region.
     public func unlockRegion(_ regionId: String, licensed: Bool, in state: inout GameState) throws {
         guard let region = catalog.region(regionId) else { throw GameError.unknownRegion(regionId) }
-        guard state.activeSession == nil else { throw GameError.sessionAlreadyActive }
+        guard state.activeSession?.kind != .focus else { throw GameError.sessionAlreadyActive }
         guard !state.unlockedRegionIds.contains(regionId) else { throw GameError.alreadyUnlocked(regionId) }
         guard region.available else { throw GameError.regionUnavailable(regionId) }
         guard licensed || !region.requiresLicense else { throw GameError.requiresLicense(regionId) }
@@ -70,7 +73,7 @@ public struct GameEngine: Sendable {
 
     public func switchRegion(_ regionId: String, licensed: Bool, in state: inout GameState) throws {
         guard let region = catalog.region(regionId) else { throw GameError.unknownRegion(regionId) }
-        guard state.activeSession == nil else { throw GameError.sessionAlreadyActive }
+        guard state.activeSession?.kind != .focus else { throw GameError.sessionAlreadyActive }
         guard state.unlockedRegionIds.contains(regionId) else { throw GameError.regionLocked(regionId) }
         guard licensed || !region.requiresLicense else { throw GameError.requiresLicense(regionId) }
         state.currentRegionId = regionId

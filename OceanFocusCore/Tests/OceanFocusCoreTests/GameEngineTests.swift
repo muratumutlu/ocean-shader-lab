@@ -107,6 +107,31 @@ final class GameEngineTests: XCTestCase {
         }
     }
 
+    func activeSession(_ kind: SessionKind) -> ActiveSession {
+        ActiveSession(kind: kind, durationSec: 1500, startedAt: Date(), endsAt: Date().addingTimeInterval(1500),
+                      monotonicStart: 0, bootSessionId: "boot-1", regionId: "med")
+    }
+
+    func testPurchaseIsBlockedDuringFocus() {
+        var state = makeState(medMoney: 100)
+        state.activeSession = activeSession(.focus)
+        XCTAssertThrowsError(try engine.purchase("med.rod", in: &state)) {
+            XCTAssertEqual($0 as? GameError, .sessionAlreadyActive)
+        }
+        XCTAssertEqual(state.progress(for: "med").money, 100)
+        XCTAssertEqual(state.progress(for: "med").ownedUpgrades, [])
+    }
+
+    func testShoppingAndRegionSwitchAreAllowedDuringABreak() throws {
+        var state = makeState(medMoney: 100)
+        state.unlockedRegionIds.append("arctic")
+        state.activeSession = activeSession(.rest)
+        try engine.purchase("med.rod", in: &state)
+        XCTAssertEqual(state.progress(for: "med").money, 80)
+        try engine.switchRegion("arctic", licensed: true, in: &state)
+        XCTAssertEqual(state.currentRegionId, "arctic")
+    }
+
     func testEnforceLicenseMovesToStarterWithoutDeletingProgress() throws {
         var state = makeState(medMoney: 150)
         try engine.unlockRegion("arctic", licensed: true, in: &state)
