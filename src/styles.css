@@ -305,3 +305,8 @@ body.game-mode .focus-settings #reset,body.game-mode .focus-settings #play,body.
 .focus-chip{flex-direction:column}
 .panel-title .focus-icon.is-inline{width:1.3em;height:1.3em}
 .focus-fish .focus-icon.is-inline{margin-right:.15em}
+/* Game-mode fallback: a parchment card instead of the study's poster page. */
+body.game-mode #fallback{background:var(--color-game-backdrop)}
+body.game-mode #fallback h2{font-family:var(--font-rounded);font-weight:900;font-size:var(--size-40);color:var(--color-game-ink);margin:0 0 var(--size-8)}
+body.game-mode #fallback p{font-family:var(--font-rounded);font-weight:800;font-size:var(--size-16);color:var(--color-game-ink-soft);margin:0 auto var(--size-20)}
+body.game-mode #fallback #retry{font-family:var(--font-rounded);min-height:var(--size-56);padding:0 var(--size-40);border:var(--size-3) solid var(--color-game-wood-dark);border-radius:var(--size-16);background:linear-gradient(var(--color-game-go-top),var(--color-game-go));box-shadow:0 var(--size-6) 0 var(--color-game-go-lip);color:var(--color-game-white);font-weight:900;font-size:var(--size-18);text-shadow:0 var(--size-2) 0 var(--color-game-text-shadow)}

@@ -46,8 +46,13 @@ export function createHud(host:Host,parent:HTMLElement){
  const speed=el('button',{type:'button',className:'focus-toggle'});
  const settings=el('div',{className:'focus-card focus-panel-sheet focus-settings',hidden:true},el('p',{className:'panel-title'},...label('gear','SETTINGS')),speed);
  // Reuse the scene's own controls (waves, tide, sun, quality, camera reset, pause, full screen) inside the gear panel.
- for(const id of ['play','fullscreen']){const node=document.querySelector<HTMLElement>('#'+id);if(node)settings.append(node);}
- const coast=document.querySelector<HTMLElement>('#settings-panel');if(coast){coast.hidden=false;settings.append(coast);}
+ // They are borrowed, not owned: dispose() puts them back so a scene restart finds them again.
+ const borrowed:{node:HTMLElement;parent:Node;next:Node|null;hidden:HTMLElement["hidden"]}[]=[];
+ for(const id of ['play','fullscreen','settings-panel']){
+  const node=document.querySelector<HTMLElement>('#'+id);if(!node?.parentNode)continue;
+  borrowed.push({node,parent:node.parentNode,next:node.nextSibling,hidden:node.hidden});
+  if(id==='settings-panel')node.hidden=false;settings.append(node);
+ }
  const corner=el('div',{className:'focus-corner'},gear,settings);
  const toast=el('div',{className:'focus-toast',role:'status'});toast.setAttribute('aria-live','polite');
  parent.append(corner,top,controls,toast);
@@ -126,6 +131,6 @@ export function createHud(host:Host,parent:HTMLElement){
  return {
   /** Called every frame; repaints only when the visible second changes. */
   frame(){const key=host.save.active?Math.ceil(host.remainingMs()/1000)+':'+Math.floor(host.expectedFish()*host.progress()):'idle';if(key!==last){last=key;render();}},
-  dispose(){unsubscribe();clearTimeout(toastTimer);corner.remove();top.remove();controls.remove();toast.remove();},
+  dispose(){unsubscribe();clearTimeout(toastTimer);for(const b of borrowed.reverse()){b.node.hidden=b.hidden;b.parent.insertBefore(b.node,b.next);}corner.remove();top.remove();controls.remove();toast.remove();},
  };
 }

@@ -17,7 +17,13 @@ function setUserPaused(value:boolean){
  userPaused=value;controller?.setPaused(userPaused||hostPaused);uiBindings?.setPaused(userPaused);
  if(controller)status.textContent=userPaused?'PAUSED / COASTAL STUDY':'LIVE / COASTAL STUDY';
 }
-function fail(error:Error){shutdown();fallback.hidden=false;toolbar.hidden=true;status.textContent='STILL VIEW';document.querySelector('#fallback-message')!.textContent=error.message+' You can retry the live scene below.';}
+// Game mode recovers on its own (e.g. the GPU context drops when an iPhone Duo folds); after three quick
+// failures it shows a simple retry card instead of the technical message.
+let gameRetries=0,retryReset=0;
+function fail(error:Error){
+ if(gameMode&&gameRetries<3){gameRetries++;shutdown();window.setTimeout(start,700);return;}
+ shutdown();fallback.hidden=false;
+ if(gameMode){toolbar.hidden=true;document.querySelector('#fallback-message')!.textContent='Something interrupted the cove. Tap to bring it back.';return;}toolbar.hidden=true;status.textContent='STILL VIEW';document.querySelector('#fallback-message')!.textContent=error.message+' You can retry the live scene below.';}
 function start(){
  shutdown();currentMode='camera';document.querySelector('#mode-camera')!.setAttribute('aria-pressed','true');document.querySelector('#mode-turtle')!.setAttribute('aria-pressed','false');document.querySelector<HTMLButtonElement>('#mode-turtle')!.disabled=true;document.querySelector<HTMLElement>('#return-turtle')!.hidden=true;document.querySelector<HTMLElement>('#turtle-touch')!.hidden=true;document.querySelector<HTMLElement>('#turtle-retry')!.hidden=true;fallback.hidden=true;toolbar.hidden=false;status.textContent='Preparing the coast…';
  const old=document.querySelector<HTMLCanvasElement>('#ocean')!,canvas=old.cloneNode(false) as HTMLCanvasElement;old.replaceWith(canvas);
@@ -28,9 +34,10 @@ function start(){
   uiBindings.setTurtleRoutine(turtleRoutineStatus);
   observer=new ResizeObserver(()=>{controller?.resize(canvas.clientWidth,canvas.clientHeight,devicePixelRatio);});observer.observe(canvas);
   status.textContent=userPaused?'PAUSED / COASTAL STUDY':'LIVE / COASTAL STUDY';postParent('ready');
+  window.clearTimeout(retryReset);retryReset=window.setTimeout(()=>{gameRetries=0;},15_000);
  }catch(error){fail(error instanceof Error?error:new Error('The live coast could not start.'));}
 }
-document.querySelector('#retry')!.addEventListener('click',start);
+document.querySelector('#retry')!.addEventListener('click',()=>{gameRetries=0;start();});
 document.querySelector('#navigation-retry')!.addEventListener('click',()=>document.querySelector('#ocean')!.dispatchEvent(new Event('retrynavigation')));
 document.querySelector('#turtle-retry')!.addEventListener('click',()=>document.querySelector('#ocean')!.dispatchEvent(new Event('retryturtle')));
 window.addEventListener('message',event=>{
