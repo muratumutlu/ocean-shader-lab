@@ -184,13 +184,13 @@ export function createFishingScene(context:SceneContext){
    });
   });
  }
- function floatLabel(text:string,at:THREE.Vector3,color?:string){
-  const label=createLabel(text,color);label.position.copy(toLocal(at));effects.add(label);let t=0;const start=label.position.y;
+ function floatLabel(text:string,at:THREE.Vector3,color?:string,glyph:'coin'|'fish'|null=null){
+  const label=createLabel(text,color,glyph);label.position.copy(toLocal(at));effects.add(label);let t=0;const start=label.position.y;
   tasks.push({update(dt){t+=dt;label.position.y=start+t*.6;(label.material as THREE.SpriteMaterial).opacity=Math.min(1,t*4)*Math.max(0,1-(t-1.6)/.8);if(t>2.4){effects.remove(label);disposeTree(label);(label.material as THREE.SpriteMaterial).map?.dispose();(label.material as THREE.SpriteMaterial).dispose();return true;}return false;}});
  }
  function coinBurst(money:number){
   const bursts=Math.max(4,Math.min(24,Math.round(money/3)));const origin=worldOf(stall.coins);
-  floatLabel('+'+money+' 💰',worldOf(stall.group).add(new THREE.Vector3(0,2.6,0)));
+  floatLabel('+'+money,worldOf(stall.group).add(new THREE.Vector3(0,2.6,0)),undefined,'coin');
   acting=acting.filter(x=>x.figure!==fisher);act(fisher,'cheer');for(const f of Object.values(crew))act(f,'hop');
   for(let i=0;i<bursts;i++)wait(i*.06,()=>{const coin=createCoin();const a=Math.random()*Math.PI*2,r=.15+Math.random()*.25;
    const pile=nextCoinSpot();arc(coin,toLocal(origin.clone().add(new THREE.Vector3(Math.cos(a)*r,.1,Math.sin(a)*r))),toLocal(worldOf(stall.coins).add(pile)),1.2+Math.random()*.6,.9,()=>{effects.remove(coin);coin.position.copy(pile);coin.rotation.set(0,0,0);stall.coins.add(coin);},14);});
@@ -206,7 +206,7 @@ export function createFishingScene(context:SceneContext){
  }
  function spill(){
   busy=true;reelIn();const count=bucket.fishSlots.children.length;let t=0;const start=bucket.group.position.clone();
-  if(count)floatLabel('-'+count+' 🐟',worldOf(bucket.group).add(new THREE.Vector3(0,1.4,0)),'#f0a08c');
+  if(count)floatLabel('-'+count,worldOf(bucket.group).add(new THREE.Vector3(0,1.4,0)),'#f0a08c','fish');
   tasks.push({update(dt){t+=dt;const k=ease(Math.min(1,t/.6));bucket.group.position.set(start.x-.3*k,start.y+.25*k,start.z);bucket.group.rotation.z=1.9*k;headNod=.5*Math.min(1,t/.6);
    if(t>=.6){
     const from=worldOf(bucket.group);for(let i=0;i<Math.max(count,3);i++)wait(i*.07,()=>{const fish=createFish(FISH_TINTS[i%FISH_TINTS.length]);fish.scale.setScalar(1.15);

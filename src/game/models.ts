@@ -122,9 +122,15 @@ function signTexture(){
 }
 export function createCoin(){const coin=new THREE.Mesh(new THREE.CylinderGeometry(.09,.09,.025,18),new THREE.MeshStandardMaterial({color:0xf0c445,roughness:.35,metalness:.3,emissive:0x6b4a00,emissiveIntensity:.35}));return coin;}
 /** Floating text label (e.g. "+30") that always faces the camera. */
-export function createLabel(text:string,color='#f2cf6b'){
+export function createLabel(text:string,color='#f2cf6b',glyph:'coin'|'fish'|null=null){
  const canvas=document.createElement('canvas');canvas.width=256;canvas.height=96;const g=canvas.getContext('2d')!;
- g.font="bold 60px ui-rounded, 'Arial Rounded MT Bold', 'Nunito', sans-serif";g.textAlign='center';g.textBaseline='middle';g.lineWidth=10;g.strokeStyle='rgba(23,40,44,.85)';g.strokeText(text,128,50);g.fillStyle=color;g.fillText(text,128,50);
+ g.font="bold 60px ui-rounded, 'Arial Rounded MT Bold', 'Nunito', sans-serif";g.textBaseline='middle';g.lineWidth=10;g.lineJoin='round';g.strokeStyle='#4f2e17';
+ // Text and a drawn glyph (same style as the HUD icons), centred together.
+ const textWidth=g.measureText(text).width,glyphSize=glyph?54:0,gap=glyph?10:0,x0=128-(textWidth+gap+glyphSize)/2;
+ g.textAlign='left';g.strokeText(text,x0,50);g.fillStyle=color;g.fillText(text,x0,50);
+ const gx=x0+textWidth+gap+glyphSize/2,gy=50;g.lineWidth=6;
+ if(glyph==='coin'){const grad=g.createRadialGradient(gx-8,gy-9,4,gx,gy,26);grad.addColorStop(0,'#fff3a8');grad.addColorStop(.5,'#ffc61a');grad.addColorStop(1,'#d18b00');g.beginPath();g.arc(gx,gy,23,0,Math.PI*2);g.fillStyle=grad;g.fill();g.strokeStyle='#8a5a00';g.stroke();g.fillStyle='#8a5a00';g.font="bold 26px ui-rounded, 'Arial Rounded MT Bold', sans-serif";g.textAlign='center';g.fillText('★',gx,gy+1);}
+ if(glyph==='fish'){g.beginPath();g.moveTo(gx-26,gy);g.quadraticCurveTo(gx-6,gy-22,gx+12,gy-4);g.lineTo(gx+26,gy-16);g.lineTo(gx+26,gy+16);g.lineTo(gx+12,gy+4);g.quadraticCurveTo(gx-6,gy+22,gx-26,gy);g.closePath();g.fillStyle='#ffffff';g.fill();g.strokeStyle='#4f2e17';g.stroke();g.beginPath();g.arc(gx-12,gy-3,3.5,0,Math.PI*2);g.fillStyle='#4f2e17';g.fill();}
  const texture=new THREE.CanvasTexture(canvas);texture.colorSpace=THREE.SRGBColorSpace;
  const sprite=new THREE.Sprite(new THREE.SpriteMaterial({map:texture,transparent:true,depthWrite:false,depthTest:false}));sprite.scale.set(1.6,.6,1);sprite.renderOrder=10;return sprite;
 }

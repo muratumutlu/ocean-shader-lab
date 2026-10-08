@@ -10,7 +10,7 @@ struct OceanFocusApp: App {
         MenuBarExtra {
             MenuContent(store: store)
         } label: {
-            MenuBarLabel(title: store.menuTitle)
+            MenuBarLabel(title: store.menuTitle, symbol: store.menuSymbol)
         }
         .menuBarExtraStyle(.menu)
 
@@ -30,10 +30,10 @@ struct MenuContent: View {
     var body: some View {
         if let active = store.active {
             if active.kind == .focus {
-                Text("🎣 Fishing · \(Int(Double(store.expectedFish) * store.progress)) / \(store.expectedFish) fish")
+                Label("Fishing · \(Int(Double(store.expectedFish) * store.progress)) / \(store.expectedFish) fish", systemImage: "fish")
                 Button("Give up (catch spills)…") { confirmGiveUp() }
             } else {
-                Text("☕️ Break")
+                Label("Break", systemImage: "cup.and.saucer")
                 Button("End break") { store.abandon() }
             }
         } else {
@@ -43,7 +43,7 @@ struct MenuContent: View {
             }
         }
         Divider()
-        Text("\(store.region?.name ?? "") · \(store.money) 💰")
+        Label("\(store.region?.name ?? "") · \(store.money) coins", systemImage: "dollarsign.circle")
         Button("Open game") {
             openWindow(id: "game")
             NSApp.activate(ignoringOtherApps: true)
@@ -70,11 +70,15 @@ struct MenuContent: View {
 /// The menu bar label exists from launch, so it also opens the game window once at startup.
 struct MenuBarLabel: View {
     let title: String
+    let symbol: String
     @Environment(\.openWindow) private var openWindow
     @State private var opened = false
 
     var body: some View {
-        Text(title).monospacedDigit()
+        HStack(spacing: 4) {
+            Image(systemName: symbol)
+            if !title.isEmpty { Text(title).monospacedDigit() }
+        }
             .task {
                 guard !opened else { return }
                 opened = true

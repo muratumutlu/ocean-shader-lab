@@ -295,3 +295,13 @@ body.game-mode .focus-settings #settings-panel label{font-size:var(--size-13)}
 @media(max-width:600px){.focus-pill{height:var(--size-46)}.focus-timer{width:var(--size-150)}.focus-coins{min-width:0}.focus-time{font-size:var(--size-20)}.focus-fish{display:none}.focus-panel-sheet{width:calc(100vw - var(--size-24));max-height:calc(100svh - var(--size-140))}.focus-top-row{gap:var(--size-6)}.focus-pill{margin-left:var(--size-18);padding-left:var(--size-30);padding-right:var(--size-12)}.focus-badge{left:calc(-1 * var(--size-18))}.focus-card .focus-go.is-hero{font-size:var(--size-18)}}
 /* The scene's own buttons carry id rules from the study page; restate the chip style at id strength. */
 body.game-mode .focus-settings #reset,body.game-mode .focus-settings #play,body.game-mode .focus-settings #fullscreen{min-height:var(--size-44);border:var(--size-3) solid var(--color-game-wood-dark);border-radius:var(--size-16);background:linear-gradient(var(--color-game-white),var(--color-game-chip));color:var(--color-game-ink);font-weight:900;font-size:var(--size-14);box-shadow:0 var(--size-5) 0 var(--color-game-chip-lip)}
+/* Drawn icon set (src/game/icons.ts): white fill, dark wood outline, gold accents. */
+.focus-icon{width:1em;height:1em;overflow:visible;stroke:var(--color-game-wood-dark);stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;flex:0 0 auto}
+.focus-icon-fill{fill:var(--color-game-white)}.focus-icon-line{fill:none}.focus-icon-dark{fill:var(--color-game-wood-dark);stroke:none}.focus-icon-accent{fill:var(--color-game-gold)}
+.focus-icon.is-inline{width:1.15em;height:1.15em;vertical-align:-.2em;margin:0 .3em 0 0}
+.focus-badge .focus-icon,.focus-round .focus-icon{width:60%;height:60%}
+.focus-tile .focus-icon{width:70%;height:70%}
+.focus-card button{display:inline-flex;align-items:center;justify-content:center}
+.focus-chip{flex-direction:column}
+.panel-title .focus-icon.is-inline{width:1.3em;height:1.3em}
+.focus-fish .focus-icon.is-inline{margin-right:.15em}

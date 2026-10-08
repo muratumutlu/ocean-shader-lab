@@ -78,12 +78,15 @@ final class GameStore: ObservableObject {
     var progress: Double { timer.progress(in: state) }
     var expectedFish: Int { timer.expectedFish(in: state) }
 
+    /// Countdown for the menu bar; empty when no session runs (the icon alone shows).
     var menuTitle: String {
-        guard let active else { return "🎣" }
-        let icon = active.kind == .focus ? "🎣" : "☕️"
+        guard active != nil else { return "" }
         let seconds = Int(remaining.rounded(.up))
-        return String(format: "%@ %02d:%02d", icon, seconds / 60, seconds % 60)
+        return String(format: "%02d:%02d", seconds / 60, seconds % 60)
     }
+
+    /// SF Symbol for the menu bar: a fish while focusing or idle, a cup during a break.
+    var menuSymbol: String { active?.kind == .rest ? "cup.and.saucer.fill" : "fish.fill" }
 
     // MARK: Commands
 
@@ -91,14 +94,14 @@ final class GameStore: ObservableObject {
         guard let preset = FocusPreset(rawValue: minutes) else { return }
         do { try timer.startFocus(preset, in: &state) } catch { return }
         persist()
-        schedule(title: "Session complete! 🎣", body: "Your catch is waiting at the stall.")
+        schedule(title: "Session complete!", body: "Your catch is waiting at the stall.")
         send(["type": "started", "session": sessionJSON(state.activeSession!), "expectedFish": expectedFish])
     }
 
     func startBreak() {
         do { try timer.startBreak(in: &state) } catch { return }
         persist()
-        schedule(title: "Break over ☕️", body: "Ready for another session?")
+        schedule(title: "Break over", body: "Ready for another session?")
         send(["type": "started", "session": sessionJSON(state.activeSession!), "expectedFish": 0])
     }
 

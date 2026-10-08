@@ -24,7 +24,7 @@ export function prepareGamePage(){
  const label=(id:string,text:string)=>{const node=document.querySelector(`label[for="${id}"]`);if(node?.firstChild)node.firstChild.textContent=text+' ';};
  label('swell','Waves');label('tide','Water level');label('light','Sun');label('quality','Quality');
  document.querySelector('#reset')!.textContent='Reset camera';
- document.querySelector('#fullscreen')!.textContent='⛶ Full screen';
+ document.querySelector('#fullscreen')!.textContent='Full screen';
  const quality:Record<string,string>={auto:'Auto',low:'Low',balanced:'Balanced',high:'High'};
  for(const option of document.querySelectorAll<HTMLOptionElement>('#quality option'))option.textContent=quality[option.value]??option.textContent;
 }
