@@ -29,7 +29,7 @@ struct GameWebView: UIViewRepresentable {
         if ProcessInfo.processInfo.environment["OCEAN_FOCUS_PROBE"] != nil {
             for delay in [3.0, 12.0] {
                 DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak webView] in
-                    webView?.evaluateJavaScript("(()=>{const c=document.querySelector('#ocean');return JSON.stringify({t:\(delay),quality:c.dataset.quality,dpr:devicePixelRatio,css:[c.clientWidth,c.clientHeight],buffer:[c.width,c.height]})})()") { result, _ in
+                    webView?.evaluateJavaScript("(()=>{const c=document.querySelector('#ocean');return JSON.stringify({t:\(delay),quality:c.dataset.quality,dpr:devicePixelRatio,css:[c.clientWidth,c.clientHeight],buffer:[c.width,c.height],floatRT:!!c.getContext('webgl2')?.getExtension('EXT_color_buffer_float'),halfRT:!!c.getContext('webgl2')?.getExtension('EXT_color_buffer_half_float')})})()") { result, _ in
                         let line = (result as? String ?? "nil") + "\n"
                         let url = FileManager.default.temporaryDirectory.appendingPathComponent("probe.txt")
                         if let handle = try? FileHandle(forWritingTo: url) { handle.seekToEndOfFile(); handle.write(Data(line.utf8)); try? handle.close() }

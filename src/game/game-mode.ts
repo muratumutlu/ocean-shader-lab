@@ -18,7 +18,8 @@ export function prepareGamePage(){
  // At startup inside WKWebView the viewport may not be laid out yet; fall back to the screen's shape.
  const width=innerWidth||screen.width,height=innerHeight||screen.height;
  if(width/height<1)setCameraHome({x:3.4,y:19,z:21.5},{x:-.3,y:0,z:1.2});
- else setCameraHome({x:9.5,y:11,z:14},{x:1.8,y:.2,z:.4});
+ // A lower, flatter angle leaves a band of painted sky above the far shore.
+ else setCameraHome({x:9.8,y:8.2,z:15.5},{x:1.4,y:.6,z:-1.2});
  document.title='Ocean Focus';
  // The coast controls move into the HUD's settings gear; give them short game labels there.
  const label=(id:string,text:string)=>{const node=document.querySelector(`label[for="${id}"]`);if(node?.firstChild)node.firstChild.textContent=text+' ';};

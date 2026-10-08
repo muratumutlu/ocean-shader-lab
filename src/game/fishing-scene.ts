@@ -3,6 +3,7 @@
 import * as THREE from 'three';
 import type {SceneContext} from '../runtime/demo';
 import {createRegionEnvironment} from './environment';
+import {paintSky} from './sky';
 import {roleOf,themeFor,type RegionTheme} from './regions';
 import type {GameSave,HostEvent} from './host';
 import {createFishSchools} from './fish-schools';
@@ -109,7 +110,8 @@ export function createFishingScene(context:SceneContext){
  function applyTheme(regionId:string){
   const next=themeFor(regionId);if(next.id===theme.id&&environment.group.userData.applied)return;
   theme=next;environment.group.userData.applied=true;
-  context.setBackground(theme.background);context.setWaterTint(theme.waterTint);context.setPalmsVisible(theme.palms);
+  context.setBackground(paintSky(theme.sky,theme.id.length*13+7));context.setWaterTint(new THREE.Color().setRGB(...theme.water));
+  context.setSand(theme.sand);context.setPalmsVisible(theme.palms);
   environment.apply(theme);schools.setTints(theme.fishTints);
   // New outfit: swap the fisherman (the rod moves with him) and let crew be rebuilt by applyOwned.
   const parent=fisher.group.parent,pos=fisher.group.position.clone();fisher.group.removeFromParent();disposeTree(fisher.group);

@@ -22,7 +22,7 @@ import {DEFAULT_CONTROLS} from '../types';
 import type {DemoController,DemoControls,QualityMode,QualityProfile,ControlMode,TurtleRoutineStatus} from '../types';
 export type SceneExtension={update(time:number,delta:number,controls:DemoControls):void;dispose():void};
 /** What a page mode may change in the scene: its own dynamic objects plus a few environment knobs. */
-export type SceneContext={group:THREE.Group;cove:ReturnType<typeof createCove>;setBackground(color:THREE.ColorRepresentation):void;setWaterTint(color:THREE.ColorRepresentation):void;setPalmsVisible(visible:boolean):void};
+export type SceneContext={group:THREE.Group;cove:ReturnType<typeof createCove>;setBackground(background:THREE.ColorRepresentation|THREE.Texture):void;setWaterTint(color:THREE.ColorRepresentation):void;setSand(tint:[number,number,number]):void;setPalmsVisible(visible:boolean):void};
 export function createDemo(canvas:HTMLCanvasElement,options:{reducedMotion:boolean;quality:QualityMode;onFatal(error:Error):void;onNavigation?(ready:boolean,error?:string):void;onTurtle?(ready:boolean,error?:string):void;onTurtleState?(state:string):void;onTurtleRoutine?(status:TurtleRoutineStatus):void;extend?(context:SceneContext):SceneExtension;ambientTurtle?:boolean;pixelRatioCaps?:Record<QualityProfile,number>;autoQualityStart?:QualityProfile}):DemoController{
  // Device-pixel-ratio ceiling per quality profile; the study page keeps its lighter defaults.
  const pixelRatioCaps=options.pixelRatioCaps??{low:1,balanced:1.5,high:2};
@@ -93,7 +93,24 @@ export function createDemo(canvas:HTMLCanvasElement,options:{reducedMotion:boole
   renderer=new THREE.WebGLRenderer({canvas,context:gl,antialias:true,preserveDrawingBuffer:true});renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=.94;renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.shadowMap.autoUpdate=false;renderer.shadowMap.needsUpdate=true;
   cove=createCove(7);seabed=createSeabedProps(7,cove.data);trails=createTurtleTrails(cove);dynamicGroup.add(trails.group);water=createWater(cove);water.setDynamicGroup(dynamicGroup);scene.add(cove.group,seabed.group,water.mesh,dynamicGroup,new THREE.HemisphereLight(0xdff4ff,0x746a56,1));
   if(options.extend)extension=options.extend({group:dynamicGroup,cove,
-   setBackground(color){(scene.background as THREE.Color).set(color);water?.setDynamicGroup(dynamicGroup);render();},
+   setBackground(background){
+    // Colours keep the shared Color instance; a texture (painted sky) replaces it, disposing the previous one.
+    const previous=scene.background;
+    if(background instanceof THREE.Texture)scene.background=background;
+    else if(previous instanceof THREE.Color)previous.set(background);else scene.background=new THREE.Color(background);
+    if(previous instanceof THREE.Texture&&previous!==scene.background)previous.dispose();
+    water?.setDynamicGroup(dynamicGroup);render();
+   },
+   setSand(tint){
+    // Multiplies the beach's original vertex colours per channel (values above 1 lift that channel), so a
+    // region can whiten or grey its sand on top of the yellowish sand texture.
+    const ground=cove?.group.children.find(o=>o instanceof THREE.Mesh&&o.geometry.getAttribute('coastMoss')) as THREE.Mesh|undefined;
+    if(!ground)return;const attribute=ground.geometry.getAttribute('color') as THREE.BufferAttribute;
+    const original=(ground.userData.originalColors??=Float32Array.from(attribute.array as Float32Array)) as Float32Array;
+    const out=attribute.array as Float32Array;
+    for(let i=0;i<attribute.count;i++)for(let k=0;k<3;k++)out[i*3+k]=original[i*3+k]*tint[k];
+    attribute.needsUpdate=true;water?.setDynamicGroup(dynamicGroup);render();
+   },
    setWaterTint(color){water?.setTint(color);render();},
    // The static coast is cached, so refresh the capture after changing it.
    setPalmsVisible(visible){const palms=cove?.group.getObjectByName('cove-mint-palms');if(palms){palms.visible=visible;renderer!.shadowMap.needsUpdate=true;water?.setDynamicGroup(dynamicGroup);render();}}});

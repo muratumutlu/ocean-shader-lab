@@ -15,7 +15,8 @@ function gearPath(){
 
 const ICONS={
  gear:[['polygon',{points:gearPath()}],['circle',{cx:12,cy:12,r:3},'accent']],
- upgrade:[['polygon',{points:'12,10.6 20.4,19 16.6,19 12,14.4 7.4,19 3.6,19'}],['polygon',{points:'12,3 20.4,11.4 16.6,11.4 12,6.8 7.4,11.4 3.6,11.4'},'accent']],
+ // Crossed hammer and wrench: the classic 'build / upgrade' sign.
+ upgrade:[['path',{d:'M15.4 3.4a4.2 4.2 0 0 0-4.9 5.5L3.6 15.8a1.9 1.9 0 0 0 2.7 2.7l6.9-6.9a4.2 4.2 0 0 0 5.5-4.9l-2.5 2.5-2.4-.5-.5-2.4Z'}],['path',{d:'M6.2 3.6l3.4 3.4-1.8 1.8-3.4-3.4Z'},'accent'],['path',{d:'M8.7 7.9l11.2 11.2a1.6 1.6 0 0 1-2.3 2.3L6.4 10.2Z'},'accent']],
  cart:[['path',{d:'M2.5 4h2.6l2.3 10.4a1.6 1.6 0 0 0 1.6 1.3h8.5a1.6 1.6 0 0 0 1.6-1.2L21 7.8H6'}],['circle',{cx:9.6,cy:19.6,r:1.7}],['circle',{cx:17.4,cy:19.6,r:1.7}]],
  timer:[['circle',{cx:12,cy:13.5,r:7.6}],['path',{d:'M9.5 2.8h5M12 2.8v3.1M18.2 6.6l1.4-1.4'},'line'],['path',{d:'M12 13.5V9.4M12 13.5l2.8 1.8'},'line']],
  cup:[['path',{d:'M4.5 9h11.5v4.8A5.2 5.2 0 0 1 10.8 19h-1.1a5.2 5.2 0 0 1-5.2-5.2Z'}],['path',{d:'M16 10.4h1.6a2.6 2.6 0 0 1 0 5.2H16M8 3.5c-.8 1 .8 2-.1 3M11.5 3.5c-.8 1 .8 2-.1 3'},'line']],

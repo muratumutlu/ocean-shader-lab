@@ -23,10 +23,16 @@ export function createHud(host:Host,parent:HTMLElement){
  let preset:Preset=25;
  // ---- top-right: timer, coins, shop ----
  const time=el('div',{className:'focus-time',textContent:'25:00'});
- const fishCount=el('div',{className:'focus-fish'});
- const bar=el('div',{className:'focus-bar'});const barFill=el('div',{className:'focus-bar-fill'});bar.append(barFill);
- const timerBadge=badge('timer');
- const timerPill=el('div',{className:'focus-pill focus-timer'},timerBadge,el('div',{className:'focus-timer-body'},el('div',{className:'focus-timer-row'},time,fishCount),bar));
+ // Timer: a medallion whose gold ring fills with session progress, big digits, and a separate catch badge.
+ const ringNS='http://www.w3.org/2000/svg',RING=2*Math.PI*25;
+ const ring=document.createElementNS(ringNS,'svg');ring.setAttribute('viewBox','0 0 60 60');ring.setAttribute('class','focus-ring');ring.setAttribute('aria-hidden','true');
+ const track=document.createElementNS(ringNS,'circle'),arc=document.createElementNS(ringNS,'circle');
+ for(const [node,cls] of [[track,'focus-ring-track'],[arc,'focus-ring-fill']] as const){node.setAttribute('cx','30');node.setAttribute('cy','30');node.setAttribute('r','25');node.setAttribute('class',cls);ring.append(node);}
+ arc.setAttribute('stroke-dasharray',String(RING));arc.setAttribute('stroke-dashoffset',String(RING));
+ const timerIcon=el('span',{className:'focus-ring-icon'},icon('timer'));
+ const timerBadge=el('span',{className:'focus-badge focus-timer-badge',ariaHidden:'true'},ring,timerIcon);
+ const fishCount=el('span',{className:'focus-catch'});
+ const timerPill=el('div',{className:'focus-pill focus-timer'},timerBadge,time,fishCount);
  const coinValue=el('span',{className:'focus-coin-value'});
  const coins=el('div',{className:'focus-pill focus-coins'},el('span',{className:'focus-badge is-gold',ariaHidden:'true'},coin()),coinValue);
  const shopToggle=el('button',{type:'button',className:'focus-round focus-upgrades-toggle',title:'Upgrades',ariaLabel:'Upgrades'},icon('upgrade'));
@@ -111,11 +117,11 @@ export function createHud(host:Host,parent:HTMLElement){
   if(!active)confirmBox.hidden=true;
   if(!confirmBox.hidden)giveUp.hidden=true;
   const badgeName:IconName=active?.kind==='break'?'cup':'timer';
-  if(badgeName!==lastBadge){lastBadge=badgeName;timerBadge.replaceChildren(icon(badgeName));}
+  if(badgeName!==lastBadge){lastBadge=badgeName;timerIcon.replaceChildren(icon(badgeName));}
   time.textContent=active?clock(host.remainingMs()):clock(preset*60_000);
-  timerPill.classList.toggle('is-break',active?.kind==='break');
-  fishCount.replaceChildren(...(focusing?rich('{fish} '+Math.floor(host.expectedFish()*host.progress())+'/'+host.expectedFish()):[]));
-  barFill.style.transform='scaleX('+(active?host.progress():0)+')';
+  timerPill.classList.toggle('is-break',active?.kind==='break');timerPill.classList.toggle('is-idle',!active);
+  fishCount.hidden=!focusing;fishCount.replaceChildren(...(focusing?rich('{fish}'+Math.floor(host.expectedFish()*host.progress())+'/'+host.expectedFish()):[]));
+  arc.setAttribute('stroke-dashoffset',String(RING*(1-(active?host.progress():0))));
   const money=String(host.money());if(coinValue.textContent!==money){if(coinValue.textContent)coins.classList.remove('bump'),void coins.offsetWidth,coins.classList.add('bump');coinValue.textContent=money;}
   speed.replaceChildren(...(host.speed===1?label('fast','Demo speed ×60'):label('timer','Real time')));speed.setAttribute('aria-pressed',String(host.speed!==1));
   renderShop();

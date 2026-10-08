@@ -256,7 +256,7 @@ body.game-mode .focus-settings #settings-panel .panel-title,body.game-mode .focu
 .focus-toast.visible{animation:focus-toast .45s ease-out forwards}
 @media(max-width:600px){.focus-controls{left:var(--size-12);right:var(--size-12);bottom:calc(var(--size-12) + env(safe-area-inset-bottom));width:auto}.focus-top{top:calc(var(--size-12) + env(safe-area-inset-top));right:var(--size-12)}.focus-top-row{gap:var(--size-8)}.focus-corner{top:calc(var(--size-12) + env(safe-area-inset-top));left:var(--size-12)}.focus-time{font-size:var(--size-22)}.focus-coins{font-size:var(--size-18)}.focus-bar{min-width:var(--size-78)}.focus-badge{width:var(--size-44);height:var(--size-44);font-size:var(--size-20)}.focus-pill{padding-left:var(--size-30);min-height:var(--size-44)}.focus-round{width:var(--size-44);height:var(--size-44);font-size:var(--size-20)}.focus-shop{width:calc(100vw - var(--size-24))}.focus-toast{bottom:calc(var(--size-220) + env(safe-area-inset-bottom))}}
 /* Game mode: punchier, toy-like colour on top of the physically based render. */
-body.game-mode #ocean{filter:saturate(1.45) contrast(1.08) brightness(1.04)}
+body.game-mode #ocean{filter:saturate(1.22) contrast(1.06) brightness(1.04)}
 /* Icons must use the colour emoji font; rounded UI fonts carry monochrome glyphs for ⏱ and 🪙. */
 .focus-badge,.focus-tile,.focus-top .focus-round{font-family:var(--font-emoji)}
 .focus-coin{display:inline-grid;place-items:center;width:1.05em;height:1.05em;margin-left:.25em;vertical-align:-.15em;border-radius:50%;background:radial-gradient(circle at 35% 30%,var(--color-coin-light),var(--color-coin) 45%,var(--color-coin-dark));border:.1em solid var(--color-coin-edge);box-shadow:inset 0 0 0 .08em var(--color-coin-light)}
@@ -322,3 +322,24 @@ body.game-mode #fallback #retry{font-family:var(--font-rounded);min-height:var(-
  .focus-top{right:max(var(--size-12),calc(var(--size-80) - 2 * env(safe-area-inset-top)))}
 }
 .focus-icon-accent{stroke:var(--color-game-wood-dark)}
+/* Timer v2: progress ring around the medallion, big digits, separate catch badge. */
+.focus-timer{width:auto;min-width:var(--size-200);gap:var(--size-10);padding-right:var(--size-12)}
+.focus-timer .focus-time{font-size:var(--size-34);font-weight:900;letter-spacing:.02em;line-height:1}
+.focus-timer.is-idle .focus-time{color:var(--color-game-ink-soft)}
+.focus-timer-badge{background:none;border:0;box-shadow:none;width:var(--size-64);height:var(--size-64);left:calc(-1 * var(--size-26))}
+.focus-ring{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg)}
+.focus-ring-track{fill:var(--color-game-sea);stroke:var(--color-game-wood-dark);stroke-width:7}
+.focus-ring-fill{fill:none;stroke:var(--color-game-gold);stroke-width:5;stroke-linecap:round;transition:stroke-dashoffset .9s linear}
+.focus-timer.is-break .focus-ring-fill{stroke:var(--color-game-go-top)}
+.focus-ring-icon{position:absolute;inset:0;display:grid;place-items:center}
+.focus-ring-icon .focus-icon{width:52%;height:52%}
+.focus-catch{display:inline-flex;align-items:center;gap:var(--size-2);padding:var(--size-4) var(--size-10);border-radius:var(--size-50);background:linear-gradient(var(--color-game-go-top),var(--color-game-go));border:var(--size-2) solid var(--color-game-wood-dark);color:var(--color-game-white);font-size:var(--size-14);font-weight:900;text-shadow:0 var(--size-1) 0 var(--color-game-text-shadow)}
+.focus-catch[hidden]{display:none}
+.focus-catch .focus-icon.is-inline{width:1.25em;height:1.25em;margin-right:.2em}
+.focus-timer .focus-bar{display:none}
+@media(max-width:600px){.focus-timer{min-width:0}.focus-timer .focus-time{font-size:var(--size-24)}.focus-timer-badge{width:var(--size-50);height:var(--size-50);left:calc(-1 * var(--size-20))}.focus-catch{font-size:var(--size-12);padding:var(--size-2) var(--size-8)}}
+/* Timer v2 refinements: visible empty track, catch badge hangs below the pill so its width never changes. */
+.focus-timer-badge{border:var(--size-3) solid var(--color-game-wood-dark);border-radius:50%;background:var(--color-game-sea)}
+.focus-ring-track{fill:var(--color-game-sea);stroke:var(--color-game-bar);stroke-width:7}
+.focus-ring-fill{stroke-width:7;stroke-linecap:butt}
+.focus-catch{position:absolute;right:var(--size-14);bottom:calc(-1 * var(--size-18));z-index:1;box-shadow:0 var(--size-3) 0 var(--color-game-go-lip)}
