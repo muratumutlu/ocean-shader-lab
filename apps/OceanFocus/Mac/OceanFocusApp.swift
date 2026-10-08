@@ -30,39 +30,39 @@ struct MenuContent: View {
     var body: some View {
         if let active = store.active {
             if active.kind == .focus {
-                Text("Odaklanma · \(Int(Double(store.expectedFish) * store.progress)) / \(store.expectedFish) balık")
-                Button("Vazgeç (balıklar denize dökülür)…") { confirmGiveUp() }
+                Text("🎣 Fishing · \(Int(Double(store.expectedFish) * store.progress)) / \(store.expectedFish) fish")
+                Button("Give up (catch spills)…") { confirmGiveUp() }
             } else {
-                Text("Mola ☕️")
-                Button("Molayı bitir") { store.abandon() }
+                Text("☕️ Break")
+                Button("End break") { store.abandon() }
             }
         } else {
-            Text("Ne kadar odaklanacaksın?")
+            Text("Focus for…")
             ForEach(FocusPreset.allCases, id: \.self) { preset in
-                Button("\(preset.minutes) dakika") { store.startFocus(minutes: preset.minutes) }
+                Button("\(preset.minutes) min") { store.startFocus(minutes: preset.minutes) }
             }
         }
         Divider()
         Text("\(store.region?.name ?? "") · \(store.money) 💰")
-        Button("Oyunu aç") {
+        Button("Open game") {
             openWindow(id: "game")
             NSApp.activate(ignoringOtherApps: true)
         }
-        Button(store.clock.speed == 1 ? "Demo hızı ×60" : "Gerçek zaman") {
+        Button(store.clock.speed == 1 ? "Demo speed ×60" : "Real time") {
             store.setSpeed(store.clock.speed == 1 ? 60 : 1)
         }
         if let problem = store.loadProblem { Text(problem) }
         Divider()
-        Button("Ocean Focus'tan çık") { NSApp.terminate(nil) }.keyboardShortcut("q")
+        Button("Quit Ocean Focus") { NSApp.terminate(nil) }.keyboardShortcut("q")
     }
 
     private func confirmGiveUp() {
         NSApp.activate(ignoringOtherApps: true)
         let alert = NSAlert()
-        alert.messageText = "Vazgeçmek istediğine emin misin?"
-        alert.informativeText = "Kovadaki balıklar denize dökülecek ve bu seanstan para kazanmayacaksın."
-        alert.addButton(withTitle: "Devam et")
-        alert.addButton(withTitle: "Vazgeç")
+        alert.messageText = "Give up this session?"
+        alert.informativeText = "Your catch spills back into the sea and this session earns no coins."
+        alert.addButton(withTitle: "Keep going")
+        alert.addButton(withTitle: "Give up")
         if alert.runModal() == .alertSecondButtonReturn { store.abandon() }
     }
 }

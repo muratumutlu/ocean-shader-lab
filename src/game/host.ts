@@ -116,15 +116,15 @@ export function createHost(options:{storage?:Storage;now?:()=>number;speed?:numb
   reset(){save=fresh();changed();},
   regions(){return regionEntries(save);},
   unlockRegion(id:string){
-   if(save.active?.kind==='focus')throw Error('Odaklanırken taşınamazsın.');
+   if(save.active?.kind==='focus')throw Error('Finish your focus session first.');
    const target=region(id),entry=regionEntries(save).find(e=>e.region.id===id);
-   if(entry?.status!=='unlockable')throw Error('Bu bölge henüz açılamaz.');
+   if(entry?.status!=='unlockable')throw Error('This region cannot be unlocked yet.');
    progressOf(save.currentRegionId).money-=target.unlockPrice;
    save.unlocked=[...(save.unlocked??[starter]),id];progressOf(id);save.currentRegionId=id;changed();
   },
   switchRegion(id:string){
-   if(save.active?.kind==='focus')throw Error('Odaklanırken taşınamazsın.');
-   if(!(save.unlocked??[starter]).includes(id))throw Error('Bu bölge kilitli.');
+   if(save.active?.kind==='focus')throw Error('Finish your focus session first.');
+   if(!(save.unlocked??[starter]).includes(id))throw Error('This region is locked.');
    save.currentRegionId=id;changed();
   },
  };

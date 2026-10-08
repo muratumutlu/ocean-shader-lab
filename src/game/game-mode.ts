@@ -17,15 +17,15 @@ export function prepareGamePage(){
  // Portrait screens (phones, iPhone Duo inner screen) look along the cove so boat and stall stack vertically.
  // At startup inside WKWebView the viewport may not be laid out yet; fall back to the screen's shape.
  const width=innerWidth||screen.width,height=innerHeight||screen.height;
- if(width/height<1)setCameraHome({x:3.4,y:19,z:21.5},{x:-.3,y:0,z:1.9});
+ if(width/height<1)setCameraHome({x:3.4,y:19,z:21.5},{x:-.3,y:0,z:1.2});
  else setCameraHome({x:9.5,y:11,z:14},{x:1.8,y:.2,z:.4});
- document.title='Ocean Focus — odaklan, balık tut';
- // The coast controls move into the HUD's settings gear; give them Turkish labels there.
+ document.title='Ocean Focus';
+ // The coast controls move into the HUD's settings gear; give them short game labels there.
  const label=(id:string,text:string)=>{const node=document.querySelector(`label[for="${id}"]`);if(node?.firstChild)node.firstChild.textContent=text+' ';};
- label('swell','Dalga boyu');label('tide','Su seviyesi');label('light','Güneş yönü');label('quality','Görüntü kalitesi');
- document.querySelector('#reset')!.textContent='Kamerayı sıfırla';
- document.querySelector('#fullscreen')!.textContent='⛶ Tam ekran';
- const quality:Record<string,string>={auto:'Otomatik',low:'Düşük',balanced:'Dengeli',high:'Yüksek'};
+ label('swell','Waves');label('tide','Water level');label('light','Sun');label('quality','Quality');
+ document.querySelector('#reset')!.textContent='Reset camera';
+ document.querySelector('#fullscreen')!.textContent='⛶ Full screen';
+ const quality:Record<string,string>={auto:'Auto',low:'Low',balanced:'Balanced',high:'High'};
  for(const option of document.querySelectorAll<HTMLOptionElement>('#quality option'))option.textContent=quality[option.value]??option.textContent;
 }
 

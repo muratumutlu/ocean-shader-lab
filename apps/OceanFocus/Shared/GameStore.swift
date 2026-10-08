@@ -58,7 +58,7 @@ final class GameStore: ObservableObject {
         store = directory.map { SaveStore(directory: $0, catalog: catalog) }
         var loaded = GameState.fresh(catalog: catalog)
         if let result = store?.load() {
-            if let state = result.state { loaded = state } else { loadProblem = "Kayıt dosyası şu an okunamıyor. Tekrar denenecek." }
+            if let state = result.state { loaded = state } else { loadProblem = "Your save can't be read right now. Retrying soon." }
         }
         state = loaded
         _ = FocusTimer(engine: engine, clock: clock).prepareLoadedState(&state, licensed: licensed)
@@ -91,14 +91,14 @@ final class GameStore: ObservableObject {
         guard let preset = FocusPreset(rawValue: minutes) else { return }
         do { try timer.startFocus(preset, in: &state) } catch { return }
         persist()
-        schedule(title: "Seans tamam! 🎣", body: "Balıklar kıyıda seni bekliyor. Gel, sat!")
+        schedule(title: "Session complete! 🎣", body: "Your catch is waiting at the stall.")
         send(["type": "started", "session": sessionJSON(state.activeSession!), "expectedFish": expectedFish])
     }
 
     func startBreak() {
         do { try timer.startBreak(in: &state) } catch { return }
         persist()
-        schedule(title: "Mola bitti ☕️", body: "Yeni bir seansa hazır mısın?")
+        schedule(title: "Break over ☕️", body: "Ready for another session?")
         send(["type": "started", "session": sessionJSON(state.activeSession!), "expectedFish": 0])
     }
 
@@ -151,14 +151,14 @@ final class GameStore: ObservableObject {
             send(["type": "abandoned", "fishLost": fishLost])
         case .focusUnverified:
             send(["type": "abandoned", "fishLost": 0])
-            notify(title: "Seans doğrulanamadı", body: "Saat değiştiği için bu seansın ödülü verilmedi.")
+            notify(title: "Session not verified", body: "The clock changed, so this session earned no coins.")
         case .breakCompleted:
             send(["type": "breakDone"])
         }
     }
 
     private func persist() {
-        do { try store?.save(state) } catch { loadProblem = "Kayıt yazılamadı: \(error.localizedDescription)" }
+        do { try store?.save(state) } catch { loadProblem = "Couldn't save: \(error.localizedDescription)" }
         tickDate = Date()
         send(["type": "state", "save": saveJSON()])
     }

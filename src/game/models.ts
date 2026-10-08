@@ -117,7 +117,7 @@ export function createStall(){
 }
 function signTexture(){
  const canvas=document.createElement('canvas');canvas.width=256;canvas.height=76;const g=canvas.getContext('2d')!;
- g.fillStyle='#1f3b63';g.fillRect(0,0,256,76);g.fillStyle='#f3efe4';g.font="bold 40px ui-rounded, 'Arial Rounded MT Bold', 'Nunito', sans-serif";g.textAlign='center';g.textBaseline='middle';g.fillText('BALIK',128,40);
+ g.fillStyle='#1f3b63';g.fillRect(0,0,256,76);g.fillStyle='#f3efe4';g.font="bold 40px ui-rounded, 'Arial Rounded MT Bold', 'Nunito', sans-serif";g.textAlign='center';g.textBaseline='middle';g.fillText('FISH',128,40);
  const texture=new THREE.CanvasTexture(canvas);texture.colorSpace=THREE.SRGBColorSpace;return texture;
 }
 export function createCoin(){const coin=new THREE.Mesh(new THREE.CylinderGeometry(.09,.09,.025,18),new THREE.MeshStandardMaterial({color:0xf0c445,roughness:.35,metalness:.3,emissive:0x6b4a00,emissiveIntensity:.35}));return coin;}

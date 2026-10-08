@@ -66,6 +66,6 @@ describe('browser host',()=>{
   expect(host.shop().every(item=>item.upgrade.id.startsWith('arctic.'))).toBe(true);
   host.switchRegion('med');
   expect(host.save.currentRegionId).toBe('med');
-  expect(()=>host.switchRegion('indian')).toThrow('kilitli');
+  expect(()=>host.switchRegion('indian')).toThrow('locked');
  });
 });
