@@ -57,7 +57,7 @@ describe('browser host',()=>{
 
  it('unlocks the Arctic with saved coins and switches back freely',()=>{
   const {host}=setup();
-  expect(host.regions().map(e=>[e.region.id,e.status])).toEqual([['med','current'],['arctic','locked'],['indian','soon'],['atlantic','soon']]);
+  expect(host.regions().map(e=>[e.region.id,e.status])).toEqual([['med','current'],['arctic','locked'],['indian','locked'],['atlantic','locked']]);
   host.save.regions.med.money=4500;
   expect(host.regions()[1].status).toBe('unlockable');
   host.unlockRegion('arctic');

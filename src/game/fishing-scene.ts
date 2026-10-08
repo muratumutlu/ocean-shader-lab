@@ -6,7 +6,7 @@ import {createRegionEnvironment} from './environment';
 import {roleOf,themeFor,type RegionTheme} from './regions';
 import type {GameSave,HostEvent} from './host';
 import {createFishSchools} from './fish-schools';
-import {createBoat,createBucket,createBuoy,createCoin,createFigure,createFish,createFloat,createIgloo,createLabel,createRing,createStall,disposeTree,type Boat,type Figure} from './models';
+import {createBoat,createBucket,createBuoy,createCoin,createFigure,createFish,createFloat,createHut,createIgloo,createLabel,createRing,createShed,createStall,disposeTree,type Boat,type Figure} from './models';
 
 type Task={update(dt:number):boolean};
 const MOORING=new THREE.Vector3(.4,0,4.2);
@@ -29,7 +29,14 @@ export function createFishingScene(context:SceneContext){
  // Boat rig: `boatRoot` carries position/heading; the boat model can be swapped per tier.
  const boatRoot=new THREE.Group();world.add(boatRoot);boatRoot.position.copy(MOORING);boatRoot.rotation.y=MOORING_HEADING;boatRoot.scale.setScalar(HERO_SCALE);
  let boat:Boat=createBoat(0);boatRoot.add(boat.group);
- const makeFisher=(t:RegionTheme)=>createFigure(t.outfit==='parka'?{shirt:'breton',parka:0xc8452f,trousers:0x3b4a5c,hat:'hood',beard:true}:{shirt:'breton',trousers:0x3b4a5c,hat:'cap',beard:true});
+ const FISHER_OUTFITS:Record<RegionTheme['outfit'],Parameters<typeof createFigure>[0]>={
+  breton:{shirt:'breton',trousers:0x3b4a5c,hat:'cap',beard:true},
+  parka:{shirt:'breton',parka:0xc8452f,trousers:0x3b4a5c,hat:'hood',beard:true},
+  tropical:{shirt:0xf5efe0,trousers:0x4f6b5a,hat:'straw',beard:true,skin:0xc98d64},
+  slicker:{shirt:0xf2c230,trousers:0x2e3a44,hat:'souwester',beard:true},
+ };
+ const makeFisher=(t:RegionTheme)=>createFigure(FISHER_OUTFITS[t.outfit]);
+ const makeStall=(t:RegionTheme)=>t.stall==='igloo'?createIgloo():t.stall==='hut'?createHut():t.stall==='shed'?createShed():createStall();
  let fisher:Figure=makeFisher(theme);
  const bucket=createBucket();
  const rod=new THREE.Group(),rodPole=new THREE.Mesh(new THREE.CylinderGeometry(.008,.018,1.7,6),new THREE.MeshStandardMaterial({color:0x4a3524,roughness:.6}));rodPole.position.y=.85;rod.add(rodPole);
@@ -40,7 +47,7 @@ export function createFishingScene(context:SceneContext){
  const line=new THREE.Line(lineGeometry,new THREE.LineBasicMaterial({color:0x2a2a2a,transparent:true,opacity:.7}));line.frustumCulled=false;world.add(line);line.visible=false;
  let stall:ReturnType<typeof createStall>=createStall();world.add(stall.group);
  const stallPos=new THREE.Vector3(-2.2,0,-4.6);stallPos.y=cove.sampleHeight(stallPos.x,stallPos.z);
- const placeStall=()=>{stall.group.position.copy(stallPos);stall.group.rotation.y=.25;stall.group.scale.setScalar(theme.stall==='igloo'?1.25:1.4);};placeStall();
+ const placeStall=()=>{stall.group.position.copy(stallPos);stall.group.rotation.y=.25;stall.group.scale.setScalar(theme.stall==='igloo'?1.25:theme.stall==='shed'?1.2:1.4);};placeStall();
  const environment=createRegionEnvironment(cove);world.add(environment.group);
  const crew:Record<string,Figure>={};
  const gear=new THREE.Group();world.add(gear);
@@ -75,8 +82,13 @@ export function createFishingScene(context:SceneContext){
   const has=new Set(owned.map(roleOf));
   const tier=owned.filter(id=>roleOf(id).startsWith('boat.')).length;
   if(tier!==boat.tier||boat.group.userData.theme!==theme.id){boatRoot.remove(boat.group);fisher.group.removeFromParent();bucket.group.removeFromParent();for(const f of Object.values(crew))f.group.removeFromParent();disposeBoat(boat);boat=createBoat(Math.min(6,tier),theme);boat.group.userData.theme=theme.id;boatRoot.add(boat.group);mountOnBoat();}
-  const parka=theme.outfit==='parka';
-  const crewSpecs:Record<string,Parameters<typeof createFigure>[0]>={'crew.deckhand':{shirt:0xb5432f,trousers:0x34404c,hat:parka?'hood':'beanie',parka:parka?0xe0a63a:undefined},'crew.net-mender':{shirt:0x4f7a5a,trousers:0x4a4136,hat:parka?'hood':'none',skin:0xb98563,parka:parka?0x4f7a5a:undefined},'crew.skipper':{shirt:0xf4f1e8,trousers:0x1b2a44,hat:parka?'hood':'captain',beard:true,parka:parka?0x2f5d7c:undefined}};
+  const CREW:Record<RegionTheme['outfit'],Record<string,Parameters<typeof createFigure>[0]>>={
+   breton:{'crew.deckhand':{shirt:0xb5432f,trousers:0x34404c,hat:'beanie'},'crew.net-mender':{shirt:0x4f7a5a,trousers:0x4a4136,hat:'none',skin:0xb98563},'crew.skipper':{shirt:0xf4f1e8,trousers:0x1b2a44,hat:'captain',beard:true}},
+   parka:{'crew.deckhand':{shirt:0xb5432f,trousers:0x34404c,hat:'hood',parka:0xe0a63a},'crew.net-mender':{shirt:0x4f7a5a,trousers:0x4a4136,hat:'hood',skin:0xb98563,parka:0x4f7a5a},'crew.skipper':{shirt:0xf4f1e8,trousers:0x1b2a44,hat:'hood',beard:true,parka:0x2f5d7c}},
+   tropical:{'crew.deckhand':{shirt:0xff8a3d,trousers:0x3d4f5f,hat:'straw',skin:0x9c6644},'crew.net-mender':{shirt:0x2fa3a3,trousers:0x4a4136,hat:'none',skin:0x7a4e33},'crew.skipper':{shirt:0xf5efe0,trousers:0x2b3a4a,hat:'straw',beard:true,skin:0xb07a52}},
+   slicker:{'crew.deckhand':{shirt:0xf28c28,trousers:0x2e3a44,hat:'souwester'},'crew.net-mender':{shirt:0xf2c230,trousers:0x2e3a44,hat:'beanie',skin:0xb98563},'crew.skipper':{shirt:0x1f3442,trousers:0x1b2a44,hat:'captain',beard:true}},
+  };
+  const crewSpecs=CREW[theme.outfit];
   for(const [id,spec] of Object.entries(crewSpecs))if(has.has(id)&&!crew[id])crew[id]=createFigure(spec);
   placeCrew();
   reel.visible=has.has('eq.reel-rod');
@@ -103,7 +115,7 @@ export function createFishingScene(context:SceneContext){
   const parent=fisher.group.parent,pos=fisher.group.position.clone();fisher.group.removeFromParent();disposeTree(fisher.group);
   fisher=makeFisher(theme);if(parent){parent.add(fisher.group);fisher.group.position.copy(pos);}fisher.rightArm.add(rod);rod.position.set(0,-.34,0);
   for(const [role,figure] of Object.entries(crew)){figure.group.removeFromParent();disposeTree(figure.group);delete crew[role];}
-  world.remove(stall.group);disposeTree(stall.group);stall=theme.stall==='igloo'?createIgloo():createStall();world.add(stall.group);placeStall();coinCount=0;
+  world.remove(stall.group);disposeTree(stall.group);stall=makeStall(theme);world.add(stall.group);placeStall();coinCount=0;
   ownedKey='';
  }
  function disposeBoat(b:Boat){b.group.traverse(o=>{if(o instanceof THREE.Mesh&&!isShared(o)){o.geometry.dispose();(o.material as THREE.Material).dispose();}});}

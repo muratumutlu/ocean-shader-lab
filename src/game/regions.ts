@@ -5,19 +5,29 @@ export type RegionTheme={
  waterTint:number;
  palms:boolean;
  snow:boolean;
- outfit:'breton'|'parka';
+ rain:boolean;
+ coral:boolean;
+ lighthouse:boolean;
+ outfit:'breton'|'parka'|'tropical'|'slicker';
  hull:number[];
  trim:number;
- stall:'stall'|'igloo';
+ topRig?:'lateen'|'outriggers'|'searchlight';
+ stall:'stall'|'igloo'|'hut'|'shed';
  fishTints:number[];
 };
-const MED:RegionTheme={id:'med',background:0xeeeae5,waterTint:0xffffff,palms:true,snow:false,outfit:'breton',
+const MED:RegionTheme={id:'med',background:0xeeeae5,waterTint:0xffffff,palms:true,snow:false,rain:false,coral:false,lighthouse:false,outfit:'breton',
  hull:[0x8b5a3c,0x8b5a3c,0x2f6f8f,0x2f6f8f,0xf1ece0,0x9a6a43,0x9a6a43],trim:0xf4f1e8,stall:'stall',
  fishTints:[0x8fb2c4,0xf2b544,0xe0785a,0x9fa9c9,0x7fc3a8,0xd9d2c0]};
-const ARCTIC:RegionTheme={id:'arctic',background:0xdde8ef,waterTint:0x9fc2e6,palms:false,snow:true,outfit:'parka',
- hull:[0x6b5446,0x6b5446,0x7a6352,0xb8432f,0xb8432f,0x31464f,0x31464f],trim:0xe9eef2,stall:'igloo',
+const ARCTIC:RegionTheme={id:'arctic',background:0xdde8ef,waterTint:0x9fc2e6,palms:false,snow:true,rain:false,coral:false,lighthouse:false,outfit:'parka',
+ hull:[0x6b5446,0x6b5446,0x7a6352,0xb8432f,0xb8432f,0x31464f,0x31464f],trim:0xe9eef2,topRig:'searchlight',stall:'igloo',
  fishTints:[0x9aa9b8,0xc96f5a,0x7d8e9c,0xd8dde2,0x5f7d8f,0xe8a07c]};
-const THEMES:Record<string,RegionTheme>={med:MED,arctic:ARCTIC};
+const INDIAN:RegionTheme={id:'indian',background:0xf4efe0,waterTint:0xd2fff2,palms:true,snow:false,rain:false,coral:true,lighthouse:false,outfit:'tropical',
+ hull:[0x1f8a8a,0x1f8a8a,0xe07a2e,0xe07a2e,0x2a6fa8,0x8c5a34,0x8c5a34],trim:0xf6d36b,stall:'hut',
+ fishTints:[0xffd23f,0x3ec1d3,0xff6f59,0xb388eb,0x7bd389,0xff9f1c]};
+const ATLANTIC:RegionTheme={id:'atlantic',background:0xd5dbe0,waterTint:0xa9c4c6,palms:false,snow:false,rain:true,coral:false,lighthouse:true,outfit:'slicker',
+ hull:[0x7a3b2e,0x7a3b2e,0x2e4a5f,0xb3322b,0xb3322b,0xb3322b,0xb3322b],trim:0xf2f2f2,topRig:'outriggers',stall:'shed',
+ fishTints:[0x8a9aa8,0x5d6f7d,0xc0c8cf,0x9c7b5b,0x6f8f8a,0xd1a46b]};
+const THEMES:Record<string,RegionTheme>={med:MED,arctic:ARCTIC,indian:INDIAN,atlantic:ATLANTIC};
 export const themeFor=(regionId:string)=>THEMES[regionId]??MED;
 /** Maps a catalog id suffix to the role it plays in the scene, so every region reuses the same visuals. */
 export function roleOf(upgradeId:string):string{

@@ -45,7 +45,49 @@
         {"id": "arctic.crew.skipper", "name": "Skipper", "category": "crew", "price": 980, "effect": {"moneyBonus": 0.2}, "requires": ["arctic.crew.net-mender", "arctic.boat.cabin"]}
       ]
     },
-    {"id": "indian", "name": "Indian Ocean", "fishPrice": 6, "unlockPrice": 9000, "available": false, "requiresLicense": true, "upgrades": [] },
-    {"id": "atlantic", "name": "Atlantic", "fishPrice": 7, "unlockPrice": 16000, "available": false, "requiresLicense": true, "upgrades": [] }
+    {"id": "indian", "name": "Indian Ocean", "fishPrice": 6, "unlockPrice": 9000, "available": true, "requiresLicense": true,
+      "upgrades": [
+        {"id": "indian.eq.sturdy-line", "name": "Handline spool", "category": "equipment", "price": 40, "effect": {"fishMultiplier": 1.15}, "requires": []},
+        {"id": "indian.eq.reel-rod", "name": "Trolling rod", "category": "equipment", "price": 100, "effect": {"fishMultiplier": 1.2}, "requires": ["indian.eq.sturdy-line"]},
+        {"id": "indian.eq.bait-box", "name": "Squid lures", "category": "equipment", "price": 200, "effect": {"fishMultiplier": 1.15}, "requires": []},
+        {"id": "indian.eq.cast-net", "name": "Reef net", "category": "equipment", "price": 420, "effect": {"fishMultiplier": 1.3}, "requires": ["indian.eq.reel-rod"]},
+        {"id": "indian.eq.trammel-net", "name": "Gill net", "category": "equipment", "price": 760, "effect": {"fishMultiplier": 1.25}, "requires": ["indian.eq.cast-net"]},
+        {"id": "indian.eq.longline", "name": "Deep handlines", "category": "equipment", "price": 1260, "effect": {"fishMultiplier": 1.3}, "requires": ["indian.eq.trammel-net"]},
+        {"id": "indian.eq.fish-finder", "name": "Bird radar", "category": "equipment", "price": 1520, "effect": {"fishMultiplier": 1.2}, "requires": ["indian.boat.motor"]},
+        {"id": "indian.eq.ice-chest", "name": "Salt store", "category": "equipment", "price": 1680, "effect": {"moneyBonus": 0.1}, "requires": []},
+        {"id": "indian.eq.purse-seine", "name": "Ring net", "category": "equipment", "price": 2520, "effect": {"fishMultiplier": 1.25}, "requires": ["indian.eq.longline"]},
+        {"id": "indian.boat.oars", "name": "Paddles", "category": "boat", "price": 60, "effect": {"fishMultiplier": 1.05}, "requires": []},
+        {"id": "indian.boat.rowboat", "name": "Outrigger canoe", "category": "boat", "price": 260, "effect": {"fishMultiplier": 1.1}, "requires": ["indian.boat.oars"]},
+        {"id": "indian.boat.motor", "name": "Longtail motor", "category": "boat", "price": 580, "effect": {"fishMultiplier": 1.1}, "requires": ["indian.boat.rowboat"]},
+        {"id": "indian.boat.cabin", "name": "Palm-roof cabin", "category": "boat", "price": 1000, "effect": {"fishMultiplier": 1.1}, "requires": ["indian.boat.motor"]},
+        {"id": "indian.boat.gulet", "name": "Dhow", "category": "boat", "price": 1840, "effect": {"fishMultiplier": 1.15}, "requires": ["indian.boat.cabin"]},
+        {"id": "indian.boat.sail-rig", "name": "Dhow sail", "category": "boat", "price": 2180, "effect": {"fishMultiplier": 1.1}, "requires": ["indian.boat.gulet"]},
+        {"id": "indian.crew.deckhand", "name": "Deckhand", "category": "crew", "price": 160, "effect": {"moneyBonus": 0.15}, "requires": ["indian.boat.rowboat"]},
+        {"id": "indian.crew.net-mender", "name": "Net mender", "category": "crew", "price": 500, "effect": {"moneyBonus": 0.15}, "requires": ["indian.crew.deckhand", "indian.boat.motor"]},
+        {"id": "indian.crew.skipper", "name": "Nakhoda", "category": "crew", "price": 1180, "effect": {"moneyBonus": 0.2}, "requires": ["indian.crew.net-mender", "indian.boat.cabin"]}
+      ]
+    },
+    {"id": "atlantic", "name": "Atlantic", "fishPrice": 7, "unlockPrice": 16000, "available": true, "requiresLicense": true,
+      "upgrades": [
+        {"id": "atlantic.eq.sturdy-line", "name": "Jig line", "category": "equipment", "price": 50, "effect": {"fishMultiplier": 1.15}, "requires": []},
+        {"id": "atlantic.eq.reel-rod", "name": "Spinning rod", "category": "equipment", "price": 120, "effect": {"fishMultiplier": 1.2}, "requires": ["atlantic.eq.sturdy-line"]},
+        {"id": "atlantic.eq.bait-box", "name": "Herring bait", "category": "equipment", "price": 230, "effect": {"fishMultiplier": 1.15}, "requires": []},
+        {"id": "atlantic.eq.cast-net", "name": "Lobster pots", "category": "equipment", "price": 490, "effect": {"fishMultiplier": 1.3}, "requires": ["atlantic.eq.reel-rod"]},
+        {"id": "atlantic.eq.trammel-net", "name": "Gillnet", "category": "equipment", "price": 890, "effect": {"fishMultiplier": 1.25}, "requires": ["atlantic.eq.cast-net"]},
+        {"id": "atlantic.eq.longline", "name": "Bottom longline", "category": "equipment", "price": 1470, "effect": {"fishMultiplier": 1.3}, "requires": ["atlantic.eq.trammel-net"]},
+        {"id": "atlantic.eq.fish-finder", "name": "Echo sounder", "category": "equipment", "price": 1770, "effect": {"fishMultiplier": 1.2}, "requires": ["atlantic.boat.motor"]},
+        {"id": "atlantic.eq.ice-chest", "name": "Cold store", "category": "equipment", "price": 1960, "effect": {"moneyBonus": 0.1}, "requires": []},
+        {"id": "atlantic.eq.purse-seine", "name": "Trawl", "category": "equipment", "price": 2940, "effect": {"fishMultiplier": 1.25}, "requires": ["atlantic.eq.longline"]},
+        {"id": "atlantic.boat.oars", "name": "Oars", "category": "boat", "price": 70, "effect": {"fishMultiplier": 1.05}, "requires": []},
+        {"id": "atlantic.boat.rowboat", "name": "Dory", "category": "boat", "price": 300, "effect": {"fishMultiplier": 1.1}, "requires": ["atlantic.boat.oars"]},
+        {"id": "atlantic.boat.motor", "name": "Diesel engine", "category": "boat", "price": 680, "effect": {"fishMultiplier": 1.1}, "requires": ["atlantic.boat.rowboat"]},
+        {"id": "atlantic.boat.cabin", "name": "Wheelhouse", "category": "boat", "price": 1170, "effect": {"fishMultiplier": 1.1}, "requires": ["atlantic.boat.motor"]},
+        {"id": "atlantic.boat.gulet", "name": "Trawler", "category": "boat", "price": 2150, "effect": {"fishMultiplier": 1.15}, "requires": ["atlantic.boat.cabin"]},
+        {"id": "atlantic.boat.sail-rig", "name": "Outriggers", "category": "boat", "price": 2540, "effect": {"fishMultiplier": 1.1}, "requires": ["atlantic.boat.gulet"]},
+        {"id": "atlantic.crew.deckhand", "name": "Deckhand", "category": "crew", "price": 190, "effect": {"moneyBonus": 0.15}, "requires": ["atlantic.boat.rowboat"]},
+        {"id": "atlantic.crew.net-mender", "name": "Net mender", "category": "crew", "price": 580, "effect": {"moneyBonus": 0.15}, "requires": ["atlantic.crew.deckhand", "atlantic.boat.motor"]},
+        {"id": "atlantic.crew.skipper", "name": "Skipper", "category": "crew", "price": 1380, "effect": {"moneyBonus": 0.2}, "requires": ["atlantic.crew.net-mender", "atlantic.boat.cabin"]}
+      ]
+    }
   ]
 }
