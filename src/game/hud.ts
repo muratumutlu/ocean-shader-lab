@@ -20,25 +20,26 @@ export function createHud(host:Host,parent:HTMLElement){
  const time=el('div',{className:'focus-time',textContent:'25:00'});
  const fishCount=el('div',{className:'focus-fish'});
  const bar=el('div',{className:'focus-bar'});const barFill=el('div',{className:'focus-bar-fill'});bar.append(barFill);
- const timerPill=el('div',{className:'focus-pill focus-timer'},badge('⏱️'),el('div',{className:'focus-timer-body'},el('div',{className:'focus-timer-row'},time,fishCount),bar));
+ const timerBadge=badge('⏱️');
+ const timerPill=el('div',{className:'focus-pill focus-timer'},timerBadge,el('div',{className:'focus-timer-body'},el('div',{className:'focus-timer-row'},time,fishCount),bar));
  const coinValue=el('span',{className:'focus-coin-value'});
  const coins=el('div',{className:'focus-pill focus-coins'},el('span',{className:'focus-badge is-gold',ariaHidden:'true'},coin()),coinValue);
  const shopToggle=el('button',{type:'button',className:'focus-round',textContent:'🛒',title:'Shop',ariaLabel:'Shop'});
- const shopList=el('div',{className:'focus-card focus-shop'});shopList.hidden=true;
+ const shopList=el('div',{className:'focus-card focus-panel-sheet focus-shop'});shopList.hidden=true;
  const top=el('div',{className:'focus-top'},el('div',{className:'focus-top-row'},timerPill,coins,shopToggle),shopList);
  // ---- bottom-left: session controls ----
- const status=el('p',{className:'focus-status'});
  const presetRow=el('div',{className:'focus-presets'});
  const presetButtons=PRESETS.map(minutes=>{const b=el('button',{type:'button',className:'focus-chip'},el('strong',{textContent:String(minutes)}),el('small',{textContent:'min'}));b.addEventListener('click',()=>{preset=minutes;render();});presetRow.append(b);return {minutes,b};});
- const start=el('button',{type:'button',className:'focus-go',textContent:'🎣 GO FISHING'});
+ const start=el('button',{type:'button',className:'focus-go is-hero',textContent:'🎣 GO FISHING'});
  const giveUp=el('button',{type:'button',className:'focus-giveup',textContent:'GIVE UP'});
- const confirmYes=el('button',{type:'button',className:'focus-giveup',textContent:'GIVE UP'}),confirmNo=el('button',{type:'button',className:'focus-go',textContent:'KEEP GOING'});
- const confirmBox=el('div',{className:'focus-confirm',hidden:true},el('p',{textContent:'Your catch will spill back into the sea.'}),el('div',{className:'focus-row'},confirmYes,confirmNo));
- const controls=el('section',{className:'focus-card focus-controls',ariaLabel:'Focus session'},status,presetRow,el('div',{className:'focus-row'},start,giveUp),confirmBox);
+ const confirmYes=el('button',{type:'button',className:'focus-giveup',textContent:'SPILL'}),confirmNo=el('button',{type:'button',className:'focus-go',textContent:'KEEP FISHING'});
+ // Confirmation replaces the give-up button in place: safe choice first, both the same size.
+ const confirmBox=el('div',{className:'focus-confirm',hidden:true},el('p',{textContent:'💦 Spill your catch?'}),el('div',{className:'focus-row'},confirmNo,confirmYes));
+ const controls=el('section',{className:'focus-card focus-controls',ariaLabel:'Focus session'},presetRow,el('div',{className:'focus-row'},start,giveUp),confirmBox);
  // ---- top-left: one gear for every setting ----
- const gear=el('button',{type:'button',className:'focus-round focus-gear',textContent:'⚙︎',title:'Settings',ariaLabel:'Settings'});
- const speed=el('button',{type:'button',className:'focus-plain'});
- const settings=el('div',{className:'focus-card focus-settings',hidden:true},el('p',{className:'panel-title',textContent:'SETTINGS'}),speed);
+ const gear=el('button',{type:'button',className:'focus-round focus-gear',textContent:'⚙️',title:'Settings',ariaLabel:'Settings'});
+ const speed=el('button',{type:'button',className:'focus-toggle'});
+ const settings=el('div',{className:'focus-card focus-panel-sheet focus-settings',hidden:true},el('p',{className:'panel-title',textContent:'⚙️ SETTINGS'}),speed);
  // Reuse the scene's own controls (waves, tide, sun, quality, camera reset, pause, full screen) inside the gear panel.
  for(const id of ['play','fullscreen']){const node=document.querySelector<HTMLElement>('#'+id);if(node)settings.append(node);}
  const coast=document.querySelector<HTMLElement>('#settings-panel');if(coast){coast.hidden=false;settings.append(coast);}
@@ -46,13 +47,21 @@ export function createHud(host:Host,parent:HTMLElement){
  const toast=el('div',{className:'focus-toast',role:'status'});toast.setAttribute('aria-live','polite');
  parent.append(corner,top,controls,toast);
 
- gear.addEventListener('click',()=>{settings.hidden=!settings.hidden;gear.setAttribute('aria-expanded',String(!settings.hidden));});
+ // One panel at a time; the session dock steps aside while a panel is open so nothing overlaps.
+ function openPanel(next:'settings'|'shop'|null){
+  settings.hidden=next!=='settings';shopList.hidden=next!=='shop';
+  gear.setAttribute('aria-expanded',String(next==='settings'));shopToggle.setAttribute('aria-expanded',String(next==='shop'));
+  controls.classList.toggle('is-tucked',next!==null);renderShop();
+ }
+ gear.addEventListener('click',()=>openPanel(settings.hidden?'settings':null));
+ document.addEventListener('keydown',event=>{if(event.key==='Escape')openPanel(null);});
  start.addEventListener('click',()=>{try{host.startFocus(preset);}catch(error){say((error as Error).message);}});
- giveUp.addEventListener('click',()=>{if(host.save.active?.kind==='focus')confirmBox.hidden=false;else host.abandon();});
- confirmNo.addEventListener('click',()=>{confirmBox.hidden=true;});
- confirmYes.addEventListener('click',()=>{confirmBox.hidden=true;host.abandon();});
+ const confirming=(on:boolean)=>{confirmBox.hidden=!on;giveUp.hidden=on||!host.save.active;};
+ giveUp.addEventListener('click',()=>{if(host.save.active?.kind==='focus')confirming(true);else host.abandon();});
+ confirmNo.addEventListener('click',()=>confirming(false));
+ confirmYes.addEventListener('click',()=>{confirming(false);host.abandon();});
  speed.addEventListener('click',()=>{host.setSpeed(host.speed===1?60:1);render();});
- shopToggle.addEventListener('click',()=>{shopList.hidden=!shopList.hidden;shopToggle.setAttribute('aria-expanded',String(!shopList.hidden));renderShop();});
+ shopToggle.addEventListener('click',()=>openPanel(shopList.hidden?'shop':null));
 
  let toastTimer=0;
  function say(text:string){toast.replaceChildren(...withCoins(text));toast.classList.remove('visible');void toast.offsetWidth;toast.classList.add('visible');clearTimeout(toastTimer);toastTimer=window.setTimeout(()=>toast.classList.remove('visible'),3800);}
@@ -66,7 +75,7 @@ export function createHud(host:Host,parent:HTMLElement){
   for(const {region,status} of host.regions()){
    const action=status==='unlockable'?el('button',{type:'button',className:'focus-go',disabled:focusing},'MOVE · '+region.unlockPrice,coin())
     :status==='unlocked'?el('button',{type:'button',className:'focus-go',textContent:'GO',disabled:focusing})
-    :el('span',{className:'focus-region-state'},...(status==='current'?['📍 You are here']:status==='soon'?['Soon']:['🔒 '+region.unlockPrice,coin()]));
+    :el('span',{className:'focus-tag'+(status==='current'?' is-here':'')},...(status==='current'?['📍 HERE']:status==='soon'?['SOON']:['🔒 '+region.unlockPrice,coin()]));
    if(action instanceof HTMLButtonElement)action.addEventListener('click',()=>{try{status==='unlockable'?host.unlockRegion(region.id):host.switchRegion(region.id);say('🧭 '+region.name+'!');}catch(error){say((error as Error).message);}});
    shopList.append(el('div',{className:'focus-item'},el('span',{className:'focus-tile',textContent:region.id==='arctic'?'🧊':region.id==='med'?'🏖️':'🌊'}),el('div',{className:'focus-item-text'},el('strong',{textContent:region.name}),el('span',{},'Per fish '+region.fishPrice,coin())),action));
   }
@@ -82,12 +91,12 @@ export function createHud(host:Host,parent:HTMLElement){
   for(const {minutes,b} of presetButtons){b.setAttribute('aria-pressed',String(minutes===preset));b.disabled=!!active;}
   presetRow.hidden=!!active;start.hidden=!!active;giveUp.hidden=!active;giveUp.textContent=focusing?'GIVE UP':'END BREAK';
   if(!active)confirmBox.hidden=true;
+  if(!confirmBox.hidden)giveUp.hidden=true;
+  timerBadge.textContent=active?.kind==='break'?'☕️':'⏱️';
   time.textContent=active?clock(host.remainingMs()):clock(preset*60_000);
   timerPill.classList.toggle('is-break',active?.kind==='break');
   fishCount.textContent=focusing?'🐟 '+Math.floor(host.expectedFish()*host.progress())+'/'+host.expectedFish():active?'☕️ break':'';
   barFill.style.transform='scaleX('+(active?host.progress():0)+')';
-  // Text stays minimal: the dock only shows a short status line while a session runs.
-  status.hidden=!active;status.textContent=focusing?'🎣 Fishing…':'☕️ Break';
   const money=String(host.money());if(coinValue.textContent!==money){if(coinValue.textContent)coins.classList.remove('bump'),void coins.offsetWidth,coins.classList.add('bump');coinValue.textContent=money;}
   speed.textContent=host.speed===1?'⏩ Demo speed ×60':'⏱ Real time';speed.setAttribute('aria-pressed',String(host.speed!==1));
   renderShop();

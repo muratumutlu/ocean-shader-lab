@@ -160,6 +160,8 @@
 --color-coin-edge:#8a5a00;
 --color-game-inset-dark:#0000002e;
 --color-game-inset-light:#ffffff80;
+--size-150:150px;
+--size-200:200px;
 --font-ui:'Avenir Next','Trebuchet MS',sans-serif;
 --font-display:Georgia,'Times New Roman',serif;
 --font-rounded:ui-rounded,'SF Pro Rounded','Arial Rounded MT Bold','Nunito','Varela Round',system-ui,sans-serif,'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji';
@@ -264,3 +266,32 @@ body.game-mode #ocean{filter:saturate(1.45) contrast(1.08) brightness(1.04)}
 .focus-round:active{transform:scale(.92);box-shadow:inset 0 calc(-1 * var(--size-2)) 0 var(--color-game-inset-dark),inset 0 var(--size-2) 0 var(--color-game-inset-light),0 var(--size-2) var(--size-6) var(--color-game-shade)}
 /* Touch devices: drop the top bar below the camera cut-out (iPhone Duo hides the status bar). */
 @media(pointer:coarse){.focus-top,.focus-corner{top:calc(var(--size-58) + env(safe-area-inset-top))}}
+/* ---- Consistency pass: one sizing system for every HUD control ---- */
+.focus-card .focus-go,.focus-card .focus-giveup{min-height:var(--size-50);font-size:var(--size-16);white-space:nowrap;letter-spacing:.04em}
+.focus-card .focus-go.is-hero{min-height:var(--size-58);font-size:var(--size-20)}
+.focus-card .focus-toggle[aria-pressed=true]{background:linear-gradient(var(--color-game-gold-top),var(--color-game-gold));box-shadow:0 var(--size-5) 0 var(--color-game-gold-lip)}
+.focus-controls{transition:transform .25s ease,opacity .25s ease}
+.focus-controls.is-tucked{transform:translateY(calc(100% + var(--size-40)));opacity:0;pointer-events:none}
+.focus-confirm p{font-size:var(--size-18);font-weight:900;margin:0 0 var(--size-12)}
+/* Panels share one size and grow from their button's corner. */
+.focus-panel-sheet{width:var(--size-360);max-height:calc(100svh - var(--size-120));overflow-y:auto;display:grid;gap:var(--size-10);align-content:start}
+.focus-shop{display:block}
+.focus-corner .focus-panel-sheet{transform-origin:top left}.focus-top .focus-panel-sheet{transform-origin:top right}
+.focus-tag{display:inline-flex;align-items:center;gap:var(--size-4);padding:var(--size-6) var(--size-12);border-radius:var(--size-50);background:var(--color-game-paper);border:var(--size-2) solid var(--color-game-chip-lip);font-size:var(--size-12);font-weight:900;color:var(--color-game-ink-soft);white-space:nowrap}
+.focus-tag.is-here{background:linear-gradient(var(--color-game-gold-top),var(--color-game-gold));border-color:var(--color-game-gold-lip);color:var(--color-game-ink)}
+/* Status pills: same height, timer keeps a fixed width so it never jumps between states. */
+.focus-pill{height:var(--size-58);min-height:0}
+.focus-timer{width:var(--size-220);justify-content:flex-start}
+.focus-timer-body{flex:1}
+.focus-coins{min-width:var(--size-120)}
+/* Game-styled sliders and select inside settings. */
+body.game-mode .focus-settings #settings-panel input[type=range]{-webkit-appearance:none;appearance:none;height:var(--size-14);border-radius:var(--size-14);background:var(--color-game-bar);border:var(--size-3) solid var(--color-game-wood-dark);margin:var(--size-6) 0 var(--size-14);min-height:0}
+body.game-mode .focus-settings #settings-panel input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:var(--size-30);height:var(--size-30);border-radius:50%;background:linear-gradient(var(--color-game-sea-top),var(--color-game-sea));border:var(--size-3) solid var(--color-game-wood-dark);box-shadow:inset 0 calc(-1 * var(--size-3)) 0 var(--color-game-inset-dark),0 var(--size-3) var(--size-6) var(--color-game-shade);cursor:grab}
+body.game-mode .focus-settings #settings-panel input[type=range]::-moz-range-thumb{width:var(--size-24);height:var(--size-24);border-radius:50%;background:var(--color-game-sea);border:var(--size-3) solid var(--color-game-wood-dark)}
+body.game-mode .focus-settings #settings-panel select{-webkit-appearance:none;appearance:none;min-height:var(--size-44);padding:0 var(--size-30) 0 var(--size-14);border-radius:var(--size-16);border:var(--size-3) solid var(--color-game-wood-dark);background:linear-gradient(var(--color-game-white),var(--color-game-chip));box-shadow:0 var(--size-4) 0 var(--color-game-chip-lip);font-weight:900;font-size:var(--size-14)}
+body.game-mode .focus-settings .quality-row{position:relative}
+body.game-mode .focus-settings .quality-row:after{content:'▾';position:absolute;right:var(--size-12);top:50%;transform:translateY(-50%);pointer-events:none;color:var(--color-game-ink);font-weight:900}
+body.game-mode .focus-settings #settings-panel label{font-size:var(--size-13)}
+@media(max-width:600px){.focus-pill{height:var(--size-46)}.focus-timer{width:var(--size-150)}.focus-coins{min-width:0}.focus-time{font-size:var(--size-20)}.focus-fish{display:none}.focus-panel-sheet{width:calc(100vw - var(--size-24));max-height:calc(100svh - var(--size-140))}.focus-top-row{gap:var(--size-6)}.focus-pill{margin-left:var(--size-18);padding-left:var(--size-30);padding-right:var(--size-12)}.focus-badge{left:calc(-1 * var(--size-18))}.focus-card .focus-go.is-hero{font-size:var(--size-18)}}
+/* The scene's own buttons carry id rules from the study page; restate the chip style at id strength. */
+body.game-mode .focus-settings #reset,body.game-mode .focus-settings #play,body.game-mode .focus-settings #fullscreen{min-height:var(--size-44);border:var(--size-3) solid var(--color-game-wood-dark);border-radius:var(--size-16);background:linear-gradient(var(--color-game-white),var(--color-game-chip));color:var(--color-game-ink);font-weight:900;font-size:var(--size-14);box-shadow:0 var(--size-5) 0 var(--color-game-chip-lip)}
