@@ -20,7 +20,7 @@ async function finishSessionIntoBreak(page:Page){
  await expect.poll(()=>page.evaluate(()=>(window as unknown as {oceanFocus:{host:{save:{active:{kind:string}|null}}}}).oceanFocus.host.save.active?.kind)).toBe('break');
 }
 async function buyEverything(page:Page,region:string,total:number){
- await page.locator('.focus-top .focus-round').click();
+ await page.locator('.focus-upgrades-toggle').click();
  // Let the panel's pop-in animation settle so measured button positions are final.
  await page.waitForTimeout(500);
  for(let bought=await owned(page,region);bought<total;){
@@ -40,6 +40,6 @@ test('every Mediterranean and Arctic upgrade can be bought during a break',async
  await humanClick(page,'.focus-shop .focus-item:has-text("Arctic") .focus-go');
  await expect.poll(()=>page.evaluate(()=>(window as unknown as {oceanFocus:{host:{save:Save}}}).oceanFocus.host.save.currentRegionId)).toBe('arctic');
  await page.evaluate(()=>{const o=(window as unknown as {oceanFocus:{host:{save:Save}}}).oceanFocus;o.host.save.regions.arctic.money=40_000;});
- await page.locator('.focus-top .focus-round').click();
+ await page.locator('.focus-upgrades-toggle').click();
  await buyEverything(page,'arctic',18);
 });

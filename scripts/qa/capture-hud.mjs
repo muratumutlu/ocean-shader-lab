@@ -12,7 +12,7 @@ for(const [label,viewport] of [['desk',{width:1280,height:800}],['phone',{width:
  await page.evaluate(()=>{oceanFocus.host.save.regions.med.money=260;oceanFocus.host.buy('med.eq.sturdy-line');});await page.waitForTimeout(400);
  await shot('1-idle');
  await page.click('.focus-gear');await page.waitForTimeout(400);await shot('2-settings');await page.click('.focus-gear');
- await page.click('.focus-top .focus-round');await page.waitForTimeout(400);await shot('3-shop');await page.click('.focus-top .focus-round');
+ await page.click('.focus-upgrades-toggle');await page.waitForTimeout(400);await shot('3-shop');await page.click('.focus-upgrades-toggle');
  await page.click('.focus-go');await page.waitForTimeout(900);await shot('4-fishing');
  await page.click('.focus-giveup');await page.waitForTimeout(300);await shot('5-confirm');
  await page.click('.focus-confirm .focus-go');

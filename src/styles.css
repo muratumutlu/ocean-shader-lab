@@ -162,6 +162,7 @@
 --color-game-inset-light:#ffffff80;
 --size-150:150px;
 --size-200:200px;
+--size-80:80px;
 --font-ui:'Avenir Next','Trebuchet MS',sans-serif;
 --font-display:Georgia,'Times New Roman',serif;
 --font-rounded:ui-rounded,'SF Pro Rounded','Arial Rounded MT Bold','Nunito','Varela Round',system-ui,sans-serif,'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji';
@@ -310,3 +311,14 @@ body.game-mode #fallback{background:var(--color-game-backdrop)}
 body.game-mode #fallback h2{font-family:var(--font-rounded);font-weight:900;font-size:var(--size-40);color:var(--color-game-ink);margin:0 0 var(--size-8)}
 body.game-mode #fallback p{font-family:var(--font-rounded);font-weight:800;font-size:var(--size-16);color:var(--color-game-ink-soft);margin:0 auto var(--size-20)}
 body.game-mode #fallback #retry{font-family:var(--font-rounded);min-height:var(--size-56);padding:0 var(--size-40);border:var(--size-3) solid var(--color-game-wood-dark);border-radius:var(--size-16);background:linear-gradient(var(--color-game-go-top),var(--color-game-go));box-shadow:0 var(--size-6) 0 var(--color-game-go-lip);color:var(--color-game-white);font-weight:900;font-size:var(--size-18);text-shadow:0 var(--size-2) 0 var(--color-game-text-shadow)}
+/* Top bar layout v2: tools (settings, upgrades) top-left, timer + coins top-right, both at the very top.
+   Phones with a status-bar safe area sit just below it; screens with a corner camera and no safe area
+   (iPhone Duo inner display) keep the right edge clear: max() picks the wide margin only when the inset is ~0. */
+.focus-tools{display:flex;gap:var(--size-10)}
+.focus-corner{justify-items:start}
+.focus-corner .focus-shop{transform-origin:top left}
+@media(pointer:coarse){
+ .focus-top,.focus-corner{top:calc(var(--size-12) + env(safe-area-inset-top))}
+ .focus-top{right:max(var(--size-12),calc(var(--size-80) - 2 * env(safe-area-inset-top)))}
+}
+.focus-icon-accent{stroke:var(--color-game-wood-dark)}

@@ -29,9 +29,9 @@ export function createHud(host:Host,parent:HTMLElement){
  const timerPill=el('div',{className:'focus-pill focus-timer'},timerBadge,el('div',{className:'focus-timer-body'},el('div',{className:'focus-timer-row'},time,fishCount),bar));
  const coinValue=el('span',{className:'focus-coin-value'});
  const coins=el('div',{className:'focus-pill focus-coins'},el('span',{className:'focus-badge is-gold',ariaHidden:'true'},coin()),coinValue);
- const shopToggle=el('button',{type:'button',className:'focus-round',title:'Shop',ariaLabel:'Shop'},icon('cart'));
+ const shopToggle=el('button',{type:'button',className:'focus-round focus-upgrades-toggle',title:'Upgrades',ariaLabel:'Upgrades'},icon('upgrade'));
  const shopList=el('div',{className:'focus-card focus-panel-sheet focus-shop'});shopList.hidden=true;
- const top=el('div',{className:'focus-top'},el('div',{className:'focus-top-row'},timerPill,coins,shopToggle),shopList);
+ const top=el('div',{className:'focus-top'},el('div',{className:'focus-top-row'},timerPill,coins));
  // ---- bottom-left: session controls ----
  const presetRow=el('div',{className:'focus-presets'});
  const presetButtons=PRESETS.map(minutes=>{const b=el('button',{type:'button',className:'focus-chip'},el('strong',{textContent:String(minutes)}),el('small',{textContent:'min'}));b.addEventListener('click',()=>{preset=minutes;render();});presetRow.append(b);return {minutes,b};});
@@ -53,7 +53,8 @@ export function createHud(host:Host,parent:HTMLElement){
   borrowed.push({node,parent:node.parentNode,next:node.nextSibling,hidden:node.hidden});
   if(id==='settings-panel')node.hidden=false;settings.append(node);
  }
- const corner=el('div',{className:'focus-corner'},gear,settings);
+ // Tool buttons live together on the left; the right edge stays clear for camera cut-outs.
+ const corner=el('div',{className:'focus-corner'},el('div',{className:'focus-tools'},gear,shopToggle),settings,shopList);
  const toast=el('div',{className:'focus-toast',role:'status'});toast.setAttribute('aria-live','polite');
  parent.append(corner,top,controls,toast);
 
@@ -82,9 +83,9 @@ export function createHud(host:Host,parent:HTMLElement){
   if(shopList.hidden){shopKey='';return;}
   const save=host.save,key=[save.currentRegionId,host.money(),host.ownedIds().size,save.active?.kind??'',(save.unlocked??[]).join(',')].join('|');
   if(!force&&key===shopKey)return;shopKey=key;
-  shopList.replaceChildren(el('p',{className:'panel-title'},...label('cart','SHOP · '+host.region().name.toUpperCase())));
+  shopList.replaceChildren(el('p',{className:'panel-title'},...label('upgrade','UPGRADES · '+host.region().name.toUpperCase())));
   const focusing=host.save.active?.kind==='focus',items=host.shop();
-  if(focusing)shopList.append(el('p',{className:'focus-note'},...rich('{lock} Shop opens after your focus session.')));
+  if(focusing)shopList.append(el('p',{className:'focus-note'},...rich('{lock} Upgrades open after your focus session.')));
   if(!items.length)shopList.append(el('p',{className:'focus-note'},...rich('{trophy} You own everything here!')));
   // Regions: move on once enough coins are saved; unlocked regions can be revisited any time.
   shopList.append(el('p',{className:'panel-title focus-regions-title'},...label('compass','REGIONS')));
