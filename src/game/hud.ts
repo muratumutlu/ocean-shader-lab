@@ -70,8 +70,14 @@ export function createHud(host:Host,parent:HTMLElement){
 
  let toastTimer=0;
  function say(text:string){toast.replaceChildren(...rich(text));toast.classList.remove('visible');void toast.offsetWidth;toast.classList.add('visible');clearTimeout(toastTimer);toastTimer=window.setTimeout(()=>toast.classList.remove('visible'),3800);}
- function renderShop(){
-  if(shopList.hidden)return;shopList.replaceChildren(el('p',{className:'panel-title'},...label('cart','SHOP · '+host.region().name.toUpperCase())));
+ // The shop is rebuilt only when something it shows changes. Rebuilding it on every timer tick replaced
+ // the buttons under the pointer, so clicks during a session or break were lost.
+ let shopKey='';
+ function renderShop(force=false){
+  if(shopList.hidden){shopKey='';return;}
+  const save=host.save,key=[save.currentRegionId,host.money(),host.ownedIds().size,save.active?.kind??'',(save.unlocked??[]).join(',')].join('|');
+  if(!force&&key===shopKey)return;shopKey=key;
+  shopList.replaceChildren(el('p',{className:'panel-title'},...label('cart','SHOP · '+host.region().name.toUpperCase())));
   const focusing=host.save.active?.kind==='focus',items=host.shop();
   if(focusing)shopList.append(el('p',{className:'focus-note'},...rich('{lock} Shop opens after your focus session.')));
   if(!items.length)shopList.append(el('p',{className:'focus-note'},...rich('{trophy} You own everything here!')));
